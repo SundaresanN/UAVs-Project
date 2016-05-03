@@ -1,0 +1,37 @@
+@CHARSET "UTF-8";
+
+.twoPanes-rightPane{
+	float: right;
+	border-left: 1px solid grey;
+	border-left-style: ridge;
+	background-color: green;
+	position: relative;
+}
+
+.twoPanes-leftPane{
+	float: left;
+	border-right: 1px solid grey;
+	border-left-style: ridge;
+	background-color: yellow;
+	position: relative;
+}
+
+.choice-buttons{
+	margin: 0 auto;
+	padding: 0 auto;
+	border: 1px solid black
+}
+
+.left-border{
+	border-left: 1px solid grey;
+}
+.right-border{
+	border-right: 1px solid grey;
+}
+.left-border-black{
+	border-left: 1px solid black;
+}
+.right-border-black{
+	border-right: 1px solid black;
+}
+

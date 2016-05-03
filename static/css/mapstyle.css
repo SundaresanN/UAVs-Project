@@ -1,0 +1,12 @@
+.map { 
+	position: relative;
+	top: 0; 
+	left: 0; 
+} 
+
+#container {
+
+	position: relative;
+	left: 0;
+	top: 0;
+}
