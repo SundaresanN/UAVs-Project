@@ -7,6 +7,8 @@ function Drone(name){
 	this.locationsToReach = new Array()
 
 	this.flight = flight
+
+	this.deleteElementWithLatitudeAndLongitude = deleteElementWithLatitudeAndLongitude
 }
 
 
@@ -21,38 +23,21 @@ function flight(socket){
 
 	$("[id = '" + this.name + "']").children().eq(2).html("-")
 	
-	socket.emit('flight', {name: this.name, locationList: this.locationsToReach})
+	socket.emit('flight', {name: this.name, locationList: this.locationsToReach}, function(){
 
-
-	socket.on('Altitude Reached', function(data){
-
-		var name = data['name']
-		var altitude =  data['altitude']
-
-		if (data['reached'] == true) {
-
-			alert(name + " has reached its altitude, it is ready to flight")
-		}else{
-
-			console.log(name + " --> altitude reached: " + altitude)
-		}
-
-	})
-
-	socket.on('Update Live Location', function(data){
-		
-		console.log(data)
-		/*
-		var xy = brain.converter.getXYCoordinatesFromLatitudeLongitudeCoordinates(data["latitude"], data["longitude"])
-		var id = data["name"] + " " + "drone"
-
-		if($("[id='" + id + "']").html() == null){
-			brain.graphicBrain.addMarker(xy.x, xy.y, "drone", data["name"], null)
-		}else{
-			$("[id='" + id + "']").css({top: xy.y, left: xy.x})
-		}
-		*/
+		console.log("qua")
 	})
 
 
+}
+
+function deleteElementWithLatitudeAndLongitude(latitude, longitude){
+
+	for(index in this.locationsToReach){
+
+		if (this.locationsToReach[index].latitude == latitude && this.locationsToReach[index].longitude == longitude) {
+
+			this.locationsToReach.splice(index, 1)
+		}
+	}
 }

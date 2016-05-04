@@ -33,5 +33,6 @@ function addLocation(){
 
 function cancelAdding(){
 
+	brain.graphicBrain.clickOnMap = false
 	$("#tableInfo").remove()
 }
