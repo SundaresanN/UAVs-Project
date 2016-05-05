@@ -3,7 +3,7 @@ from flask import jsonify
 
 class Drone:
 
-	def __init__(self, name, wifiConnection):
+	def __init__(self, name, wifiConnection, cameraConnection):
 
 		self.targetAltitude = 2
 
@@ -15,7 +15,8 @@ class Drone:
 		
 		self.wifiConnection = wifiConnection
 
-		self.thread = {}
+		self.cameraConnection = cameraConnection
+
 
 	def connect(self):
 		self.vehicle = connect('udpout:10.1.1.10:14560', wait_ready=True)
@@ -30,8 +31,8 @@ class Drone:
 		}
 		return jsonify(location)
 
-	def buildListOfLocations(self, listOfLocations):
-
-		for location in listOfLocations:
+	def buildListOfLocations(self, locations):
+		print "Building Location for", self.name
+		for location in locations:
 			if location != None:
 				self.listOfLocations.append(LocationGlobalRelative(location["latitude"], location["longitude"], location['altitude']))
