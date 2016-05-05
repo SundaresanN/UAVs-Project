@@ -25,13 +25,9 @@ class ServerBrain:
 			'Solo Green' : drone.Drone('Solo Green', self.wifiConnections['Solo Green'])
 		}
 
-	def getDistanceMeters(firstLocation, secondLocation):
-		latitude = float(secondLocation.lat) - float(firstLocation.lat)
-		longitude = float(secondLocation.lon) - float(firstLocation.lon)
-		return math.sqrt((latitude*latitude) + (longitude*longitude))*1.113195e5
-
+	
 	def switchConnection(self, droneName):
-		print "I'm going to switch WiFi connection, ", droneName
+		#print "I'm going to switch WiFi connection, ", droneName
 		return self.conn.connect(ssid=self.drones[droneName].wifiConnection[0], password=self.drones[droneName].wifiConnection[1])
 		
 	def connectDrone(self, droneName):
@@ -51,6 +47,11 @@ class ServerBrain:
 		if functionName == "flight":
 			eventlet.spawn(self.flight, listOfLocations, name)
 	
+	def getDistanceMeters(self, firstLocation, secondLocation):
+		latitude = float(secondLocation.lat) - float(firstLocation.lat)
+		longitude = float(secondLocation.lon) - float(firstLocation.lon)
+		return math.sqrt((latitude*latitude) + (longitude*longitude))*1.113195e5
+
 	def arm(self, name):
 
 		print "Arming... ", name
@@ -73,15 +74,37 @@ class ServerBrain:
 			print "Waiting for arming ", name
 			time.sleep(1)
 		print "I finish the arm function execution and I'm ready to take off, ", name
-
+	'''
 	def flight(self, listOfLocations, name):
+		print "Inside flight function, ", name
+		self.switchConnection(name)
+		self.drones[name].buildListOfLocations(listOfLocations)
+		for locationToReach in self.drones[name].listOfLocations:
+			self.switchConnection(name)
+			print "Location to reach for " + name + " is ", locationToReach
+			soloCurrentLocation = self.drones[name].vehicle.location.global_relative_frame
+			
+			print locationToReach
+			targetDistance = self.getDistanceMeters(soloCurrentLocation, locationToReach)
+			print targetDistance
+			print "Sto inviando, ", name
+			self.socket.emit('Update Live Location', {
+					"name": name,
+					"status": "reached",
+					"latitude": locationToReach.lat,
+					"longitude": locationToReach.lon
+					#"distance": targetDistance
+					})
+			eventlet.sleep(4)
+		print "Sono uscito, ", name
+	'''
+	def flight(self, listOfLocations, name):
+		
 		print "I'm " + name + " and I'm inside flight function"
 		
 		self.arm(name)
-		targetAltitude = 2
+		targetAltitude = 4
 		self.drones[name].vehicle.simple_takeoff(targetAltitude)
-		
-		eventlet.sleep(5)
 		
 		while True:
 			print "I'm trying to understand if I reach the target altitude ", name
@@ -90,7 +113,7 @@ class ServerBrain:
 			message = {"reached": False , "altitude": self.drones[name].vehicle.location.global_relative_frame.alt, "name" : name}
 			if self.drones[name].vehicle.location.global_relative_frame.alt >= targetAltitude*0.95:
 				message = {"reached": True , "altitude": targetAltitude, "name" : name}
-				self.drones[name].vehicle.mode = VehicleMode('RTL')
+				#self.drones[name].vehicle.mode = VehicleMode('RTL')
 			self.socket.emit('Altitude Reached', message)
 			if message["reached"] == True:
 				break
@@ -99,36 +122,47 @@ class ServerBrain:
 
 		self.drones[name].buildListOfLocations(listOfLocations)
 
-		for locationToReach in listOfLocations:
+		for locationToReach in self.drones[name].listOfLocations:
+			
 			eventlet.sleep(3)
 			self.switchConnection(name)
 			#self.drones[name].vehicle = connect('udpout:10.1.1.10:14560', wait_ready=True)
 			print "Location to reach for " + name + " is ", locationToReach
-			soloCurrentLocation = vehicle.location.global_relative_frame
+			soloCurrentLocation = self.drones[name].vehicle.location.global_relative_frame
 			targetDistance = self.getDistanceMeters(soloCurrentLocation, locationToReach)
 			self.drones[name].vehicle.simple_goto(locationToReach)
-			eventlet.sleep(2)
+			
 			while True:
+				
+				eventlet.sleep(3)
+				
 				self.switchConnection(name)
 				soloCurrentLocation = self.drones[name].vehicle.global_relative_frame
 				remainingDistance = self.getDistanceMeters(soloCurrentLocation, targetDistance)
-				socketio.emit('Update Live Location', {
+				
+				self.socket.emit('Update Live Location', {
 					"name": name,
 					"status": "flying",
 					"latitude" : soloCurrentLocation.lat,
 					"longitude" : soloCurrentLocation.lon, 
 					"altitude" : soloCurrentLocation.alt,
 					})
+				
 				if remainingDistance <= targetDistance * 0.05:
 					#here the code for taking picture
-					socketio.emit('Update Live Location', {
+					self.socket.emit('Update Live Location', {
 					"name": name,
-					"status": "reached"
+					"status": "reached",
+					"latitude": locationToReach.lat,
+					"longitude": locationToReach.lon 
 					})
 					break
-				eventlet.sleep(2)
+		
+		self.switchConnection(name)
 		#self.drones[name].vehicle = connect('udpout:10.1.1.10:14560', wait_ready=True)
 		self.drones[name].vehicle.mode = VehicleMode('RTL')
+		
+
 
 
 
