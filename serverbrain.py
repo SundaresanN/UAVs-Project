@@ -1,5 +1,5 @@
 from wireless import Wireless
-import drone
+from drone import Drone
 from dronekit import connect, VehicleMode
 from flask_socketio import SocketIO, emit, send
 import eventlet
@@ -21,8 +21,8 @@ class ServerBrain:
 		self.conn = Wireless()
 		#array of drones initializer
 		self.drones = {
-			'Solo Gold' : drone.Drone('Solo Gold', self.wifiConnections['Solo Gold']),
-			'Solo Green' : drone.Drone('Solo Green', self.wifiConnections['Solo Green'])
+			'Solo Gold' : Drone('Solo Gold', self.wifiConnections['Solo Gold']),
+			'Solo Green' : Drone('Solo Green', self.wifiConnections['Solo Green'])
 		}
 
 	
@@ -47,10 +47,10 @@ class ServerBrain:
 		if functionName == "flight":
 			eventlet.spawn(self.flight, listOfLocations, name)
 	
-	def getDistanceMeters(self, firstLocation, secondLocation):
-		latitude = float(secondLocation.lat) - float(firstLocation.lat)
-		longitude = float(secondLocation.lon) - float(firstLocation.lon)
-		return math.sqrt((latitude*latitude) + (longitude*longitude))*1.113195e5
+	def getDistanceMeters(self, current, target):
+		lat = float(target.lat) - float(current.lat)
+		lon = float(target.lon) - float(current.lon)
+		return math.sqrt((lat*lat) + (lon*lon)) *  1.113195e5
 
 	def arm(self, name):
 
@@ -103,7 +103,7 @@ class ServerBrain:
 		print "I'm " + name + " and I'm inside flight function"
 		
 		self.arm(name)
-		targetAltitude = 4
+		targetAltitude = 5
 		self.drones[name].vehicle.simple_takeoff(targetAltitude)
 		
 		while True:
@@ -111,7 +111,7 @@ class ServerBrain:
 			eventlet.sleep(3)
 			self.switchConnection(name)
 			message = {"reached": False , "altitude": self.drones[name].vehicle.location.global_relative_frame.alt, "name" : name}
-			if self.drones[name].vehicle.location.global_relative_frame.alt >= targetAltitude*0.95:
+			if self.drones[name].vehicle.location.global_relative_frame.alt >= targetAltitude*0.90:
 				message = {"reached": True , "altitude": targetAltitude, "name" : name}
 				#self.drones[name].vehicle.mode = VehicleMode('RTL')
 			self.socket.emit('Altitude Reached', message)
@@ -121,12 +121,13 @@ class ServerBrain:
 		eventlet.sleep(3)
 
 		self.drones[name].buildListOfLocations(listOfLocations)
+		print self.drones[name].listOfLocations
 
 		for locationToReach in self.drones[name].listOfLocations:
 			
 			eventlet.sleep(3)
 			self.switchConnection(name)
-			#self.drones[name].vehicle = connect('udpout:10.1.1.10:14560', wait_ready=True)
+			self.drones[name].vehicle = connect('udpout:10.1.1.10:14560', wait_ready=True)
 			print "Location to reach for " + name + " is ", locationToReach
 			soloCurrentLocation = self.drones[name].vehicle.location.global_relative_frame
 			targetDistance = self.getDistanceMeters(soloCurrentLocation, locationToReach)
@@ -137,8 +138,8 @@ class ServerBrain:
 				eventlet.sleep(3)
 				
 				self.switchConnection(name)
-				soloCurrentLocation = self.drones[name].vehicle.global_relative_frame
-				remainingDistance = self.getDistanceMeters(soloCurrentLocation, targetDistance)
+				soloCurrentLocation = self.drones[name].vehicle.location.global_relative_frame
+				remainingDistance = self.getDistanceMeters(soloCurrentLocation, locationToReach)
 				
 				self.socket.emit('Update Live Location', {
 					"name": name,
@@ -159,7 +160,7 @@ class ServerBrain:
 					break
 		
 		self.switchConnection(name)
-		#self.drones[name].vehicle = connect('udpout:10.1.1.10:14560', wait_ready=True)
+		self.drones[name].vehicle = connect('udpout:10.1.1.10:14560', wait_ready=True)
 		self.drones[name].vehicle.mode = VehicleMode('RTL')
 		
 

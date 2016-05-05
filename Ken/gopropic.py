@@ -1,4 +1,4 @@
-import urllib.request
+import urllib2.request
 
 wifipassword = "09021967"
 #wifipassword = "Silvestri"
@@ -7,7 +7,7 @@ off = "http://10.5.5.9/bacpac/PW?t=" + wifipassword + "&p=%00"
 shutter = "http://10.5.5.9/bacpac/SH?t=" + wifipassword + "&p=%01"
 
 def SendCmd(cmd):
-  data = urllib.request.urlretrieve(cmd)
+  data = urllib2.request.urlretrieve(cmd)
 
 
 SendCmd(shutter)
