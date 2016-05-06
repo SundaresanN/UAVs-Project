@@ -57,8 +57,10 @@ function addMarker(x, y, typeOfMarker, droneName, drones){
 	switch(typeOfMarker){
 
 		case "home":
+			console.log(typeOfMarker)
 			id = id + " " + typeOfMarker
 			iconPath = id
+			console.log("ID: " + id)
 			break
 		case "drone":
 			id = id + " " + typeOfMarker
@@ -160,12 +162,12 @@ function addLocationIntoTableOfLocationsToReach(droneName, drones, latitude, lon
 	var marker = String.fromCharCode(96 + size)
 	for(drone in drones){
 		if(drones[drone].name == droneName){
-			if (drones[drone].locationsToReach.length == 0) {
+			if (drones[drone].homeLocation == null) {
 				marker = droneName + " home"
 			} 
 		}
-
 	}
+
 	var buttons = " - "
 	var locationToAppend = "<tr>" +
 								"<td>"+ droneName +"</td>" +

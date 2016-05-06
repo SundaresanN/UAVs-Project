@@ -47,7 +47,7 @@ function connectDrone(droneName){
 	console.log(droneName)
 
 	$("[id ='" + droneName + "']").children().eq(1).html("Trying to connect...")
-	
+	$("[id ='" + droneName + "']").children().eq(2).children().eq(0).attr("disabled", "true")
 	
 	$.ajax({
 		type: 'POST',
@@ -59,7 +59,8 @@ function connectDrone(droneName){
 			if (message == droneName + " netwotk is not reacheble") {
 				alert(message)
 				$("[id ='" + droneName + "']").children().eq(1).html("Not connected(previous error)")
-			
+				$("[id ='" + droneName + "']").children().eq(2).children().eq(0).removeAttr("disabled")
+	
 			} else{
 				
 				var element = brain.getIndexDrone(droneName)

@@ -179,6 +179,13 @@ class ServerBrain:
 					#here the code for taking picture
 					self.takeAPicture(name)
 					status = "reached"
+					self.socket.emit('Update Live Location', {
+					"name": name,
+					"status": status,
+					"latitude" : locationToReach.lat,
+					"longitude" : locationToReach.lon, 
+					"altitude" : locationToReach.alt,
+					})
 				'''
 				self.socket.emit('Update Live Location', {
 					"name": name,

@@ -26,7 +26,7 @@ function flightDrone(droneName){
 	brain.socket.on('Update Live Location', function(data){
 		
 		//console.log(data)
-		
+		/*
 		var xy = brain.converter.getXYCoordinatesFromLatitudeLongitudeCoordinates(data["latitude"], data["longitude"])
 		var id = data["name"] + " " + "drone"
 
@@ -35,7 +35,7 @@ function flightDrone(droneName){
 		}else{
 			$("[id='" + id + "']").css({top: xy.y, left: xy.x})
 		}
-		
+		*/
 		console.log("dentro Update Live Location, " + data['name'])
 		console.log(data)
 		if(data["status"] == "reached"){
