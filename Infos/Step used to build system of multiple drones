@@ -1,0 +1,6 @@
+Step used to build system of multiple drones
+
+1) Download DroneKit API for Python. This step is essential in order to communicate with multiple drones
+2) Download eventlet in order to switch threads everytime I need a thread switch
+3) Download flask in order to build a server using Python
+4) Download flask-socketio in order to be able to use socket in our system. Sockets are essential if we want sharing data between client and server
