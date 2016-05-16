@@ -1,0 +1,20 @@
+Project UAVs Description
+
+Fundamental server side libraries:
+
+- dronekit api for python: this module is essential in order to communicate with 3dr drone
+- eventlet: this module is used to handle threads that will run server side everytime client will send request
+- flask: this module is used in order to build a server side using Python language
+- flask-socketio: this module is used to communicate realtime (using sockets) with client from server
+
+Server Side Communication Solution:
+One of the biggest problem of this system is proper drone WiFi network, in fact every drone generates a WiFi network and to communicate with it I need to be connected to this WiFi network. Our system is thought in order to handle multiple drones and it means that I need to be connected to each drone with a single WiFi antenna.
+First attempt of solution to this problem was switching WiFi network everytime I need to send command to a particular drone. This solution is not feasible because slow nature of WiFi switching that causes delay in each action that drone has to do.
+Second attempt of solution is the following one:
+- Each object of the system (drone or camera) has been associated with a particular antenna ==> if we have 2 drones with 2 cameras I will have 4 antenna connected on laptop.
+- I will use network interface and not anymore WiFi switch, this seems like something not perfect but obviusly is more fast than the other solution
+
+How to hanlde all the interfaces with associated objects?
+
+1) I can check how many drones I have in the network -> to allow this research I need that Drone WiFi Network is like: Solo(ColorDrone)Drone. This kind of name because I need regular expression in order to detect Drone on my network:
+
