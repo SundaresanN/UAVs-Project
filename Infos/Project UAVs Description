@@ -6,15 +6,73 @@ Fundamental server side libraries:
 - eventlet: this module is used to handle threads that will run server side everytime client will send request
 - flask: this module is used in order to build a server side using Python language
 - flask-socketio: this module is used to communicate realtime (using sockets) with client from server
+- wireless: this is a module useful for handling network command by Python script
 
 Server Side Communication Solution:
 One of the biggest problem of this system is proper drone WiFi network, in fact every drone generates a WiFi network and to communicate with it I need to be connected to this WiFi network. Our system is thought in order to handle multiple drones and it means that I need to be connected to each drone with a single WiFi antenna.
 First attempt of solution to this problem was switching WiFi network everytime I need to send command to a particular drone. This solution is not feasible because slow nature of WiFi switching that causes delay in each action that drone has to do.
 Second attempt of solution is the following one:
-- Each object of the system (drone or camera) has been associated with a particular antenna ==> if we have 2 drones with 2 cameras I will have 4 antenna connected on laptop.
-- I will use network interface and not anymore WiFi switch, this seems like something not perfect but obviusly is more fast than the other solution
+- Each object of the system (drone or camera) has been associated with a particular antenna ==> if we have 2 drones with 2 cameras I will have 4 antenna connected with laptop.
+- I will use network interface and not anymore WiFi switching, this seems like something not perfect but obviusly is more fast than the other solution
 
 How to hanlde all the interfaces with associated objects?
+In order to answer to this question I will have a drones data structure like this following one:
 
-1) I can check how many drones I have in the network -> to allow this research I need that Drone WiFi Network is like: Solo(ColorDrone)Drone. This kind of name because I need regular expression in order to detect Drone on my network:
+	drones = {
+		'Solo Gold' : ['', ''],
+		'Solo Green' : [''. ''] 
+	}
 
+WiFi network of each element of the system will be like this following(name of the network depends of kind of object that system is processing):
+
+- Drone -> Associated WiFi network name: SoloColorDrone (for instance: Solo Gold -> SoloGoldDrone is the name of its WiFi network)
+- Camera -> Associated WiFi network name: SoloColorCameraType (for instance: RGB on Solo Gold -> SoloGoldCameraRGB) 
+
+So basically for each key of 'drones' dict I have an array that will contain these information:
+- first element of the array is the interface of Drone's WiFi network;
+- second element of the array is the interface of GoPro on Drone's board;
+
+To assing a value(that is an array of 2 elements) to each key of the 'drones' dict I have the following lines of code:
+	
+	from wireless import Wireless
+	
+	conn = Wireless()
+	for interface in conn.interfaces():
+		print 'Interface: ', interface
+		currentWiFiConnection = conn.current()
+		if "Drone" in currentWiFiConnection:
+			for drone in drones:
+				droneColor = drone.split()[1]
+				if droneColor in currentWiFiConnection:
+					drones[drone][0] = interface
+					print "I'm breaking the nested for"
+					break
+		if 'Camera' in currentWiFiConnection:
+			for drone in drones:
+				droneColor = drone.split()[1]
+				if droneColor in currentWiFiConnection:
+					drones[drone][1] = interface
+					print "I'm breaking the nested for"
+					break
+(Remember the structure that WiFi Networks have to have in order to assign automatically interfaces to drones key)
+
+At the end of this portion of code, 'drones' dict will be filled as following one:
+
+	drones = {
+		'Solo Gold' : ['interfaceSoloGold', 'interfaceCameraSoloGold'],
+		'Solo Green' : ['interfaceSoloGreen'. 'interfaceCameraSoloGreen'] 
+	}
+
+These assignments have to be done before 'index.html' has been loaded on network.
+When 'index.html' will appear, the UI will present a table with all the vehicles connected. 
+
+How we can get this drones data?
+
+Client will request (via AJAX) drones data from server and server will answer with 'drones' dict.
+When client will receive drones data, it will interpret them in this way: for each element of 'drones' dict, it will read the array associated to that element:
+ - if the array is empty ( 'drone1' : ['', ''] ) -> it means that 'drone1' is not available
+ - if the array is like 'drone1': ['interface', ''] -> it means that the camera on board 'drone1' is not avilable
+ - if the array is like 'drone1' : ['interfaceD', 'interfaceC'] -> it means that 'drone1' is avilable and its camera too
+ 
+ 
+	
