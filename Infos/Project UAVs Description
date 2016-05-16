@@ -71,8 +71,16 @@ How we can get this drones data?
 Client will request (via AJAX) drones data from server and server will answer with 'drones' dict.
 When client will receive drones data, it will interpret them in this way: for each element of 'drones' dict, it will read the array associated to that element:
  - if the array is empty ( 'drone1' : ['', ''] ) -> it means that 'drone1' is not available
- - if the array is like 'drone1': ['interface', ''] -> it means that the camera on board 'drone1' is not avilable
+ - if the array is like 'drone1': ['interfaceD', ''] -> it means that the camera on board 'drone1' is not avilable
  - if the array is like 'drone1' : ['interfaceD', 'interfaceC'] -> it means that 'drone1' is avilable and its camera too
- 
- 
+
+Client will show the status of drone and associated camera(if available or not). If drone is available, a button for 'Flight' option will be shown and if the user has inserted location to reach, on 'Flight' button click the drone associated to that button will fly to that location.
+Hopefully with the use of the interfaces, the system will be faster than the old system built with WiFi switching, and with this kind of solution we probably could update the live drone location on the map using socket in order to get the drone thread be able to send its associated location.
+
+How we can handle the multiple flights?
+In order to be able to handle multiple flight we will use green thread(eventlet module thread). 
+Everytime I want a drone ready to fly, in the server side a thread will be created and this thread will run the associated function for drone flight and in this function there is the code for sending the drone live location to client.
+
+
+
 	
