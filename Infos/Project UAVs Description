@@ -82,22 +82,21 @@ How system works with "network interfaces solution"
 	In this paragraph I'm going to explain how we can be able to do actions with the drones and cameras:
 
 		- connection with drone
-		- positioning on the map of points of interest
 		- taking off and flight
 
 		Connection with drone
 
-			Our systen being a web application will be composed of two sides: client and server.
-			Let's talk about behavior of connection in both sides and we will see how the both side interact.
-			When client reaches the addresse where 'index.html' is located, on server side server will already have associated entities to interfaces. In this kind of process we could meet errors and issues, in fact could be possible that a drone or camera is not available and this must be communicated to client in terms of graphic informations. On client side in fact a table will be shown with all the drone that system have and a status for each drone will be shown(it's the same thing for camera on board of drone).
-			We could have a situation like this following one:
+			This system being a web application will be composed of two sides: client and server.
+			Let's talk about behavior of connection in both sides and we will see how the both sides interact.
+			When client reaches the address where 'index.html' is located, on server side server will already have associated entities to interfaces. In this kind of process we could meet errors and issues, in fact could be possible that a drone or camera is not available and this must be communicated to client in terms of graphic informations. On client side in fact a table will be shown with all the drones that system have and a status for each drone will be shown(it's the same thing for camera on board of drone).
+			We could have a system with 2 drones(and 2 cameras) like this following one:
 
 				drones = {
 					'Solo Gold' : ['interfaceA', ''],
 					'Solo Green' : ['interfaceB'. 'interfaceD'] 
 				}
 
-			Table on client side will be filled with this informations:
+			Table on client side will be filled with these informations:
 
 				- Solo Gold: 
 					- Drone: available;
@@ -105,10 +104,16 @@ How system works with "network interfaces solution"
 				- Solo Green: 
 					- Drone: available;
 					- Camera: available;
-			(Could be possibile too that we have a drone unreacheble)
+
+			(Could be possible too that we have a drone unreacheble)
 			At this point user knows which drone and camera are available or not.
-
+			Depending on which is the status of each couple drone/camera on client side different possbile actions will be shown.
 			(In the future we could have multiple infos about weather conditions, drone's battery, camera's battery and so on..)
-			
 
+
+What are the data structure of the system?
+	
+	In order to talk about this decision, we have to distinguish between server side and client side
+
+	Server Side
 
