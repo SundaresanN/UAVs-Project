@@ -13,9 +13,14 @@ class ServerBrain:
 		
 		self.socket = socket
 		self.dronesName = ["Solo Gold", "Solo Green"]
+		
 		self.wifiConnections = {
 			'Solo Gold' : ['SoloLink_gold', 'sololinkmst'],
 			'Solo Green' : ['SoloLink_MST', 'sololinkmst']
+		}
+		self.droneWiFiInterfaces = {
+			'Solo Gold' : "wlx40a5ef03ea3a",
+			'Solo Green' : "wlx40a5ef040181"
 		}
 		#used to switch connection
 		self.conn = Wireless()
@@ -56,7 +61,7 @@ class ServerBrain:
 		if self.conn.current() != self.wifiConnections[droneName]:
 			if self.switchConnection(droneName, "drone") == False:
 				#self.conn.power(False) #this command sets off the WiFi antenna
-				return droneName + " netwotk is not reacheble"
+				return droneName + " network is not reacheale"
 		
 		self.drones[droneName].connect()
 		location = self.drones[droneName].getActualLocation()
@@ -177,7 +182,7 @@ class ServerBrain:
 				status = "flying"
 				if remainingDistance <= targetDistance * 0.05:
 					#here the code for taking picture
-					self.takeAPicture(name)
+					#self.takeAPicture(name)
 					status = "reached"
 					self.socket.emit('Update Live Location', {
 					"name": name,
