@@ -1,86 +1,84 @@
 Project UAVs Description
 
-Fundamental server side libraries:
+Fundamental server side modules:
 
-- dronekit api for python: this module is essential in order to communicate with 3dr drone
-- eventlet: this module is used to handle threads that will run server side everytime client will send request
-- flask: this module is used in order to build a server side using Python language
-- flask-socketio: this module is used to communicate realtime (using sockets) with client from server
-- wireless: this is a module useful for handling network command by Python script
+	- dronekit api for python: this module is essential in order to communicate with 3dr drone
+	- eventlet: this module is used to handle threads that will run server side everytime client will send request
+	- flask: this module is used in order to build a server side using Python language
+	- flask-socketio: this module is used to communicate realtime (using sockets) with client from server
+	- wireless: this is a module useful for handling network command by Python script
 
-Server Side Communication Solution:
-One of the biggest problem of this system is proper drone WiFi network, in fact every drone generates a WiFi network and to communicate with it I need to be connected to this WiFi network. Our system is thought in order to handle multiple drones and it means that I need to be connected to each drone with a single WiFi antenna.
-First attempt of solution to this problem was switching WiFi network everytime I need to send command to a particular drone. This solution is not feasible because slow nature of WiFi switching that causes delay in each action that drone has to do.
-Second attempt of solution is the following one:
-- Each object of the system (drone or camera) has been associated with a particular antenna ==> if we have 2 drones with 2 cameras I will have 4 antenna connected with laptop.
-- I will use network interface and not anymore WiFi switching, this seems like something not perfect but obviusly is more fast than the other solution
+Occurred problems and solution attempts:
 
-How to hanlde all the interfaces with associated objects?
-In order to answer to this question I will have a drones data structure like this following one:
-
-	drones = {
-		'Solo Gold' : ['', ''],
-		'Solo Green' : [''. ''] 
-	}
-
-WiFi network of each element of the system will be like this following(name of the network depends of kind of object that system is processing):
-
-- Drone -> Associated WiFi network name: SoloColorDrone (for instance: Solo Gold -> SoloGoldDrone is the name of its WiFi network)
-- Camera -> Associated WiFi network name: SoloColorCameraType (for instance: RGB on Solo Gold -> SoloGoldCameraRGB) 
-
-So basically for each key of 'drones' dict I have an array that will contain these information:
-- first element of the array is the interface of Drone's WiFi network;
-- second element of the array is the interface of GoPro on Drone's board;
-
-To assing a value(that is an array of 2 elements) to each key of the 'drones' dict I have the following lines of code:
+	One of the biggest problem of this system is proper drone and camera WiFi networks, in fact they generate a WiFi networks and to communicate with them I need to be connected to these WiFi networks. Our system is thought in order to handle multiple drones and cameras with a single web application and it means that I need to be able to handle multiple drones with a simple homemade server. We need to find a solution to this incompatibility between this server with one WiFi antenna and multiple drones WiFi networks to handle.
 	
-	from wireless import Wireless
+	First solution attempt to this problem was switching WiFi network everytime I need to send command to a particular drone. This solution is not feasible because slow nature of WiFi switching that causes delay in each action that drone has to do.
 	
-	conn = Wireless()
-	for interface in conn.interfaces():
-		print 'Interface: ', interface
-		currentWiFiConnection = conn.current()
-		if "Drone" in currentWiFiConnection:
-			for drone in drones:
-				droneColor = drone.split()[1]
-				if droneColor in currentWiFiConnection:
-					drones[drone][0] = interface
-					print "I'm breaking the nested for"
-					break
-		if 'Camera' in currentWiFiConnection:
-			for drone in drones:
-				droneColor = drone.split()[1]
-				if droneColor in currentWiFiConnection:
-					drones[drone][1] = interface
-					print "I'm breaking the nested for"
-					break
-(Remember the structure that WiFi Networks have to have in order to assign automatically interfaces to drones key)
+	Second solution attempt is based on the following points: 
+	- We have multiple WiFi antennas connected with USB ports(so with USB hub we can have multiple WiFi connection)
+	- Each entity of the system (drone or camera) is connected to an antenna of all the antennas available (if we have 2 drones with 2 cameras I will have 4 WiFi antennas)
+	- I will send command to each entity using network interface, this process gets attempt of solution faster than previous one.
 
-At the end of this portion of code, 'drones' dict will be filled as following one:
+	Next step to do is understanding how to associate network interfaces with entities in the code. Let's see how the physical drone and camera are connected: each drone in our system will have a camera on board, so we need to understand wich camera is on which drone. In order to solve this problem, we have thought on "color solution", so basically each drone/camera couple will have a color that indetifies that couple. For instance: if I have one drone with one camera on board, I will identify them with "gold" color.
+	Another step to do is understaing how we can identify a WiFi network for each couple, again we can do it with "color solution" and in addiction key word that allows us to discriminate between camera(and its type of camera) and drone, so:
+		- Drone -> proper WiFi network: SoloGoldDrone (or something similar)
+		- Camera -> proper WiFi network: SoloGoldCameraRGB (we need to specify type of camera)
 
-	drones = {
-		'Solo Gold' : ['interfaceSoloGold', 'interfaceCameraSoloGold'],
-		'Solo Green' : ['interfaceSoloGreen'. 'interfaceCameraSoloGreen'] 
-	}
+	So now we are able to discriminate between cameras and drones and between every couple camera/drone of our system.
+	Now the question is "what kind of structure can I use in order to identify a couple camera/drone and their interfaces?". Assuming that we have 2 drones and 2 cameras(and their "color IDs" are Gold and Green), we can try to answer to this question with this type of structure:
 
-These assignments have to be done before 'index.html' has been loaded on network.
-When 'index.html' will appear, the UI will present a table with all the vehicles connected. 
+		drones = {
+			'Solo Gold': ['', ''],
+			'Solo Green': ['', '']
+		}
 
-How we can get this drones data?
+	Let's analyze this data structure:
 
-Client will request (via AJAX) drones data from server and server will answer with 'drones' dict.
-When client will receive drones data, it will interpret them in this way: for each element of 'drones' dict, it will read the array associated to that element:
- - if the array is empty ( 'drone1' : ['', ''] ) -> it means that 'drone1' is not available
- - if the array is like 'drone1': ['interfaceD', ''] -> it means that the camera on board 'drone1' is not avilable
- - if the array is like 'drone1' : ['interfaceD', 'interfaceC'] -> it means that 'drone1' is avilable and its camera too
-
-Client will show the status of drone and associated camera(if available or not). If drone is available, a button for 'Flight' option will be shown and if the user has inserted location to reach, on 'Flight' button click the drone associated to that button will fly to that location.
-Hopefully with the use of the interfaces, the system will be faster than the old system built with WiFi switching, and with this kind of solution we probably could update the live drone location on the map using socket in order to get the drone thread be able to send its associated location.
-
-How we can handle the multiple flights?
-In order to be able to handle multiple flight we will use green thread(eventlet module thread). 
-Everytime I want a drone ready to fly, in the server side a thread will be created and this thread will run the associated function for drone flight and in this function there is the code for sending the drone live location to client.
-
-
-
+		- 'drones' is a dict; its keys are drone names and its values are array with a specific meaning
+		- a value array is composed with 2 elements:
+			1) first one represents network interface connected to drone's WiFi network;
+			2) second one represents network interface connected to camera's WiFi network;
 	
+	So now we have to understand how we can automatically associate two network interfaces to a particular couple camera/drone. In order to solve this problem we can use this script:
+
+		from wireless import Wireless
+		conn = Wireless()
+		for interface in conn.interfaces():
+			print 'Interface: ', interface
+			currentWiFiConnection = conn.current()
+			if "Drone" in currentWiFiConnection:
+				for drone in drones:
+					droneColor = drone.split()[1]
+					if droneColor in currentWiFiConnection:
+						drones[drone][0] = interface
+						print "I'm breaking the nested for"
+						break
+			if 'Camera' in currentWiFiConnection:
+				for drone in drones:
+					droneColor = drone.split()[1]
+					if droneColor in currentWiFiConnection:
+						drones[drone][1] = interface
+						print "I'm breaking the nested for"
+						break
+
+
+	This script will be executed before index web page will be loaded.
+	Assuming that WiFi networks available are:
+		- SoloGoldDrone with netwrok interface "interfaceA"
+		- SoloGreenDrone with netwrok interface "interfaceB"
+		- SoloGoldCameraRGB with netwrok interface "interfaceC"
+		- SoloGreenCameraRGB with netwrok interface "interfaceD"
+	An example of 'drones' dict state at the end of the script execution could be this following one:
+
+		drones = {
+			'Solo Gold' : ['interfaceA', 'interfaceC'],
+			'Solo Green' : ['interfaceB'. 'interfaceD'] 
+		}
+
+
+
+How system works with "network interfaces solution"
+
+
+
+
