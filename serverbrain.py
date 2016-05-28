@@ -1,221 +1,111 @@
 from wireless import Wireless
 from drone import Drone
-from dronekit import connect, VehicleMode
+from camera import Camera
 from flask_socketio import SocketIO, emit, send
+from flask import jsonify
 import eventlet
 import time
-import math
 import urllib #I need this for camera
 
 class ServerBrain:
 
 	def __init__(self, socket = None):
-		
+
 		self.socket = socket
-		self.dronesName = ["Solo Gold", "Solo Green"]
-		
-		self.wifiConnections = {
-			'Solo Gold' : ['SoloLink_gold', 'sololinkmst'],
-			'Solo Green' : ['SoloLink_MST', 'sololinkmst']
-		}
-		self.droneWiFiInterfaces = {
-			'Solo Gold' : "wlx40a5ef03ea3a",
-			'Solo Green' : "wlx40a5ef040181"
-		}
 		#used to switch connection
-		self.conn = Wireless()
-		
+		self.connectionManager = Wireless()
+
 		#array of drone initializer
 		self.drones = {
-			'Solo Gold' : Drone('Solo Gold', ['SoloLink_gold', 'sololinkmst'], ['mstgorgbgold', 'Silvestri']),
-			'Solo Green' : Drone('Solo Green', ['SoloLink_MST', 'sololinkmst'], ['mstgorgbgreen', 'Silvestri'])
+			'Solo Gold' : None,
+			'Solo Green' : None
 		}
 
-	def switchConnection(self, droneName, type):
-		ssid = password = ""
-		if type == "drone":
-			ssid = self.drones[droneName].wifiConnection[0]
-			password = self.drones[droneName].wifiConnection[1]
-		else:
-			ssid = self.drones[droneName].cameraConnection[0]
-			password = self.drones[droneName].cameraConnection[1]
-		print "I'm switching WiFi connection for ", type
-		return self.conn.connect(ssid=ssid, password=password)
-		
-	def takeAPicture(self, name):
+	def takeAFlight(self, drone):
+		eventlet.spawn(self.drones[drone].flight, self.connectionManager, self.socket)
 
-		self.switchConnection(name, "camera")
-		
-		wifipassword = "09021967"
-
-		on = "http://10.5.5.9/bacpac/PW?t=" + wifipassword + "&p=%01"
-		off = "http://10.5.5.9/bacpac/PW?t=" + wifipassword + "&p=%00"
-		shutter = "http://10.5.5.9/bacpac/SH?t=" + wifipassword + "&p=%01"
-
-		opener = urllib.FancyURLopener({})
-		f = opener.open(shutter)
-		print "Just took a picture"
+	def buildPath(self, droneName, locationsToReach):
+		'''
+		algorithm for building a path for droneName
+		'''
+		print locationsToReach
+		self.drones[droneName].buildListOfLocations(locationsToReach)
+		self.socket.emit('path built', {
+			'drone' : droneName,
+			'locations to reach' : self.drones[droneName].serializeListOfLocationsToReach()
+		})
 
 	def connectDrone(self, droneName):
-		
-		if self.conn.current() != self.wifiConnections[droneName]:
-			if self.switchConnection(droneName, "drone") == False:
-				#self.conn.power(False) #this command sets off the WiFi antenna
-				return droneName + " network is not reacheale"
-		
-		self.drones[droneName].connect()
-		location = self.drones[droneName].getActualLocation()
-		
-		return location
+		'''
+		Trying to find a free network for the drone
+		'''
+		print self.connectionManager.interfaces()
+		interface, network = self.__getNetwork__(droneName, 'drone')
+		if (interface, network) == (False, False):
+			return droneName + " network is not reacheable"
+		else:
+			infosToReturn = {}
+			self.drones[droneName] = Drone(droneName, interface, network)
+			print self.drones[droneName]
+			self.drones[droneName].connect()
+			infosToReturn['drone status'] = "available"
+			infosToReturn['home location'] = self.drones[droneName].getCurrentLocation()
+			infosToReturn['drone battery'] = self.drones[droneName].getBattery()
 
-	def activateThread(self, functionName, name, listOfLocations):
+			'''now it's the camera time '''
+			interface, network = self.__getNetwork__(droneName, 'camera')
+			if (interface, network) == (False, False):
+				print "Camera is not available for ", droneName
+				infosToReturn['camera status'] = 'not available'
+				infosToReturn['camera battery'] = 'info not reacheable'
+			else:
+				print "Camera is available ", droneName
+				self.drones[droneName].camera = Camera(interface, network, droneName)
+				infosToReturn['camera status'] = 'available'
+				infosToReturn['camera battery'] = '-'
 
-		if functionName == "flight":
-			eventlet.spawn(self.flight, listOfLocations, name)
-	
-	def getDistanceMeters(self, current, target):
-		lat = float(target.lat) - float(current.lat)
-		lon = float(target.lon) - float(current.lon)
-		return math.sqrt((lat*lat) + (lon*lon)) *  1.113195e5
+			return infosToReturn
 
-	def arm(self, name):
-
-		#print "Arming... ", name
-		self.switchConnection(name, "drone")
-		self.drones[name].vehicle = connect('udpout:10.1.1.10:14560', wait_ready=True)
-		
-		#print "Current WiFi network: ", self.conn.current()
-		
-		#print "Vehicle of " + name + " is: ", self.drones[name].vehicle is not None
-		
-		#print name + " is armable: ", self.drones[name].vehicle.is_armable
-		while not self.drones[name].vehicle.is_armable:
-			print "Waiting for vehicle to initialise..", name
-			
-		self.drones[name].vehicle.mode = VehicleMode("GUIDED")
-		self.drones[name].vehicle.armed = True
-
-		#print name + " armed: ", self.drones[name].vehicle.armed
-		while not self.drones[name].vehicle.armed:
-			print "Waiting for arming ", name
-			time.sleep(1)
-		#print "I finish the arm function execution and I'm ready to take off, ", name
-	
 	'''
-	def flight(self, listOfLocations, name):
-		print "Inside flight function, ", name
-		self.switchConnection(name, "drone")
-		self.drones[name].buildListOfLocations(listOfLocations)
-
-		print self.drones[name].listOfLocations
-		eventlet.sleep(3)
-		i = 0
-		for locationToReach in self.drones[name].listOfLocations:
-			self.switchConnection(name, "drone")
-			print "Location to reach for " + name + " is ", locationToReach
-			soloCurrentLocation = self.drones[name].vehicle.location.global_relative_frame
-			print name + " index: ", i
-			i = i + 1
-			#print locationToReach
-			targetDistance = self.getDistanceMeters(soloCurrentLocation, locationToReach)
-			print targetDistance
-			print "Sto inviando, ", name
-			
-			self.socket.emit('Update Live Location', {
-					"name": name,
-					"status": "reached",
-					"latitude": locationToReach.lat,
-					"longitude": locationToReach.lon
-					#"distance": targetDistance
-					})
-			
-			self.takeAPicture(name)
-			eventlet.sleep(5)
-			
-		print "Sono uscito, ", name
+	This method is used for building the network the drone will connect to.
+	This method is private because it's usage is thought for this class and not for other classes.
 	'''
-	def flight(self, listOfLocations, name):
-		
-		print "I'm " + name + " and I'm inside flight function"
-		
-		self.arm(name)
-		targetAltitude = 5
-		self.drones[name].vehicle.simple_takeoff(targetAltitude)
-		
-		while True:
-			eventlet.sleep(2)
-			print "I'm trying to understand if I reach the target altitude ", name
-			self.switchConnection(name, "drone")
-			message = {"reached": False , "altitude": self.drones[name].vehicle.location.global_relative_frame.alt, "name" : name}
-			if self.drones[name].vehicle.location.global_relative_frame.alt >= targetAltitude*0.90:
-				message = {"reached": True , "altitude": targetAltitude, "name" : name}
-				#self.drones[name].vehicle.mode = VehicleMode('RTL')
-			#self.socket.emit('Altitude Reached', message)
-			if message["reached"] == True:
-				break
+	def __getNetworkName__(self, type, drone):
+		color = drone.split()[1] # I've just taken the drone color from drone name(ex:'Solo Gold')
+		if type == "drone":
+			print "Drone setting network"
+			wifiNetwork = "SoloLink_" + color + "Drone"
+		if type == "camera":
+			print "Camera setting network"
+			wifiNetwork = "Solo" + color + "CameraRGB"
+		return wifiNetwork
 
-		eventlet.sleep(3)
+	'''
+	This method has been designed for getting network interface value and wifi network name
+	for the drone or for the camera.
+	This method is private because its functions are thought for inside the class.
+	'''
+	def __getNetwork__(self, drone, type):
+		wifiNetwork = self.__getNetworkName__(type, drone)
 
-		self.drones[name].buildListOfLocations(listOfLocations)
-		print self.drones[name].listOfLocations
+		'''This for-loop checks if this network is already connected '''
+		for interface in self.connectionManager.interfaces():
+			self.connectionManager.interface(interface)
+			if self.connectionManager.current() == wifiNetwork:
+				print "You are already connected to this network, ", wifiNetwork
+				self.connectionManager.connect(ssid = wifiNetwork, password = "Silvestri")
+				return self.connectionManager.interface(), self.connectionManager.current()
 
-		for locationToReach in self.drones[name].listOfLocations:
-			
-			eventlet.sleep(5)
-			self.switchConnection(name, "drone")
+		'''This for-loop checks if this network has not a connection yet '''
+		for interface in self.connectionManager.interfaces():
+			self.connectionManager.interface(interface)
+			if self.connectionManager.current() == None:
+				print "I've just found one free antenna ready to be connected"
+				if self.connectionManager.connect(ssid = wifiNetwork, password = "Silvestri"):
+					return self.connectionManager.interface(), self.connectionManager.current()
+				else:
+					'''This could be possible if the network is not available '''
+					return False, False
 
-			#connecting again the vehicle to be sure that the command will be sent
-			self.drones[name].vehicle = connect('udpout:10.1.1.10:14560', wait_ready=True)
-			
-			print "Location to reach for " + name + " is ", locationToReach
-			soloCurrentLocation = self.drones[name].vehicle.location.global_relative_frame
-			targetDistance = self.getDistanceMeters(soloCurrentLocation, locationToReach)
-			self.drones[name].vehicle.simple_goto(locationToReach)
-			
-			#Right here I'm waiting that drone reaches each location on the list
-			while True:
-				eventlet.sleep(2)
-				self.switchConnection(name, "drone")
-
-				soloCurrentLocation = self.drones[name].vehicle.location.global_relative_frame
-				remainingDistance = self.getDistanceMeters(soloCurrentLocation, locationToReach)
-				status = "flying"
-				if remainingDistance <= targetDistance * 0.05:
-					#here the code for taking picture
-					#self.takeAPicture(name)
-					status = "reached"
-					self.socket.emit('Update Live Location', {
-					"name": name,
-					"status": status,
-					"latitude" : locationToReach.lat,
-					"longitude" : locationToReach.lon, 
-					"altitude" : locationToReach.alt,
-					})
-				'''
-				self.socket.emit('Update Live Location', {
-					"name": name,
-					"status": status,
-					"latitude" : soloCurrentLocation.lat,
-					"longitude" : soloCurrentLocation.lon, 
-					"altitude" : soloCurrentLocation.alt,
-					})
-				'''
-				if status == "reached":
-					break
-		
-		self.switchConnection(name, "drone")
-		#connecting again the vehicle to be sure that the command will be sent
-		self.drones[name].vehicle = connect('udpout:10.1.1.10:14560', wait_ready=True)
-		self.drones[name].vehicle.mode = VehicleMode('RTL')
-	
-
-
-
-
-
-
-
-
-
-
-		
+		print "I haven't found a free antenna for your connection... sorry, ", wifiNetwork
+		return False, False

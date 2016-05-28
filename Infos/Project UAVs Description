@@ -49,12 +49,7 @@ Occurred problems and solution attempts:
 			currentWiFiConnection = conn.current()
 			if "Drone" in currentWiFiConnection:
 				for drone in drones:
-					droneColor = drone.split()[1]
-					if droneColor in currentWiFiConnection:
-						drones[drone][0] = interface
-						print "I'm breaking the nested for"
-						break
-			if 'Camera' in currentWiFiConnection:
+					droneColor = drone.split(In this kind of eventnection:
 				for drone in drones:
 					droneColor = drone.split()[1]
 					if droneColor in currentWiFiConnection:
@@ -113,6 +108,122 @@ How system works with "network interfaces solution"
 
 What are the data structure of the system?
 
-	In order to talk about this decision, we have to distinguish between server side and client side
+	In order to talk about this decision, we have to distinguish between client side and server side
 
-	Server Side
+	Client Side Data Structure Description
+
+		Client side has been built with the idea to have classes for different behavior:
+				- ClientBrain
+				- Converter
+				- Drone
+				- GraphicBrain
+				- Map
+				- Location
+
+		ClientBrain class description
+			This class is the most important class of the web application.
+			This class has the following class members:
+				- socket -> it's useful for bidirectional communication channel with server
+				- map -> it's an instance of Map class
+				- drones -> it's an array of Drone instances
+				- converter -> it's an instance of Converter class
+				- graphicBrain -> it's an instance of GraphicBrain class
+			Methods associated to ClientBrain class are:
+				- initialGraphicSettings -> this method is used in order to set up the initial graphic components on the web page;
+				- waitingClickOnMap -> this method is a "listener" method, basically it is waiting for a "click event" on the static map;
+				- getIndexDrone -> this methods returns the drones array index using the name of the drone that I'm looking for
+
+		Converter class description
+			This class is used for various conversion between lat/lon coordinates and x/y coordinates and vice versa.
+			It is used every time map has been clicked in a particular point and we need a conversion from x/y coordinates on the map and lat/lon coordinates that will be sent to drones when user want a drone in flight.
+			This class has methods only:
+				- getXYCoordinatesFromLatitudeLongitudeCoordinates
+				- getLatitudeLongitudeCoordinatesFromXYCoordinates
+
+		Drone class description
+			This class represents a drone and all those informations that I need for it.
+			Data members:
+				- name -> it represents the name of the drone
+				- homeLocation -> it represents the home location of the drone, so basically it is the location where the drone has been turned on
+				- locationsToReach -> it is an array of Location object, and it represents locations that user want drone ready to reach in flight.
+			Methods:
+				- flight -> this is the method that allows drone to flight(if there is at least one location to reach)
+				- deleteElementWithLatitudeAndLongitude -> this method delete a location from the locations array using latitude and longitude as parameters
+
+		GraphicBrain class description
+		 	This class has been build for handling graphic event on the webpage, so everything on the webpage that can cause an important graphic change it is handled with this class
+			Data members:
+				- firstLocationAdded -> this ????????????????????????
+				- clickOnMap -> this is the variable that knows if the map has been clicked; in it has been clicked it means that webpage is showing me a "form" ready to be filled for adding a new location to reach.
+			Methods:
+				- init -> this method set up first graphic components in the web page: map image and drones table.
+				- addMarker -> it is used for adding marker on the map; 3 different markers: home, drone, location. "home" marker is used to position a marker for the home location of a drone; "drone" is used to position the drone in flight mode(updating live location); "location" is used to put a location to reach marker on the map(using letter)
+				- showTableForLocationToAdd -> this function shows a "form" table every time I click on the map and I want to add a new location to reach
+				- addLocationIntoTableOfLocationsToReach -> when I decide to add a location with the "form" table, this function will be insert a new row in the locations to reach table
+
+		Map class description
+			This class represents all the info that I need in order to have a static image that represents a map and I want to extrapolate map data(lat/lon coordinates) from it.
+			This class has only data members:
+			 	- name
+				- centerLatitude
+				- centerLongitude
+				- zoom
+				- width
+				- height
+				- imagePath
+			All these data members are required for precise conversions that I need.
+
+		Location class description
+			This is a class that represents a location in terms of latitude, longitude and altitude.
+			Data members are:
+				- latitude
+				- longitude
+				- altitude
+
+	Client Side Flow of the Events Description
+
+		In this section I want to describe the flow of the most important events. Let's analyze which are the most important events:
+			- inital setting
+			- drone connection
+			- click on map
+			- flight of drone
+
+			Initial Setting Event Description
+
+				In this kind of event we are talking about the "index.html" loading. When document that represents "index.html" has been loaded I need to create a ClientBrain object.
+				ClientBrain initializer has as members a socket variable and a map object, in fact before I create a ClientBrain object, I need to create a socket var and a map object.
+				When the ClientBrain object has been created, I can get data about drones from server: an AJAX request will be sent to server and it will respond with tha name of the drones in the system.
+				After I've received the drones data, I can call the method "initialGraphicSettings" from ClientBrain object and setting up all the initial graphic elements(map image and drones table).
+				In the drones table these infos will be displayed:
+					- drone name
+					- action button(it will change every time I click it)
+					- drone status
+					- drone battery
+					- camera on board
+					- camera battery
+				The informations that could be change with time, will be updated when it is required.
+
+			Drone Connection Event Description
+
+				This event will be launched when user clicks on "Connect" button in the drones table.
+				On button click, an AJAX request will be sent to server in order to obtain the connection with drone and the camera on board of it.
+				If the drone has been connected, all the informations about camera and drone will be displayed in the table(camera battery is not reacheble), otherwise a "Not connected(previous error)" string will be displayed in the status box.
+				Assuming that drone has been connected, its home location will be putted on the map with "home" marker and the informations about its home location coordinates will be inserted in the table used to display all the locations to reach.
+
+			Click On Map Event Description
+
+				When I click on the map, it means that I want to add a location to reach for a specific drone.
+				A "form table" will be shown and the data that you are to fill in order to correctly add a location are altitude and drone name.
+				When you click on "Confirm" button, a location will be added in the table of locations to reach and a marker will be putted on the map.
+
+			Flight of Drone Event Description
+
+				If the drone has at least one location to reach, it will be ready to have a flight.
+				Before the flight another step is required: build location to reach.
+				This is important in order to have an independence for choosing which drone must reach a location. The problem is that you don't know if a drone could reach that location(battery problem, collision problem), so you need a scheduling algorithm(TSP algorithm might be a solution) that assigns to each drone a list of locations to reach.
+				Right now the scheduling algorithm is not implemented and the only way to assign a list of locations to reach is basically putting a marker on the map and assign it to a drone.
+				The button 'Build Path' is shown because that future idea of scheduling algorithm.
+				After the path has been built, the "Flight" button will appear. 
+				You need only to press the "Flight" button on the drones table and your drone will fly in all of its locations.
+				In the future a live location might be shown on the map.
+				Every time a drone reaches one of the location that it has to reach, that location will be deleted from the locations to reache table.

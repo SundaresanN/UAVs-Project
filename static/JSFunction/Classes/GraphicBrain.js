@@ -9,14 +9,14 @@ function GraphicBrain(){
 	this.addMarker = addMarker
 
 	this.showTableForLocationToAdd = showTableForLocationToAdd
-	
+
 	this.addLocationIntoTableOfLocationsToReach = addLocationIntoTableOfLocationsToReach
 }
 
 function init(map, drones){
-	
+
 	var image = "<div class='col-lg-6' id='mapBox'><img src='" + map.imagePath + "' class='map'/></div>"
-	
+
 	$("#firstRow").append(image)
 
 	var dronesTable = "<div class='col-lg-6' id>" +
@@ -25,42 +25,46 @@ function init(map, drones){
 							"<thead>" +
 				              "<tr>" +
 				                "<th>Drone</th>" +
-				                "<th>Status</th>" +
+				                "<th>Drone Status</th>" +
+												"<th>Drone Battery</th>" +
 				                "<th>Action</th>" +
+												"<th>Camera Status</th>" +
+												"<th>Camera Battery</th>" +
 				              "</tr>" +
 				            "</thead>" +
 				            "<tbody>" +
-				              
+
 				            "</tbody>" +
 						"</table>" +
-					  "</div>" 
-	
+					  "</div>"
+
 	$("#firstRow").append(dronesTable)
 	for(element in drones){
 
-		var button = '<button type="button" class="btn btn-success" onclick="connectDrone(\'' +  drones[element].name + '\')">Connect</button>'  
+		var button = '<button type="button" class="btn btn-success" onclick="connectDrone(\'' +  drones[element].name + '\')">Connect</button>'
 		var row = "" +
 			"<tr id='" + drones[element].name + "'>" +
 				"<td>" + drones[element].name +"</td>" +
 				"<td> Not connected </td>" +
-			    '<td><button type="button" class="btn btn-success" onclick="connectDrone(\'' +  drones[element].name + '\')">Connect</button></td>' +
-            "</tr>"
+				"<td> - </td>" +
+			  '<td><button type="button" class="btn btn-success" onclick="connectDrone(\'' +  drones[element].name + '\')">Connect</button></td>' +
+				"<td> - </td>" +
+				"<td> - </td>" +
+			"</tr>"
         $("dronesTable, tbody").append(row)
 	}
 
 }
 
 function addMarker(x, y, typeOfMarker, droneName, drones){
-	
-	var id = droneName 
+
+	var id = droneName
 	var iconPath = ""
 	switch(typeOfMarker){
 
 		case "home":
-			console.log(typeOfMarker)
 			id = id + " " + typeOfMarker
 			iconPath = id
-			console.log("ID: " + id)
 			break
 		case "drone":
 			id = id + " " + typeOfMarker
@@ -79,7 +83,7 @@ function addMarker(x, y, typeOfMarker, droneName, drones){
 	var marker = "<img id='" + id + "' src='static/Images/Useful\ Images/" + iconPath + ".png' style='position: absolute' />"
 	$('#mapBox').append(marker)
 	$("[id='" + id + "']").css({top: y, left: x})
-	
+
 }
 
 function showTableForLocationToAdd(latitude, longitude, drones){
@@ -124,12 +128,11 @@ function showTableForLocationToAdd(latitude, longitude, drones){
 
 }
 
-function addLocationIntoTableOfLocationsToReach(droneName, drones, latitude, longitude, altitude){
+function addLocationIntoTableOfLocationsToReach(droneName, drones, latitude, longitude, altitude, type){
 
 	if(this.firstLocationAdded == false){
 
 		this.firstLocationAdded = true
-
 		//add table
 		var tableOfAllTheLocationsToReach = " " +
 				"<div class='col-lg-6'>" +
@@ -146,7 +149,7 @@ function addLocationIntoTableOfLocationsToReach(droneName, drones, latitude, lon
 			              "</tr>" +
 			            "</thead>" +
 			            "<tbody>" +
-			              
+
 			            "</tbody>" +
 					"</table>" +
 				"</div>"
@@ -158,14 +161,11 @@ function addLocationIntoTableOfLocationsToReach(droneName, drones, latitude, lon
 	for(drone in drones){
 		size += drones[drone].locationsToReach.length
 	}
-
-	var marker = String.fromCharCode(96 + size)
-	for(drone in drones){
-		if(drones[drone].name == droneName){
-			if (drones[drone].homeLocation == null) {
-				marker = droneName + " home"
-			} 
-		}
+	if(type == "location"){
+		var marker = String.fromCharCode(96 + size)
+	}
+	if (type == "home") {
+		var	marker = droneName + " home"
 	}
 
 	var buttons = " - "
@@ -175,11 +175,11 @@ function addLocationIntoTableOfLocationsToReach(droneName, drones, latitude, lon
 			                    "<td>"+ latitude +"</td>" +
 			                    '<td> ' + longitude + '</td>' +
 			                    '<td> ' + altitude + '</td>' +
-			                    "<td>" + 
+			                    "<td>" +
 			                 		buttons
 			                    "</td>" +
                       		"</tr>"
 
 	$("#locationsToReach tbody").append(locationToAppend)
-	
+
 }
