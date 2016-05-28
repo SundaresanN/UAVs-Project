@@ -21,7 +21,7 @@ function init(map, drones){
 
 	var dronesTable = "<div class='col-lg-6' id>" +
 						"<h2>List of Drones Available</h2>" +
-						"<table id='dronesTable' class='table table-striped' style='width: 50%;''>" +
+						"<table id='dronesTable' class='table table-striped' style='width: 80%;''>" +
 							"<thead>" +
 				              "<tr>" +
 				                "<th>Drone</th>" +
@@ -30,6 +30,7 @@ function init(map, drones){
 				                "<th>Action</th>" +
 												"<th>Camera Status</th>" +
 												"<th>Camera Battery</th>" +
+												"<th>Two Points Flight</th>" +
 				              "</tr>" +
 				            "</thead>" +
 				            "<tbody>" +
@@ -50,6 +51,7 @@ function init(map, drones){
 			  '<td><button type="button" class="btn btn-success" onclick="connectDrone(\'' +  drones[element].name + '\')">Connect</button></td>' +
 				"<td> - </td>" +
 				"<td> - </td>" +
+				"<td><input type='checkbox'></td>" +
 			"</tr>"
         $("dronesTable, tbody").append(row)
 	}

@@ -201,7 +201,7 @@ class ServerBrain:
 					})
 				'''
 
-		
+
 		self.switchConnection(name, "drone")
 		#connecting again the vehicle to be sure that the command will be sent
 		self.drones[name].vehicle = connect('udpout:10.1.1.10:14560', wait_ready=True)

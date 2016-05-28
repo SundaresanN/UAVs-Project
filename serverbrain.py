@@ -21,20 +21,6 @@ class ServerBrain:
 			'Solo Green' : None
 		}
 
-	def takeAFlight(self, drone):
-		eventlet.spawn(self.drones[drone].flight, self.connectionManager, self.socket)
-
-	def buildPath(self, droneName, locationsToReach):
-		'''
-		algorithm for building a path for droneName
-		'''
-		print locationsToReach
-		self.drones[droneName].buildListOfLocations(locationsToReach)
-		self.socket.emit('path built', {
-			'drone' : droneName,
-			'locations to reach' : self.drones[droneName].serializeListOfLocationsToReach()
-		})
-
 	def connectDrone(self, droneName):
 		'''
 		Trying to find a free network for the drone
@@ -66,6 +52,33 @@ class ServerBrain:
 
 			return infosToReturn
 
+	'''
+	This method uses a scheduling algorithm for locations to reach for the drones.
+	When the algorithm finishes its work, the locations to reach will be assigned to each drone.
+	'''
+	def buildPath(self, droneName, locationsToReach):
+		'''
+		algorithm for building a path for droneName
+		'''
+		self.drones[droneName].buildListOfLocations(locationsToReach)
+		self.socket.emit('path built', {
+			'drone' : droneName,
+			'locations to reach' : self.drones[droneName].serializeListOfLocationsToReach()
+		})
+
+	'''
+	This method creates a thread for a drone's flight.
+	'''
+	def takeAFlight(self, drone):
+		eventlet.spawn(self.drones[drone].flight, self.connectionManager, self.socket)
+
+	'''
+	This method doesn't create a thread for the following kind of flight. We need to talk about
+	priority this method could have.
+	Max priority means that this kind of flight could not be interrupted by anything(so it's a process that requires all the power of the server)
+	'''
+	def takeATwoPointsFlight(self, drone):
+		self.drones[drone].twoPointsFlight()
 	'''
 	This method is used for building the network the drone will connect to.
 	This method is private because it's usage is thought for this class and not for other classes.

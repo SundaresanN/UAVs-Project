@@ -34,8 +34,18 @@ def getDroneNames():
 @app.route('/connectDrone', methods=['POST'])
 def connectDrone():
     data = request.get_json()
-    message = brain.connectDrone(data['droneName'])
-    print message
+    #message = brain.connectDrone(data['droneName'])
+    message = {
+        'drone status': 'available',
+        'home location' : {
+            'latitude': 0,
+            'longitude': 0,
+            'altitude': 0
+        },
+        'drone battery': 100,
+        'camera status': 'available',
+        'camera battery': '100'
+    }
     return jsonify({'data' : message})
 
 @socketio.on('flight')
@@ -44,10 +54,15 @@ def flight(data):
 	#brain.activateThread("flight", data['name'], data['locationList'])
     brain.takeAFlight(data['name'])
 
+@socket.on('two points flight')
+def twoPointsFlight(data):
+    print "Two points flight for ", data['name']
+    brain.takeATwoPointsFlight(data['name'])
+
 @socketio.on('build path')
 def buildPath(data):
-
     brain.buildPath(data['name'], data['locationsList'])
+    pass
 
 if __name__ == '__main__':
 

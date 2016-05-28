@@ -1,6 +1,6 @@
 from dronekit import connect, VehicleMode, LocationGlobal, LocationGlobalRelative
 from flask import jsonify
-from random
+import random
 from wireless import Wireless
 import eventlet
 import math
@@ -142,10 +142,61 @@ class Drone:
 				if remainingDistanceToNexLocation <=  distanceToNextLocation * 0.05:
 					self.camera.takeAPicture(connectionManager)
 					break
+				'''
+				You could consider the possibility to send the distance from the location to reach via socket.
+				'''
 		'''
 		Now it's time to come back home
 		'''
+		self.__removeAllTheElementInTheListOfLocationsToReach__()
 		self.__connectToMyNetwork__(connectionManager)
+		self.vehicle.mode = VehicleMode('RTL')
+
+	'''
+	This method is used for flying continuously in two points until drone's battery has reached 20%.
+	We have to decide if we need exclusive priority for this kind of flight, so basically I don't wanto to interrupt this
+	kind of flight with other request.
+	'''
+	def twoPointsFlight(self, connectionManager, socket):
+		self.__connectToMyNetwork__(connectionManager)
+
+		import signal
+		def handler(signum, frame):
+			raise Exception('The take off of' + self.name + ' is taking too much time, need an abort')
+
+		signal.signal(signal.SIGALRM, handler)
+		signal.alarm(60)
+		try:
+			self.__armAndTakeOff__()
+		except Exception, exc:
+			return exc #if I return exc, this means that I have to notify the client about this issue.
+
+		while self.vehicle.location.global_relative_frame.alt <= self.targetAltitude:
+			print "Drone is taking off..."
+
+		batteryLimit = 20
+		locationBool = False#it means the first location to reach
+
+		while self.vehicle.battery.level >= batteryLimit:
+
+			location = self.listOfLocationsToReach[locationBool]
+			self.vehicle.simple_goto(location)
+			'''
+			Waiting drone arrives to this location
+			'''
+			while True:
+				self.__connectToMyNetwork__(connectionManager)
+				remainingDistanceToNexLocation = self.__getDistanceFromTwoPointsInMeters__(self.vehicle.location.global_relative_frame, location)
+				'''
+				If drone has just reached the location, I need to take a picture
+				'''
+				if remainingDistanceToNexLocation <= distanceToNextLocation * 0.05:
+					#I don't know if a picture is required every time drone reaches the location
+					#self.camera.takeAPicture(connectionManager)
+					locationBool = not locationBool
+					break
+
+		self.__removeAllTheElementInTheListOfLocationsToReach__()
 		self.vehicle.mode = VehicleMode('RTL')
 
 	'''
@@ -173,3 +224,12 @@ class Drone:
 		lat = float(target.lat) - float(current.lat)
 		lon = float(target.lon) - float(current.lon)
 		return math.sqrt((lat*lat) + (lon*lon)) *  1.113195e5
+
+	'''
+	This method allows deleting of the element in the array of locations to reach
+	'''
+	def __removeAllTheElementInTheListOfLocationsToReach__(self):
+		index = len(self.listOfLocationsToReach)
+		while lenght >= 0:
+			del self.listOfLocationsToReach[index]
+			index = index - 1
