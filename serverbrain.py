@@ -21,6 +21,17 @@ class ServerBrain:
 			'Solo Green' : None
 		}
 
+	'''
+	This method returns a list that contains the name of the drones in the system
+	'''
+
+	def getDroneNames(self):
+		droneList = list()
+		for drone in self.drones:
+			droneList.append(drone)
+		return droneList
+
+
 	def connectDrone(self, droneName):
 		'''
 		Trying to find a free network for the drone

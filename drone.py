@@ -81,6 +81,7 @@ class Drone:
 
 	def __armAndTakeOff__(self):
 
+		'''
 		while not self.vehicle.is_armable:
 			print "Waiting for vehicle to initialise..."
 
@@ -91,7 +92,8 @@ class Drone:
 			print "Waiting for arming..."
 
 		self.vehicle.simple_takeoff(self.takeOffAltitude)
-
+		'''
+		print "self.vehicle.simple_takeoff(self.takeOffAltitude), ", self.takeOffAltitude
 	'''
 	this method is based on the possibility to send news to client via socket.
 	This is why I need a Wireless object as parameter and the Socket object.
@@ -126,7 +128,8 @@ class Drone:
 			self.__connectToMyNetwork__(connectionManager)
 			droneCurrentLocation = self.vehicle.location.global_relative_frame
 			distanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(droneCurrentLocation, location)
-			self.vehicle.simple_goto(location)
+			#self.vehicle.simple_goto(location)
+			print "self.vehicle.simple_goto(location), ", location
 			'''
 			Now I have to check the location of the drone in flight, this because dronekit API is thought in order to have
 			flight to single point and if I immediatelly send another location to reach, the drone will immediatelly change
@@ -142,6 +145,7 @@ class Drone:
 				if remainingDistanceToNexLocation <=  distanceToNextLocation * 0.05:
 					self.camera.takeAPicture(connectionManager)
 					break
+				self.camera.takeAPicture(connectionManager)
 				'''
 				You could consider the possibility to send the distance from the location to reach via socket.
 				'''
@@ -150,7 +154,8 @@ class Drone:
 		'''
 		self.__removeAllTheElementInTheListOfLocationsToReach__()
 		self.__connectToMyNetwork__(connectionManager)
-		self.vehicle.mode = VehicleMode('RTL')
+		#self.vehicle.mode = VehicleMode('RTL')
+		print "self.vehicle.mode = VehicleMode('RTL')"
 
 	'''
 	This method is used for flying continuously in two points until drone's battery has reached 20%.

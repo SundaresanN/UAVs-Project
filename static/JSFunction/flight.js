@@ -1,38 +1,4 @@
 
-function buildPath(droneName){
-
-	var index = brain.getIndexDrone(droneName)
-	if(brain.drones[index].locationsToReach.length == 0){
-		alert("This drone has not locations to reach right now..")
-		return
-	}
-
-	brain.socket.on('path built', function(data){
-
-		console.log("Locations to reach for " + data['drone'] + ": " + data['locations to reach'])
-		alert("Locations to reach for " + data['drone'] + ": " + data['locations to reach'])
-		//adding the flight button in the dronesTable
-		var flightButton = '<button type="button" class="btn btn-success" onclick="flightDrone(\'' +  brain.drones[element].name + '\')">Flight</button>'
-		$("[id = '" + data['drone'] + "']").children().eq(3).html(flightButton)
-
-		/*
-		//adding the two point flight checkbox --> be sure that when you check this checkbox, the drone has at least two locations to reach
-		$("#dronesTable thead tr").append("<th>Two Points Flight</th>")
-		var checkboxTwoPointsFlight = '<td><div class="checkbox"> <label><input type="checkbox">Two Points Flight</label></div></td>'
-		$("[id = '" + data['drone'] + "']").append(checkboxTwoPointsFlight)
-		*/
-
-	})
-
-	/*
-	brain.socket.emit('build path', {name: droneName, locationsList: brain.drones[index].locationsToReach}, function(){
-		console.log("Send data for building the path for ", droneName)
-	})
-	*/
-
-}
-
-
 function flightDrone(droneName){
 
 	var index = brain.getIndexDrone(droneName)
@@ -65,4 +31,30 @@ function flightDrone(droneName){
 	... You have to decide where you can display this update ...
 })
 	*/
+}
+
+function buildPath(droneName){
+
+	alert("I'm here")
+
+	var index = brain.getIndexDrone(droneName)
+	if(brain.drones[index].locationsToReach.length == 0){
+		alert("This drone has not locations to reach right now..")
+		return
+	}
+
+	brain.socket.emit('build path', {name: droneName, locationsList: brain.drones[index].locationsToReach}, function(){
+		console.log("Send data for building the path for ", droneName)
+	})
+
+	brain.socket.on('path built', function(data){
+
+		console.log("Locations to reach for " + data['drone'] + ": " + data['locations to reach'])
+		alert("Locations to reach for " + data['drone'] + ": " + data['locations to reach'])
+		//adding the flight button in the dronesTable
+		var flightButton = '<button type="button" class="btn btn-success" onclick="flightDrone(\'' +  brain.drones[element].name + '\')">Flight</button>'
+		$("[id = '" + data['drone'] + "']").children().eq(3).html(flightButton)
+
+	})
+
 }
