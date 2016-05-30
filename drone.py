@@ -4,6 +4,7 @@ import random
 from wireless import Wireless
 import eventlet
 import math
+import signal
 
 '''
 Initializing the seed of the random class
@@ -69,6 +70,8 @@ class Drone:
 			listToReturn.append(location)
 		return listToReturn
 
+	def __handlerTakeOff__(self, signum, frame):
+		raise Exception('The take off of ' + self.name + ' is taking too much time, need an abort')
 
 	'''
 	Sometimes could happen that the drone is not able to take off, so I must handle this situation and be
@@ -78,7 +81,6 @@ class Drone:
 	The "check code" is in the flight function.
 	This function is private because I don't want that someone could decide to only taking off, if the drone should consume battery, this consumption must be on flight.
 	'''
-
 	def __armAndTakeOff__(self):
 
 		'''
@@ -94,41 +96,43 @@ class Drone:
 		self.vehicle.simple_takeoff(self.takeOffAltitude)
 		'''
 		print "self.vehicle.simple_takeoff(self.takeOffAltitude), ", self.takeOffAltitude
+
 	'''
-	this method is based on the possibility to send news to client via socket.
+	This method is based on the possibility to send flight news to client via socket.
 	This is why I need a Wireless object as parameter and the Socket object.
-	The Wureless object is used for switching connection and be sure that the command is sent to right drone
+	The Wireless object is used for switching connection and be sure that the command is sent to right drone
 	The Socket object is used for update the location on client side.
 	This method will be in concurrency with the other threads, so this is why I will use eventlet.sleep(random.random()) in
 	some some points of the code.
-	In this function there is the part of code that check if the 'arming and takinf off' requires a lot of time and this is
-	not possible because I need to be sure that the system will not be blocked because this 'arming and taking off' doesn't work in the right way
+	In this function there is the part of code that check if the 'arming and taking off' requires a lot of time and this is
+	not possible because I need to be sure that the system will not be blocked because this 'arming and taking off' doesn't work in the right manner
 	'''
 	def flight(self, connectionManager, socket):
-
+		print "Inside Flight"
 		self.__connectToMyNetwork__(connectionManager)
 		'''
 		This is the part of code where I check if the arm and take require a lot of time
 		and the risk is to have a blocked system.
 		'''
-		import signal
-		def handler(signum, frame):
-			raise Exception('The take off of' + self.name + ' is taking too much time, need an abort')
-
-		signal.signal(signal.SIGALRM, handler)
-		signal.alarm(60)
+		'''
+		signal.signal(signal.SIGALRM, self.__handlerTakeOff__)
+		signal.alarm(5)
 		try:
+			print "almost inside arm and take off"
 			self.__armAndTakeOff__()
 		except Exception, exc:
 			return exc #if I return exc, this means that I have to notify the client about this issue.
+		'''
+		self.__armAndTakeOff__()
 
 		eventlet.sleep(self.__generatingRandomSleepTime__())
 
-		for location in self.drones[name].listOfLocationsToReach:
+		print "Number of locations to reach: ", len(self.listOfLocationsToReach)
+		for location in self.listOfLocationsToReach:
+			print "Location to reache this time: ", location
 			self.__connectToMyNetwork__(connectionManager)
 			droneCurrentLocation = self.vehicle.location.global_relative_frame
 			distanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(droneCurrentLocation, location)
-			#self.vehicle.simple_goto(location)
 			print "self.vehicle.simple_goto(location), ", location
 			'''
 			Now I have to check the location of the drone in flight, this because dronekit API is thought in order to have
@@ -138,23 +142,30 @@ class Drone:
 			while True:
 				eventlet.sleep(self.__generatingRandomSleepTime__())
 				self.__connectToMyNetwork__(connectionManager)
-				remainingDistanceToNexLocation = self.__getDistanceFromTwoPointsInMeters__(self.vehicle.location.global_relative_frame, location)
-				'''
-				If I've just reached the location, I need to take a picture
-				'''
-				if remainingDistanceToNexLocation <=  distanceToNextLocation * 0.05:
-					self.camera.takeAPicture(connectionManager)
+				currentDroneLocation = self.vehicle.location.global_relative_frame
+				remainingDistanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(currentDroneLocation, location)
+				self.__sendFlightDataToClientUsingSocket__(socket, currentDroneLocation, reached = False, RTLMode = False)
+
+				#If I've just reached the location, I need to take a picture
+				if remainingDistanceToNextLocation <= distanceToNextLocation * 0.05:
+					if self.camera is not None:
+						self.camera.takeAPicture(connectionManager)
+					# It's time to send the reached status to client
+					self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False)
 					break
+				#these 3 following lines of code will be deleted, it's here only for test
+				self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False)
 				self.camera.takeAPicture(connectionManager)
-				'''
-				You could consider the possibility to send the distance from the location to reach via socket.
-				'''
+				break
+
 		'''
 		Now it's time to come back home
 		'''
+		print "Removing all the elements in the list of locations to reach"
 		self.__removeAllTheElementInTheListOfLocationsToReach__()
 		self.__connectToMyNetwork__(connectionManager)
 		#self.vehicle.mode = VehicleMode('RTL')
+		self.__sendFlightDataToClientUsingSocket__(socket, self.vehicle.location.global_frame, reached = False, RTLMode = True)
 		print "self.vehicle.mode = VehicleMode('RTL')"
 
 	'''
@@ -164,45 +175,51 @@ class Drone:
 	'''
 	def twoPointsFlight(self, connectionManager, socket):
 		self.__connectToMyNetwork__(connectionManager)
-
-		import signal
-		def handler(signum, frame):
-			raise Exception('The take off of' + self.name + ' is taking too much time, need an abort')
-
-		signal.signal(signal.SIGALRM, handler)
+		'''
+		signal.signal(signal.SIGALRM, self.__handlerTakeOff__)
 		signal.alarm(60)
 		try:
 			self.__armAndTakeOff__()
 		except Exception, exc:
 			return exc #if I return exc, this means that I have to notify the client about this issue.
-
-		while self.vehicle.location.global_relative_frame.alt <= self.targetAltitude:
+		'''
+		self.__armAndTakeOff__()
+		'''
+		while self.vehicle.location.global_relative_frame.alt <= self.takeOffAltitude:
 			print "Drone is taking off..."
-
+		'''
 		batteryLimit = 20
 		locationBool = False#it means the first location to reach
 
 		while self.vehicle.battery.level >= batteryLimit:
 
 			location = self.listOfLocationsToReach[locationBool]
-			self.vehicle.simple_goto(location)
+			droneCurrentLocation = self.vehicle.location.global_relative_frame
+			distanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(droneCurrentLocation, location)
+			print "Flying towards location: ", location
+			#self.vehicle.simple_goto(location)
 			'''
 			Waiting drone arrives to this location
 			'''
 			while True:
 				self.__connectToMyNetwork__(connectionManager)
-				remainingDistanceToNexLocation = self.__getDistanceFromTwoPointsInMeters__(self.vehicle.location.global_relative_frame, location)
+				remainingDistanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(self.vehicle.location.global_relative_frame, location)
 				'''
 				If drone has just reached the location, I need to take a picture
 				'''
-				if remainingDistanceToNexLocation <= distanceToNextLocation * 0.05:
+				if remainingDistanceToNextLocation <= distanceToNextLocation * 0.05:
 					#I don't know if a picture is required every time drone reaches the location
+					#you have to check if camera is not None
 					#self.camera.takeAPicture(connectionManager)
 					locationBool = not locationBool
 					break
+				locationBool = not locationBool
+				break
 
-		self.__removeAllTheElementInTheListOfLocationsToReach__()
+		print "Removing locations to reach"
+		self.__removeAllTheElementInTheListOfLocationsToReach__(twoLocationsToRemove = True)
 		self.vehicle.mode = VehicleMode('RTL')
+
 
 	'''
 	With this function I set up the interface on the value of the this drone instance and after that I give
@@ -218,7 +235,9 @@ class Drone:
 	Again, this function is used inside the class and it's not built for public usage.
 	'''
 	def __generatingRandomSleepTime__(self):
-		return random.random()*5
+		number = random.random()*5
+		print "Drone " + self.name + " is going to sleep for ", number
+		return number
 
 	'''
 	This method has been implemented in order to have a method that given two points of LocationGlobalRelative type,
@@ -233,8 +252,24 @@ class Drone:
 	'''
 	This method allows deleting of the element in the array of locations to reach
 	'''
-	def __removeAllTheElementInTheListOfLocationsToReach__(self):
-		index = len(self.listOfLocationsToReach)
-		while lenght >= 0:
-			del self.listOfLocationsToReach[index]
-			index = index - 1
+	def __removeAllTheElementInTheListOfLocationsToReach__(self, twoLocationsToRemove = False):
+		if twoLocationsToRemove is not True:
+			lenght = len(self.listOfLocationsToReach) - 1
+			while lenght >= 0:
+				del self.listOfLocationsToReach[lenght]
+				lenght = lenght - 1
+		else:
+			print "removing first two elements in the list of locations to reach..."
+			del self.listOfLocationsToReach[0]
+			del self.listOfLocationsToReach[1]
+			print self.listOfLocationsToReach
+
+
+	def __sendFlightDataToClientUsingSocket__(self, socket, location, reached = False, RTLMode = False):
+		data = {
+			'name' : self.name,
+			'location' : [location.lat, location.lon, self.vehicle.location.global_relative_frame.alt],
+			'reached' : reached,
+			'RTL' : RTLMode
+		}
+		socket.emit('Flight Informations', data)

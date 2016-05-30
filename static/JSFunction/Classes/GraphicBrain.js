@@ -91,7 +91,7 @@ function addMarker(x, y, typeOfMarker, droneName, drones){
 function showTableForLocationToAdd(latitude, longitude, drones){
 
 	var directionInfoLatLon = "" +
-		"<div id='tableInfo' class='col-lg-6' style='width: 40%;'>" +
+		"<div id='tableInfo' class='col-lg-6' style='width: 45%;'>" +
 	        "<h3>Update Info</h3>" +
 	        "<div class='form-group'>" +
 	            "<label for='latitude'>Latitude</label>" +
@@ -139,7 +139,7 @@ function addLocationIntoTableOfLocationsToReach(droneName, drones, latitude, lon
 		var tableOfAllTheLocationsToReach = " " +
 				"<div class='col-lg-6'>" +
 					"<h2>Locations To Reach</h2>" +
-					"<table id='locationsToReach' class='table table-striped' style='width: 40%;''>" +
+					"<table id='locationsToReach' class='table table-striped' style='width: 80%;''>" +
 						"<thead>" +
 			              "<tr>" +
 			              	"<th>Drone</th>" +

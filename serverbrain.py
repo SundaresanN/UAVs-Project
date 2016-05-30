@@ -5,7 +5,7 @@ from flask_socketio import SocketIO, emit, send
 from flask import jsonify
 import eventlet
 import time
-import urllib #I need this for camera
+
 
 class ServerBrain:
 
@@ -71,6 +71,7 @@ class ServerBrain:
 		'''
 		algorithm for building a path for droneName
 		'''
+		print "BUILD PATH: ", droneName
 		self.drones[droneName].buildListOfLocations(locationsToReach)
 		self.socket.emit('path built', {
 			'drone' : droneName,
@@ -81,6 +82,7 @@ class ServerBrain:
 	This method creates a thread for a drone's flight.
 	'''
 	def takeAFlight(self, drone):
+		print "######################### ", drone
 		eventlet.spawn(self.drones[drone].flight, self.connectionManager, self.socket)
 
 	'''
@@ -89,7 +91,7 @@ class ServerBrain:
 	Max priority means that this kind of flight could not be interrupted by anything(so it's a process that requires all the power of the server)
 	'''
 	def takeATwoPointsFlight(self, drone):
-		self.drones[drone].twoPointsFlight()
+		self.drones[drone].twoPointsFlight(self.connectionManager, self.socket)
 	'''
 	This method is used for building the network the drone will connect to.
 	This method is private because it's usage is thought for this class and not for other classes.

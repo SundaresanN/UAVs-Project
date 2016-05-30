@@ -63,5 +63,4 @@ def buildPath(data):
 if __name__ == '__main__':
 
 	brain = ServerBrain(socketio)
-	app.debug = True
 	socketio.run(app)

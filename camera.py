@@ -7,10 +7,6 @@ class Camera:
         self.networkInterface = interface
         self.wifiNetwork = wifi
 
-	def __connectToMyNetwork__(self, connectionManager):
-		connectionManager.interface(self.networkInterface)
-		connectionManager.connect(ssid = self.wifiNetwork, password = "Silvestri")
-
     def takeAPicture(self, connectionManager):
         self.__connectToMyNetwork__(connectionManager)
         '''
@@ -18,3 +14,7 @@ class Camera:
         Check the API
         '''
         self.camera.command('record', 'on')
+
+    def __connectToMyNetwork__(self, connectionManager):
+		connectionManager.interface(self.networkInterface)
+		connectionManager.connect(ssid = self.wifiNetwork, password = "Silvestri")
