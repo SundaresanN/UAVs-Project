@@ -22,7 +22,6 @@ function addLocation(){
 			brain.drones[index].locationsToReach.push(location)
 			xycoords = brain.converter.getXYCoordinatesFromLatitudeLongitudeCoordinates(location.latitude, location.longitude)
 			brain.graphicBrain.addMarker(xycoords.x, xycoords.y, "location", drone, brain.drones)
-			alert('Sono qua')
 			brain.graphicBrain.addLocationIntoTableOfLocationsToReach(drone, brain.drones, location.latitude, location.longitude, location.altitude, "location")
 			return
 		}

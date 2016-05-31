@@ -85,7 +85,6 @@ function addMarker(x, y, typeOfMarker, droneName, drones){
 			iconPath = id
 			break
 		case "location":
-			alert('Inside location switch case')
 			var size = 0
 			for(drone in drones){
 				size += drones[drone].locationsToReach.length
@@ -97,7 +96,6 @@ function addMarker(x, y, typeOfMarker, droneName, drones){
 
 	var marker = "<img id='" + id + "' src='static/Images/Useful\ Images/" + iconPath + ".png' style='position: absolute' />"
 	$('#mapBox').append(marker)
-	alert('added')
 	$("[id='" + id + "']").css({top: y, left: x})
 
 }
