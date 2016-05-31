@@ -127,7 +127,7 @@ class Drone:
 
 		eventlet.sleep(self.__generatingRandomSleepTime__())
 
-		print "Number of locations to reach: ", len(self.listOfLocationsToReach)
+		print self.name + " number of locations to reach: ", len(self.listOfLocationsToReach)
 		for location in self.listOfLocationsToReach:
 			print "Location to reache this time: ", location
 			self.__connectToMyNetwork__(connectionManager)
@@ -149,13 +149,14 @@ class Drone:
 				#If I've just reached the location, I need to take a picture
 				if remainingDistanceToNextLocation <= distanceToNextLocation * 0.05:
 					if self.camera is not None:
+						print "Drone " + self.name + " is taking a picture..."
 						self.camera.takeAPicture(connectionManager)
 					# It's time to send the reached status to client
 					self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False)
 					break
 				#these 3 following lines of code will be deleted, it's here only for test
+				#self.camera.takeAPicture(connectionManager)
 				self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False)
-				self.camera.takeAPicture(connectionManager)
 				break
 
 		'''
@@ -237,7 +238,7 @@ class Drone:
 	def __generatingRandomSleepTime__(self):
 		number = random.random()*5
 		print "Drone " + self.name + " is going to sleep for ", number
-		return number
+		return 3
 
 	'''
 	This method has been implemented in order to have a method that given two points of LocationGlobalRelative type,
@@ -265,11 +266,12 @@ class Drone:
 			print self.listOfLocationsToReach
 
 
-	def __sendFlightDataToClientUsingSocket__(self, socket, location, reached = False, RTLMode = False):
+	def __sendFlightDataToClientUsingSocket__(self, socket, location, reached, RTLMode):
 		data = {
 			'name' : self.name,
 			'location' : [location.lat, location.lon, self.vehicle.location.global_relative_frame.alt],
 			'reached' : reached,
 			'RTL' : RTLMode
 		}
+		print "Sendinga data for ", self.name
 		socket.emit('Flight Informations', data)

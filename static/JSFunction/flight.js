@@ -7,13 +7,10 @@ function buildPath(droneName){
 		return
 	}
 
-	brain.socket.emit('build path', {name: droneName, locationsList: brain.drones[index].locationsToReach}, function(){
-		console.log("Send data for building the path for ", droneName)
-	})
+	brain.socket.emit('build path', {name: droneName, locationsList: brain.drones[index].locationsToReach})
 
 	brain.socket.on('path built', function(data){
 
-		console.log("Locations to reach for " + data['drone'] + ": " + data['locations to reach'])
 		var element = brain.getIndexDrone(data['drone'])
 		//adding the flight button in the dronesTable
 		var flightButton = '<button type="button" class="btn btn-success" onclick="flightDrone(\'' +  brain.drones[element].name + '\')">Flight</button>'
@@ -21,18 +18,9 @@ function buildPath(droneName){
 
 	})
 
-	brain.socket.on('Flight Informations', function(data){
-		console.log("I'm here")
-		console.log(data)
-		if($('#liveFlightInformations').html()==undefined){
-			var liveFlightInformations = "" +
-				"<div id='liveFlightInformations' class='col-lg-6' style='width: 45%;>" +
-							"<h3> Live Flight Informations</h3>" +
-							"<div>" +
-							"</div>" +
-						"</div>"
-			$("#secondRow").append(liveFlightInformations)
-		}
+	/*
+	brain.socket.on('Flight Informations Solo Gold', function(data){
+		console.log('Solo Gold')
 		var textToDisplay = "Drone " + data['name'] + "<br>" +
 										"Drone location: " + "<br>" +
 										" - latitude: " + data['location'][0] + "<br>" +
@@ -41,20 +29,19 @@ function buildPath(droneName){
 		if (data['reached'] == true) {
 			textToDisplay += "Reached location: " + data["reached"] + "<br>"
 			//something to delete the location to the table
-			var index = brain.getIndexDrone(data['name'])
-			var location = data['location'] //data['location'] is an array that cotains infos about the locations drone has to reach. First element is lat, second one is lon and third one is alt
-			brain.drones[index].deleteElementWithLatitudeAndLongitude(location[0], location[1])
+			updateGraphicAndDataStructureInformationsOnReachedLocation(data)
 		}
 		if (data['RTL'] == true) {
 			textToDisplay = "Drone " + data['name'] + ' has completed its flight, now it is coming back home'
+			//Now that the flight has been just completed, I need to reset the 'Build Path' button for having another flight
+			var buildPathButton = '<button type="button" class="btn btn-success" onclick="buildPath(\'' +  brain.drones[element].name + '\')">Build Path</button>'
+			$("[id = '" + droneName + "']").children().eq(3).html(buildPathButton)
 		}
 	  var divToDisplay = "<div class='well well-lg'>" + textToDisplay + "</div>"
 		$("#liveFlightInformations").children().eq(1).prepend(divToDisplay)
 	})
-
+	*/
 }
-
-
 
 function flightDrone(droneName){
 
@@ -74,17 +61,53 @@ function flightDrone(droneName){
 			}
 	} else {
 		//This means that I have a "normal" flight to accomplish
-		brain.socket.emit('flight', {'name': droneName}, function(){
-			console.log("Drone is flying with Normal Flight...")
-		})
+		brain.socket.emit('flight', {'name': droneName})
+
 	}
 
-	//In this section you could add the code for updating the distance between drone and locations to reach
-	/*
-	brain.socket('Update distance', function(data){
+	brain.socket.on('Flight Informations', function(data){
+		var textToDisplay = "Drone " + data['name'] + "<br>" +
+										"Drone location: " + "<br>" +
+										" - latitude: " + data['location'][0] + "<br>" +
+										" - longitude: " + data['location'][1] + "<br>" +
+										" - altitude: " + data['location'][2] + "<br>"
+		if (data['reached'] == true) {
+			textToDisplay += "Reached location: " + data["reached"] + "<br>"
+			//something to delete the location to the table
+			updateGraphicAndDataStructureInformationsOnReachedLocation(data)
+		}
+		if (data['RTL'] == true) {
+			textToDisplay = "Drone " + data['name'] + ' has completed its flight, now it is coming back home'
+			//Now that the flight has been just completed, I need to reset the 'Build Path' button for having another flight
+			var index = brain.getIndexDrone(drone['name'])
+			var buildPathButton = '<button type="button" class="btn btn-success" onclick="buildPath(\'' +  brain.drones[index].name + '\')">Build Path</button>'
+			$("[id = '" + droneName + "']").children().eq(3).html(buildPathButton)
+		}
+		var divToDisplay = "<div class='well well-lg'>" + textToDisplay + "</div>"
+		if($("#liveFlightInformations").children().eq(1).children().html() != textToDisplay) {
+			$("#liveFlightInformations").children().eq(1).prepend(divToDisplay)
+		}
 
-	... something to do,,,
-	... You have to decide where you can display this update ...
-})
-	*/
+	})
+}
+
+function updateGraphicAndDataStructureInformationsOnReachedLocation(data){
+
+			for(var index=0; index<$("#locationsToReach > tbody > tr").length; index++){
+
+				var latitude = $("#locationsToReach > tbody").children().eq(index).children().eq(2).html()
+				var longitude = $("#locationsToReach > tbody").children().eq(index).children().eq(3).html()
+
+				if (data["location"][0] == latitude && data["location"][1] == longitude) {
+					// These following 3 lines of code are used to remove the marker of the location just reached from map
+					var marker = $("#locationsToReach > tbody").children().eq(index).children().eq(1).html()
+					var idMarker = data['name'] + (marker.charCodeAt()-96)
+					$("[id = '" + idMarker + "']").remove()
+					//this line of code is used for deleting the row which represents a location just reached
+					$("#locationsToReach > tbody").children().eq(index).remove()
+					var indexDrone = brain.getIndexDrone(data["name"])
+					brain.drones[indexDrone].deleteElementWithLatitudeAndLongitude(latitude, longitude)
+					index = $("#locationsToReach > tbody > tr").length
+				}
+		}
 }

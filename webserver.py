@@ -16,9 +16,11 @@ socket.socket.bind = my_socket_bind
 app = Flask(__name__)
 socketio = SocketIO(app)
 
+
 @app.route('/')
 def index():
-	return render_template('index.html')
+    brain.cleanAll()
+    return render_template('index.html')
 
 @app.route('/getDrones')
 def getDrones():
@@ -61,6 +63,5 @@ def buildPath(data):
     pass
 
 if __name__ == '__main__':
-
 	brain = ServerBrain(socketio)
 	socketio.run(app)

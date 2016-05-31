@@ -45,8 +45,6 @@ function getDronesInfoFromServer(){
 //in each row of drones table.
 function connectDrone(droneName){
 
-	console.log(droneName)
-
 	$("[id ='" + droneName + "']").children().eq(1).html("Trying to connect...")
 	$("[id ='" + droneName + "']").children().eq(2).children().eq(0).attr("disabled", "true")
 
@@ -56,12 +54,8 @@ function connectDrone(droneName){
 		contentType: 'application/json',
 		data: JSON.stringify({ droneName: droneName}),
 		success: function(data){
-
-			console.log(data)
 			var data = data['data']
-
-			if (data == droneName + " netwotk is not reacheble") {
-				alert(message)
+			if (data['home location'] == undefined) {
 				$("[id ='" + droneName + "']").children().eq(1).html("Not connected(previous error)")
 				$("[id = '" + droneName + "']").children().eq(2).html("-")
 				$("[id ='" + droneName + "']").children().eq(3).children().eq(0).removeAttr("disabled")
@@ -85,7 +79,7 @@ function connectDrone(droneName){
 			}
 		},
 		error: function(data){
-
+			alert("An error occured on server-side")
 			console.log(data)
 		}
 	})

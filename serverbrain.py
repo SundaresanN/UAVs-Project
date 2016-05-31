@@ -21,6 +21,10 @@ class ServerBrain:
 			'Solo Green' : None
 		}
 
+	def cleanAll(self):
+		for drone in self.drones:
+			self.drones[drone] = None
+		
 	'''
 	This method returns a list that contains the name of the drones in the system
 	'''

@@ -6,29 +6,7 @@ function Drone(name){
 
 	this.locationsToReach = new Array()
 
-	this.flight = flight
-
 	this.deleteElementWithLatitudeAndLongitude = deleteElementWithLatitudeAndLongitude
-}
-
-
-function flight(socket){
-
-	if (this.locationsToReach.length == 0) {
-
-		alert("You haven't inserted locations to reach for " + this.name + " drone yet.")
-
-		return
-	}
-
-	$("[id = '" + this.name + "']").children().eq(2).html("-")
-	
-	socket.emit('flight', {name: this.name, locationList: this.locationsToReach}, function(){
-
-		console.log("qua")
-	})
-
-
 }
 
 function deleteElementWithLatitudeAndLongitude(latitude, longitude){

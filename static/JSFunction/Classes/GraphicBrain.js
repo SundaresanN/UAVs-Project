@@ -19,24 +19,26 @@ function init(map, drones){
 
 	$("#firstRow").append(image)
 
-	var dronesTable = "<div class='col-lg-6' id>" +
-						"<h2>List of Drones Available</h2>" +
-						"<table id='dronesTable' class='table table-striped' style='width: 80%;''>" +
-							"<thead>" +
-				              "<tr>" +
-				                "<th>Drone</th>" +
-				                "<th>Drone Status</th>" +
-												"<th>Drone Battery</th>" +
-				                "<th>Action</th>" +
-												"<th>Camera Status</th>" +
-												"<th>Camera Battery</th>" +
-												"<th>Two Points Flight</th>" +
-				              "</tr>" +
-				            "</thead>" +
-				            "<tbody>" +
+	var dronesTable = "<div class='col-lg-6' id='secondColumnOfFirstRow'>" +
+						"<div class='row'>" +
+							"<h2>List of Drones Available</h2>" +
+							"<table id='dronesTable' class='table table-striped' style='width: 80%;''>" +
+								"<thead>" +
+					              "<tr>" +
+					                "<th>Drone</th>" +
+					                "<th>Drone Status</th>" +
+													"<th>Drone Battery</th>" +
+					                "<th>Action</th>" +
+													"<th>Camera Status</th>" +
+													"<th>Camera Battery</th>" +
+													"<th>Two Points Flight</th>" +
+					              "</tr>" +
+					            "</thead>" +
+					            "<tbody>" +
 
-				            "</tbody>" +
-						"</table>" +
+					            "</tbody>" +
+							"</table>" +
+						"</div>" +
 					  "</div>"
 
 	$("#firstRow").append(dronesTable)
@@ -56,6 +58,16 @@ function init(map, drones){
         $("dronesTable, tbody").append(row)
 	}
 
+	var liveFlightInformations = "" +
+		"<div id='liveFlightInformations' class='col-lg-6' style='width: 45%;>" +
+					"<div class='container-fluid pre-scrollable'>" +
+						"<h2> Live Flight Informations </h2>" +
+						"<div class='container-fluid'>" +
+					 		"<div class='well well-lg'>In this section will be displayed all the informations sent by drones in flight</div>" +
+						"</div>" +
+					"</div>" +
+				"</div>"
+	$("#secondRow").append(liveFlightInformations)
 }
 
 function addMarker(x, y, typeOfMarker, droneName, drones){
@@ -73,6 +85,7 @@ function addMarker(x, y, typeOfMarker, droneName, drones){
 			iconPath = id
 			break
 		case "location":
+			alert('Inside location switch case')
 			var size = 0
 			for(drone in drones){
 				size += drones[drone].locationsToReach.length
@@ -84,6 +97,7 @@ function addMarker(x, y, typeOfMarker, droneName, drones){
 
 	var marker = "<img id='" + id + "' src='static/Images/Useful\ Images/" + iconPath + ".png' style='position: absolute' />"
 	$('#mapBox').append(marker)
+	alert('added')
 	$("[id='" + id + "']").css({top: y, left: x})
 
 }
@@ -137,7 +151,7 @@ function addLocationIntoTableOfLocationsToReach(droneName, drones, latitude, lon
 		this.firstLocationAdded = true
 		//add table
 		var tableOfAllTheLocationsToReach = " " +
-				"<div class='col-lg-6'>" +
+			"<div class='row pre-scrollable' >" +
 					"<h2>Locations To Reach</h2>" +
 					"<table id='locationsToReach' class='table table-striped' style='width: 80%;''>" +
 						"<thead>" +
@@ -149,14 +163,14 @@ function addLocationIntoTableOfLocationsToReach(droneName, drones, latitude, lon
 			                "<th>Altitude</th>" +
 			                "<th>Action</th>" +
 			              "</tr>" +
-			            "</thead>" +
-			            "<tbody>" +
+			        "</thead>" +
+			        "<tbody>" +
 
-			            "</tbody>" +
+			        "</tbody>" +
 					"</table>" +
 				"</div>"
 
-		$("#firstRow").append(tableOfAllTheLocationsToReach)
+		$("#secondColumnOfFirstRow").append(tableOfAllTheLocationsToReach)
 	}
 
 	var size = 0
