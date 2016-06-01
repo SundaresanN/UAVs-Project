@@ -79,8 +79,7 @@ function flightDrone(droneName){
 		if (data['RTL'] == true) {
 			textToDisplay = "Drone " + data['name'] + ' has completed its flight, now it is coming back home'
 			//Now that the flight has been just completed, I need to reset the 'Build Path' button for having another flight
-			var index = brain.getIndexDrone(drone['name'])
-			var buildPathButton = '<button type="button" class="btn btn-success" onclick="buildPath(\'' +  brain.drones[index].name + '\')">Build Path</button>'
+			var buildPathButton = '<button type="button" class="btn btn-success" onclick="buildPath(\'' +  drone['name'] + '\')">Build Path</button>'
 			$("[id = '" + droneName + "']").children().eq(3).html(buildPathButton)
 		}
 		var divToDisplay = "<div class='well well-lg'>" + textToDisplay + "</div>"

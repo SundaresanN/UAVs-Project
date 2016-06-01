@@ -19,7 +19,6 @@ socketio = SocketIO(app)
 
 @app.route('/')
 def index():
-    brain.cleanAll()
     return render_template('index.html')
 
 @app.route('/getDrones')
@@ -60,8 +59,9 @@ def twoPointsFlight(data):
 def buildPath(data):
     print "I'm here"
     brain.buildPath(data['name'], data['locationsList'])
-    pass
+
 
 if __name__ == '__main__':
-	brain = ServerBrain(socketio)
-	socketio.run(app)
+    brain = ServerBrain(socketio)
+    app.debug = True
+    socketio.run(app)

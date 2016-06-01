@@ -21,10 +21,6 @@ class ServerBrain:
 			'Solo Green' : None
 		}
 
-	def cleanAll(self):
-		for drone in self.drones:
-			self.drones[drone] = None
-		
 	'''
 	This method returns a list that contains the name of the drones in the system
 	'''
@@ -75,7 +71,6 @@ class ServerBrain:
 		'''
 		algorithm for building a path for droneName
 		'''
-		print "BUILD PATH: ", droneName
 		self.drones[droneName].buildListOfLocations(locationsToReach)
 		self.socket.emit('path built', {
 			'drone' : droneName,
@@ -86,7 +81,6 @@ class ServerBrain:
 	This method creates a thread for a drone's flight.
 	'''
 	def takeAFlight(self, drone):
-		print "######################### ", drone
 		eventlet.spawn(self.drones[drone].flight, self.connectionManager, self.socket)
 
 	'''

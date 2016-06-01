@@ -82,8 +82,7 @@ class Drone:
 	This function is private because I don't want that someone could decide to only taking off, if the drone should consume battery, this consumption must be on flight.
 	'''
 	def __armAndTakeOff__(self):
-
-		'''
+	
 		while not self.vehicle.is_armable:
 			print "Waiting for vehicle to initialise..."
 
@@ -94,8 +93,7 @@ class Drone:
 			print "Waiting for arming..."
 
 		self.vehicle.simple_takeoff(self.takeOffAltitude)
-		'''
-		print "self.vehicle.simple_takeoff(self.takeOffAltitude), ", self.takeOffAltitude
+		#print "self.vehicle.simple_takeoff(self.takeOffAltitude), ", self.takeOffAltitude
 
 	'''
 	This method is based on the possibility to send flight news to client via socket.
@@ -144,7 +142,7 @@ class Drone:
 				self.__connectToMyNetwork__(connectionManager)
 				currentDroneLocation = self.vehicle.location.global_relative_frame
 				remainingDistanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(currentDroneLocation, location)
-				self.__sendFlightDataToClientUsingSocket__(socket, currentDroneLocation, reached = False, RTLMode = False)
+				#self.__sendFlightDataToClientUsingSocket__(socket, currentDroneLocation, reached = False, RTLMode = False)
 
 				#If I've just reached the location, I need to take a picture
 				if remainingDistanceToNextLocation <= distanceToNextLocation * 0.05:
@@ -152,22 +150,19 @@ class Drone:
 						print "Drone " + self.name + " is taking a picture..."
 						self.camera.takeAPicture(connectionManager)
 					# It's time to send the reached status to client
-					self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False)
 					break
 				#these 3 following lines of code will be deleted, it's here only for test
 				#self.camera.takeAPicture(connectionManager)
-				self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False)
-				break
-
+				#self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False)
 		'''
 		Now it's time to come back home
 		'''
 		print "Removing all the elements in the list of locations to reach"
 		self.__removeAllTheElementInTheListOfLocationsToReach__()
 		self.__connectToMyNetwork__(connectionManager)
-		#self.vehicle.mode = VehicleMode('RTL')
+		self.vehicle.mode = VehicleMode('RTL')
 		self.__sendFlightDataToClientUsingSocket__(socket, self.vehicle.location.global_frame, reached = False, RTLMode = True)
-		print "self.vehicle.mode = VehicleMode('RTL')"
+		#print "self.vehicle.mode = VehicleMode('RTL')"
 
 	'''
 	This method is used for flying continuously in two points until drone's battery has reached 20%.
@@ -214,8 +209,6 @@ class Drone:
 					#self.camera.takeAPicture(connectionManager)
 					locationBool = not locationBool
 					break
-				locationBool = not locationBool
-				break
 
 		print "Removing locations to reach"
 		self.__removeAllTheElementInTheListOfLocationsToReach__(twoLocationsToRemove = True)
@@ -237,8 +230,7 @@ class Drone:
 	'''
 	def __generatingRandomSleepTime__(self):
 		number = random.random()*5
-		print "Drone " + self.name + " is going to sleep for ", number
-		return 3
+		return number
 
 	'''
 	This method has been implemented in order to have a method that given two points of LocationGlobalRelative type,
@@ -273,5 +265,5 @@ class Drone:
 			'reached' : reached,
 			'RTL' : RTLMode
 		}
-		print "Sendinga data for ", self.name
+		print "Sending data for ", self.name
 		socket.emit('Flight Informations', data)
