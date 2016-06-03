@@ -1,4 +1,5 @@
 from math import asin
+from math import acos
 from math import tan
 from math import atan
 from math import floor
@@ -34,14 +35,16 @@ The algorithm assumes the orientation
 ''' Excellent Reference for checking plan point correctness:
     http://www.darrinward.com/lat-long/?id=1908337 '''
 
-''' In each of the following cases the points on the rectangle ccw from sw most corner are given 
+''' In each of the following cases the points on the rectangle ccw from sw most corner are given
     f1 is the field for the may 10 demo
     f2 is the field just north of that one
     f3 is a field on a strange angle I found for testing'''
 
-f1=[latlon(38.893866,-92.201769),latlon(38.893843,-92.201026),latlon(38.894552,-92.201016),latlon(38.894554,-92.201748)]
+f1=[latlon(38.893866,-92.201769),latlon(38.893881, -92.201025),latlon(38.894552,-92.201016),latlon(38.894554,-92.201748)]
 f2=[latlon(38.894687,-92.202445),latlon(38.894659,-92.201019),latlon(38.895398,-92.201018),latlon(38.895424,-92.202389)]
 f3=[latlon(38.202472,-91.736857),latlon(38.203990,-91.734097),latlon(38.205077,-91.735023),latlon(38.203475,-91.737941)]
+
+badPoints=[latlon(38.893968,-92.201754),latlon(38.893906, -92.201759),latlon(38.894549,-92.201091),latlon(38.894549, -92.201046)]
 
 def add(p1, p2):
     north=p1.n+p2.n
@@ -66,13 +69,28 @@ def smult(p, scalar):
 def mag(p):
     return (p.n*p.n+p.w*p.w)**.5
 
-def rectMission(p1, p2, p3, alt, cam, imgOvr=.05):
+
+def isPerpendicular(v1,v2):
+    tolerance=.04
+    angle=acos(abs((v1.n*v2.n+v1.n*v2.n)/(mag(v1)*mag(v2))))
+    if angle > (pi/2)*(1-tolerance) and angle < (pi/2)*(1+tolerance):
+        return True
+    else:
+        return False
+
+def testIsPerpendicular(p1,p2,p3):
+    v21=sub(p1,p2)
+    v23=sub(p3,p2)
+    print(isPerpendicular(v21,v23))
+
+def rectMission(p1, p2, p3, alt, cam='gopro', imgOvr=.05):
     picList=list()
     camParam={'pi':{'ssizem':2.74, 'ssizep':3.76, 'flen':3.6, 'angN' : 0.7272647522337332, 'angW' : 0.9625338617968637, 'TangN':.8900036993, 'TangW':1.436087493},
               'canon':{'ssizem':5.7, 'ssizep':7.6, 'flen':5.2, 'angN' : 1.0027311229353408, 'angW' : 1.2621587749426584, 'TangN':1.566803225, 'TangW':3.1365079},
               'gopro':{'angN':2.792523803, 'angW':2.792523803, 'TangN':2.3857296493600746, 'TangW':2.3857296493600746}}
     v21=sub(p1,p2)
     v23=sub(p3,p2)
+    print('Are the vectors sufficiently perpindicular? '+str(isPerpendicular(v21,v23)))
     vectorAngle=atan(v21.n/v21.w)*180/pi
     if v21.n<0:
         if v21.w<0:
@@ -97,7 +115,7 @@ def rectMission(p1, p2, p3, alt, cam, imgOvr=.05):
     picList.append(mission(position.n,position.w,alt,bearing,picNum))
     #print (position.n, position.w)
     #print (str(position.n)+','+str(position.w))
-    for i in range(0,int(outerlimit+1)):  
+    for i in range(0,int(outerlimit+1)):
         for k in range(0,int(innerlimit-1)):
             if i%2==0:
                 position=add(position,innerstep)
@@ -108,18 +126,18 @@ def rectMission(p1, p2, p3, alt, cam, imgOvr=.05):
 
             picNum+=1
             picList.append(mission(position.n,position.w,alt,bearing,picNum))
-        if i!= outerlimit:   
+        if i!= outerlimit:
             position=add(position,outerstep)
             #print (str(position.n)+','+str(position.w))
             picNum+=1
             picList.append(mission(position.n,position.w,alt,bearing,picNum))
     #print (str(position.n)+','+str(position.w), picNum)
     return picList
-
-#missionList=rectMission(f1[0],f1[1],f1[2],20, 'pi')
+'''
+missionList=rectMission(f1[0],f1[1],f1[2],20, 'pi')
 #missionList=rectMission(f2[2],f2[3],f2[0],20, 'canon')
-missionList=rectMission(f3[2],f3[3],f3[0],20, 'pi')
-
+#missionList=rectMission(f3[2],f3[3],f3[0],20, 'pi')
+#missionList=rectMission(f1[0],f1[1],badPoints[2],20, 'pi')
 for x in missionList:
     if x!=missionList[-1]:
         print(x.latitude,',',x.longitude)
@@ -127,3 +145,14 @@ for x in missionList:
         print(x.latitude,',',x.longitude,x.bearing,x.ordLoc)
 
 
+'''
+
+print('These shoud be bad')
+testIsPerpendicular(f1[0],f1[1],badPoints[2])
+testIsPerpendicular(f1[0],f1[1],badPoints[3])
+testIsPerpendicular(badPoints[0],f1[1],f1[2])
+testIsPerpendicular(badPoints[1],f1[1],f1[2])
+print('These should be good')
+testIsPerpendicular(f1[0],f1[1],f1[2])
+testIsPerpendicular(f1[1],f1[2],f1[3])
+testIsPerpendicular(f1[2],f1[3],f1[0])
