@@ -53,6 +53,7 @@ class ServerBrain:
 			interface, network = self.__getNetwork__(droneName, 'camera')
 			if (interface, network) == (False, False):
 				print "Camera is not available for ", droneName
+				self.drones[droneName].camera = None
 				infosToReturn['camera status'] = 'not available'
 				infosToReturn['camera battery'] = 'info not reacheable'
 			else:
@@ -72,17 +73,14 @@ class ServerBrain:
 		algorithm for building a path for droneName
 		'''
 		self.drones[droneName].buildListOfLocations(locationsToReach)
-		self.socket.emit('path built', {
-			'drone' : droneName,
-			'locations to reach' : self.drones[droneName].serializeListOfLocationsToReach()
-		})
+		return {'drone': droneName, 'locations to reach' : self.drones[droneName].serializeListOfLocationsToReach()}
 
 	'''
 	This method creates a thread for a drone's flight.
 	'''
 	def takeAFlight(self, drone):
 		eventlet.spawn(self.drones[drone].flight, self.connectionManager, self.socket)
-
+		#self.drones[drone].flight(self.connectionManager, self.socket)
 	'''
 	This method doesn't create a thread for the following kind of flight. We need to talk about
 	priority this method could have.

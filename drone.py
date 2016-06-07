@@ -4,7 +4,9 @@ import random
 from wireless import Wireless
 import eventlet
 import math
-import signal
+import time
+
+eventlet.monkey_patch()
 
 '''
 Initializing the seed of the random class
@@ -82,7 +84,7 @@ class Drone:
 	This function is private because I don't want that someone could decide to only taking off, if the drone should consume battery, this consumption must be on flight.
 	'''
 	def __armAndTakeOff__(self):
-	
+
 		while not self.vehicle.is_armable:
 			print "Waiting for vehicle to initialise..."
 
@@ -121,15 +123,14 @@ class Drone:
 		except Exception, exc:
 			return exc #if I return exc, this means that I have to notify the client about this issue.
 		'''
-		self.__armAndTakeOff__()
-
-		eventlet.sleep(self.__generatingRandomSleepTime__())
+		print 'self.__armAndTakeOff__()'
 
 		print self.name + " number of locations to reach: ", len(self.listOfLocationsToReach)
 		for location in self.listOfLocationsToReach:
-			print "Location to reache this time: ", location
+			print "Location to reach this time: ", location
 			self.__connectToMyNetwork__(connectionManager)
 			droneCurrentLocation = self.vehicle.location.global_relative_frame
+			#print 'Drone: ' + self.name + ' current location: ', droneCurrentLocation
 			distanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(droneCurrentLocation, location)
 			print "self.vehicle.simple_goto(location), ", location
 			'''
@@ -141,26 +142,35 @@ class Drone:
 				eventlet.sleep(self.__generatingRandomSleepTime__())
 				self.__connectToMyNetwork__(connectionManager)
 				currentDroneLocation = self.vehicle.location.global_relative_frame
+				print 'Drone: ' + self.name + ' current location: ', droneCurrentLocation
 				remainingDistanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(currentDroneLocation, location)
+				print 'Drone: ' + self.name + ' remaining distance: ', remainingDistanceToNextLocation
 				#self.__sendFlightDataToClientUsingSocket__(socket, currentDroneLocation, reached = False, RTLMode = False)
 
 				#If I've just reached the location, I need to take a picture
-				if remainingDistanceToNextLocation <= distanceToNextLocation * 0.05:
+				if remainingDistanceToNextLocation <= distanceToNextLocation*0.05:
 					if self.camera is not None:
 						print "Drone " + self.name + " is taking a picture..."
+						self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False)
 						self.camera.takeAPicture(connectionManager)
+						# It's time to send the reached status to client
+						eventlet.sleep(self.__generatingRandomSleepTime__())
+						break
+				if self.camera is not None:
+					print "Drone " + self.name + " is taking a picture..."
+					self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False)
+					self.camera.takeAPicture(connectionManager)
 					# It's time to send the reached status to client
+					eventlet.sleep(self.__generatingRandomSleepTime__())
 					break
-				#these 3 following lines of code will be deleted, it's here only for test
-				#self.camera.takeAPicture(connectionManager)
-				#self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False)
+
 		'''
 		Now it's time to come back home
 		'''
 		print "Removing all the elements in the list of locations to reach"
 		self.__removeAllTheElementInTheListOfLocationsToReach__()
 		self.__connectToMyNetwork__(connectionManager)
-		self.vehicle.mode = VehicleMode('RTL')
+		print "self.vehicle.mode = VehicleMode('RTL')"
 		self.__sendFlightDataToClientUsingSocket__(socket, self.vehicle.location.global_frame, reached = False, RTLMode = True)
 		#print "self.vehicle.mode = VehicleMode('RTL')"
 
@@ -179,7 +189,7 @@ class Drone:
 		except Exception, exc:
 			return exc #if I return exc, this means that I have to notify the client about this issue.
 		'''
-		self.__armAndTakeOff__()
+		print "self.__armAndTakeOff__()"
 		'''
 		while self.vehicle.location.global_relative_frame.alt <= self.takeOffAltitude:
 			print "Drone is taking off..."
@@ -209,10 +219,12 @@ class Drone:
 					#self.camera.takeAPicture(connectionManager)
 					locationBool = not locationBool
 					break
+				locationBool = not locationBool
+				break
 
 		print "Removing locations to reach"
 		self.__removeAllTheElementInTheListOfLocationsToReach__(twoLocationsToRemove = True)
-		self.vehicle.mode = VehicleMode('RTL')
+		print "self.vehicle.mode = VehicleMode('RTL')"
 
 
 	'''
@@ -230,7 +242,7 @@ class Drone:
 	'''
 	def __generatingRandomSleepTime__(self):
 		number = random.random()*5
-		return number
+		return 3
 
 	'''
 	This method has been implemented in order to have a method that given two points of LocationGlobalRelative type,
@@ -262,8 +274,10 @@ class Drone:
 		data = {
 			'name' : self.name,
 			'location' : [location.lat, location.lon, self.vehicle.location.global_relative_frame.alt],
+			'battery' : self.battery.level,
 			'reached' : reached,
 			'RTL' : RTLMode
 		}
 		print "Sending data for ", self.name
-		socket.emit('Flight Informations', data)
+		socket.emit('Flight Information', data)
+		print "Data sent for ", self.name

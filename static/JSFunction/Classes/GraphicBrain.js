@@ -19,10 +19,10 @@ function init(map, drones){
 
 	$("#firstRow").append(image)
 
-	var dronesTable = "<div class='col-lg-6' id='secondColumnOfFirstRow'>" +
+	var dronesTable = "<div class='col-lg-4' id='secondColumnOfFirstRow'>" +
 						"<div class='row'>" +
-							"<h2>List of Drones Available</h2>" +
-							"<table id='dronesTable' class='table table-striped' style='width: 80%;''>" +
+							"<h2>Drones</h2>" +
+							"<table id='dronesTable' class='table table-striped' style='width: 100%;''>" +
 								"<thead>" +
 					              "<tr>" +
 					                "<th>Drone</th>" +
@@ -30,8 +30,6 @@ function init(map, drones){
 													"<th>Drone Battery</th>" +
 					                "<th>Action</th>" +
 													"<th>Camera Status</th>" +
-													"<th>Camera Battery</th>" +
-													"<th>Two Points Flight</th>" +
 					              "</tr>" +
 					            "</thead>" +
 					            "<tbody>" +
@@ -52,18 +50,51 @@ function init(map, drones){
 				"<td> - </td>" +
 			  '<td><button type="button" class="btn btn-success" onclick="connectDrone(\'' +  drones[element].name + '\')">Connect</button></td>' +
 				"<td> - </td>" +
-				"<td> - </td>" +
-				"<td><input type='checkbox'></td>" +
 			"</tr>"
         $("dronesTable, tbody").append(row)
 	}
 
-	var liveFlightInformations = "" +
-		"<div id='liveFlightInformations' class='col-lg-6' style='width: 45%;>" +
-					"<div class='container-fluid pre-scrollable'>" +
-						"<h2> Live Flight Informations </h2>" +
+	var typeOfSurveyDiv = "" +
+					"<div class='col-lg-2' id='typeOfSurveyDiv'> " +
 						"<div class='container-fluid'>" +
-					 		"<div class='well well-lg'>In this section will be displayed all the informations sent by drones in flight</div>" +
+							"<div class='row'>" +
+								"<div class='col-lg-12'>" +
+									"<h2> Type of Survey </h2>" +
+								"</div>" +
+							"</div>" +
+							"<div class='row'>" +
+								"<div class='col-lg-12'>" +
+									"<div class='form-group'>" +
+										"<br />" +
+										"<label for='selectTypeOfSurvey'>Select type of flight (select one):</label>" +
+										"<select class='form-control' id='selectTypeOfSurvey'> " +
+											"<option>Normal Survey</option>" +
+											"<option>Rectangular Survey</option>" +
+										"</select>" +
+									"</div>" +
+								"</div>" +
+							"</div>" +
+							"<div class='row'>" +
+								"<div class='col-lg-12'>" +
+									"<button type='button' class='btn btn-primary' id='confirmedSurvey' onclick='confirmedSurvey()'>Confirm</button>" +
+								"</div>" +
+							"</div>" +
+						"</div>" +
+					"</div>"
+	$("#firstRow").append(typeOfSurveyDiv)
+
+	var liveFlightInformations = "" +
+		"<div id='liveFlightInformation' class='col-lg-6' style='width: 45%;>" +
+					"<div class='container-fluid pre-scrollable'>" +
+						"<div class='row'>" +
+							"<div class='col-lg-12'>" +
+								"<div class='container-fluid'>" +
+									"<h2> Live Flight Information </h2>" +
+								"</div>" +
+								"<div class='container-fluid'>" +
+							 		"<div class='well well-lg'>In this section will be displayed all the information sent by drones in flight</div>" +
+								"</div>" +
+							"</div>" +
 						"</div>" +
 					"</div>" +
 				"</div>"
@@ -196,4 +227,66 @@ function addLocationIntoTableOfLocationsToReach(droneName, drones, latitude, lon
 
 	$("#locationsToReach tbody").append(locationToAppend)
 
+}
+
+function confirmedSurvey(){
+
+	var typeOfSurvey = $("#selectTypeOfSurvey option:selected").text()
+	switch (typeOfSurvey) {
+		case 'Normal Survey':
+			console.log(typeOfSurvey)
+			break;
+		case 'Rectangular Survey':
+			alert('message for user')
+			addGraphicsInfoForTheFlightSurvey()
+			break;
+			}
+}
+
+function addGraphicsInfoForTheFlightSurvey(){
+
+		$("#typeOfSurveyDiv").children().eq(0).children().eq(2).remove()
+		var checkbox = ''
+		for (element in brain.drones){
+			checkbox = "<div class='row'>" +
+										"<div class='col-lg-12'>" +
+											"<div class='checkbox'>" +
+													"<label><input type='checkbox' >" + brain.drones[element].name + "</label>" +
+										  "</div>" +
+										"</div>" +
+									"</div>"
+			$("#typeOfSurveyDiv").children().eq(0).append(checkbox)
+
+		}
+		var buttons = "<div class='row'>" +
+										"<div class='col-lg-12'>" +
+											"<button type='button' class='btn btn-primary' id='confirmRectangularSurvey'>Confirm</button>" +
+											"<button type='button' class='btn btn-danger' id='cancelSurvey'>Cancel</button>" +
+										"</div>" +
+									"</div>"
+		$("#typeOfSurveyDiv").children().eq(0).append(buttons)
+
+		$("#cancelSurvey").click(function(){
+				while($('#typeOfSurveyDiv').children().eq(0).children().eq(2).html() != undefined){
+					$('#typeOfSurveyDiv').children().eq(0).children().eq(2).remove()
+				}
+				var button = "<div class='row'>" +
+												"<div class='col-lg-12'>" +
+													"<button type='button' class='btn btn-primary' id='confirmedSurvey' onclick='confirmedSurvey()'>Confirm</button>" +
+												"</div>" +
+											"</div>"
+				$("#typeOfSurveyDiv").children().eq(0).append(button)
+		})
+
+		$("#confirmRectangularSurvey").click(function(){
+			var dronesSelected = []
+			var child = 2
+			while($('#typeOfSurveyDiv').children().eq(0).children().eq(child).children().eq(0).children().hasClass('checkbox')){
+				alert("checkbox")
+				if ($('#typeOfSurveyDiv').children().eq(0).children().eq(child).children().eq(0).children().attr('checked')) {
+					console.log("checked")
+				}
+			}
+
+		})
 }

@@ -14,6 +14,7 @@ class Camera:
         Check the API
         '''
         self.camera.command('record', 'on')
+        print "Just took a picture..", self.name
 
     def __connectToMyNetwork__(self, connectionManager):
 		connectionManager.interface(self.networkInterface)

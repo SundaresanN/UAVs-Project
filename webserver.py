@@ -7,15 +7,10 @@ import socket
 
 # Allow us to reuse sockets after the are bound.
 # http://stackoverflow.com/questions/25535975/release-python-flask-port-when-script-is-terminated
-socket.socket._bind = socket.socket.bind
-def my_socket_bind(self, *args, **kwargs):
-    self.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    return socket.socket._bind(self, *args, **kwargs)
-socket.socket.bind = my_socket_bind
+
 
 app = Flask(__name__)
 socketio = SocketIO(app)
-
 
 @app.route('/')
 def index():
@@ -46,22 +41,27 @@ def connectDrone():
     return jsonify({'data' : message})
 
 
-@socketio.on('flight')
-def flight(data):
+@app.route('/flight', methods=['POST'])
+def flight():
+    data = request.get_json()
     brain.takeAFlight(data['name'])
+    return 'Flight started'
 
-@socketio.on('two points flight')
+@app.route('/twoPointsFlight', methods=['POST'])
 def twoPointsFlight(data):
     print "Two points flight for ", data['name']
     brain.takeATwoPointsFlight(data['name'])
+    return 'Two Points Flight Completed'
 
-@socketio.on('build path')
-def buildPath(data):
-    print "I'm here"
-    brain.buildPath(data['name'], data['locationsList'])
-
+@app.route('/buildPath', methods=['POST'])
+def buildPath():
+    data = request.get_json()
+    print data
+    path = brain.buildPath(data['droneName'], data['locationsList'])
+    return jsonify({'path' : path})
 
 if __name__ == '__main__':
     brain = ServerBrain(socketio)
     app.debug = True
+    app.threaded = True
     socketio.run(app)
