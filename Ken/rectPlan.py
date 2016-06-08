@@ -69,7 +69,6 @@ def smult(p, scalar):
 def mag(p):
     return (p.n*p.n+p.w*p.w)**.5
 
-
 def isPerpendicular(p1,p2,p3):
     tolerance=.02
     v12=sub(p2,p1)
@@ -137,7 +136,7 @@ def rectMission(p1, p2, p3, alt, cam='gopro', imgOvr=.05):
     else:
         print ("Error: Given points do not form a sufficiently perpindiucalr angle for optimal operation")
         return None
-#missionList=rectMission(f1[0],f1[1],f1[2],20, 'pi')
+missionList=rectMission(f1[0],f1[1],f1[2],20, 'pi')
 #missionList=rectMission(f2[2],f2[3],f2[0],20, 'canon')
 #missionList=rectMission(f3[2],f3[3],f3[0],20, 'pi')
 #missionList=rectMission(f1[0],f1[1],badPoints[2],20, 'pi')
