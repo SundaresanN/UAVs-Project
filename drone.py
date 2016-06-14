@@ -84,15 +84,20 @@ class Drone:
 	This function is private because I don't want that someone could decide to only taking off, if the drone should consume battery, this consumption must be on flight.
 	'''
 	def __armAndTakeOff__(self):
+		print self.name + " is armable: ", self.vehicle.is_armable
+		print self.name + " armed: ", self.vehicle.armed
+
+		print self.name + " is taking off..."
 
 		while not self.vehicle.is_armable:
 			print "Waiting for vehicle to initialise..."
 
 		self.vehicle.mode = VehicleMode('GUIDED')
 		self.vehicle.armed = True
-
+		print self.name + " armed: ", self.vehicle.armed
 		while not self.vehicle.armed:
 			print "Waiting for arming..."
+			time.sleep(1)
 
 		self.vehicle.simple_takeoff(self.takeOffAltitude)
 		#print "self.vehicle.simple_takeoff(self.takeOffAltitude), ", self.takeOffAltitude
@@ -108,31 +113,19 @@ class Drone:
 	not possible because I need to be sure that the system will not be blocked because this 'arming and taking off' doesn't work in the right manner
 	'''
 	def flight(self, connectionManager, socket):
-		print "Inside Flight"
+		print "Inside Flight ", self.name
 		self.__connectToMyNetwork__(connectionManager)
-		'''
-		This is the part of code where I check if the arm and take require a lot of time
-		and the risk is to have a blocked system.
-		'''
-		'''
-		signal.signal(signal.SIGALRM, self.__handlerTakeOff__)
-		signal.alarm(5)
-		try:
-			print "almost inside arm and take off"
-			self.__armAndTakeOff__()
-		except Exception, exc:
-			return exc #if I return exc, this means that I have to notify the client about this issue.
-		'''
-		print 'self.__armAndTakeOff__()'
+		self.__armAndTakeOff__()
+		eventlet.sleep(self.__generatingRandomSleepTime__())
 
 		print self.name + " number of locations to reach: ", len(self.listOfLocationsToReach)
 		for location in self.listOfLocationsToReach:
 			print "Location to reach this time: ", location
 			self.__connectToMyNetwork__(connectionManager)
 			droneCurrentLocation = self.vehicle.location.global_relative_frame
-			#print 'Drone: ' + self.name + ' current location: ', droneCurrentLocation
 			distanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(droneCurrentLocation, location)
 			print "self.vehicle.simple_goto(location), ", location
+			self.vehicle.simple_goto(location)
 			'''
 			Now I have to check the location of the drone in flight, this because dronekit API is thought in order to have
 			flight to single point and if I immediatelly send another location to reach, the drone will immediatelly change
@@ -148,20 +141,13 @@ class Drone:
 				#self.__sendFlightDataToClientUsingSocket__(socket, currentDroneLocation, reached = False, RTLMode = False)
 
 				#If I've just reached the location, I need to take a picture
-				if remainingDistanceToNextLocation <= distanceToNextLocation*0.05:
+				if remainingDistanceToNextLocation <= distanceToNextLocation*0.1:
 					if self.camera is not None:
 						print "Drone " + self.name + " is taking a picture..."
 						self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False)
 						self.camera.takeAPicture(connectionManager)
 						# It's time to send the reached status to client
 						eventlet.sleep(self.__generatingRandomSleepTime__())
-						break
-				if self.camera is not None:
-					print "Drone " + self.name + " is taking a picture..."
-					self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False)
-					self.camera.takeAPicture(connectionManager)
-					# It's time to send the reached status to client
-					eventlet.sleep(self.__generatingRandomSleepTime__())
 					break
 
 		'''
@@ -170,7 +156,7 @@ class Drone:
 		print "Removing all the elements in the list of locations to reach"
 		self.__removeAllTheElementInTheListOfLocationsToReach__()
 		self.__connectToMyNetwork__(connectionManager)
-		print "self.vehicle.mode = VehicleMode('RTL')"
+		self.vehicle.mode = VehicleMode('RTL')
 		self.__sendFlightDataToClientUsingSocket__(socket, self.vehicle.location.global_frame, reached = False, RTLMode = True)
 		#print "self.vehicle.mode = VehicleMode('RTL')"
 
@@ -242,7 +228,7 @@ class Drone:
 	'''
 	def __generatingRandomSleepTime__(self):
 		number = random.random()*5
-		return 3
+		return number
 
 	'''
 	This method has been implemented in order to have a method that given two points of LocationGlobalRelative type,
@@ -274,7 +260,7 @@ class Drone:
 		data = {
 			'name' : self.name,
 			'location' : [location.lat, location.lon, self.vehicle.location.global_relative_frame.alt],
-			'battery' : self.battery.level,
+			'battery' : self.vehicle.battery.level,
 			'reached' : reached,
 			'RTL' : RTLMode
 		}

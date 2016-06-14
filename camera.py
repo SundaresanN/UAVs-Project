@@ -1,4 +1,5 @@
 from goprohero import GoProHero
+import time
 
 class Camera:
     def __init__(self, interface, wifi, name):
@@ -15,6 +16,7 @@ class Camera:
         '''
         self.camera.command('record', 'on')
         print "Just took a picture..", self.name
+        time.sleep(3)
 
     def __connectToMyNetwork__(self, connectionManager):
 		connectionManager.interface(self.networkInterface)
