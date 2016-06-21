@@ -32,6 +32,19 @@ The algorithm assumes the orientation
     from the second: the shorter dimension of the
     camera is parallel with the vector from rectangle vertex 2 to 1.'''
 
+'''This algorithm returns a list with the first item in the list being
+    the 'quality' of the generated rectangle. The values possible are
+    'Good'
+    'Warn'
+    'Bad'
+    and you can use these to decide what to do on the client side. For the Bad case,
+    no missions are actually calculated since thre resulting survey will be too unstable.
+    In the case of the 'Good' or 'Warn' scenarios, the rest of the items in the list
+    consist  of 'missions' each with member variables latitude, longitude,
+    altitude, bearing, and ordLoc. All are striaghtforward in meaning with ordLoc being the
+    only exception. It denotes the position of that mission in the context of the
+    larger planned survey in an ordinal manner. '''
+
 ''' Excellent Reference for checking plan point correctness:
     http://www.darrinward.com/lat-long/?id=1908337 '''
 
@@ -70,16 +83,19 @@ def mag(p):
     return (p.n*p.n+p.w*p.w)**.5
 
 def isPerpendicular(p1,p2,p3):
-    tolerance=.02
+    tightTolerance=.04
+    warnTolerance=.14
     v12=sub(p2,p1)
     v23=sub(p3,p2)
     v31=sub(p1,p3)
     hypotenuse=mag(v31)
     sides=(mag(v12)**2+mag(v23)**2)**.5
-    if sides > hypotenuse*(1-tolerance) and sides < hypotenuse*(1+tolerance):
-        return True
+    if sides > hypotenuse*(1-tightTolerance) and sides < hypotenuse*(1+tightTolerance):
+        return "Good"
+    elif sides > hypotenuse*(1-warnTolerance) and sides < hypotenuse*(1+warnTolerance):
+        return "Warn"
     else:
-        return False
+        return "Bad"
 
 
 def rectMission(p1, p2, p3, alt, cam='gopro', imgOvr=.05):
@@ -87,9 +103,11 @@ def rectMission(p1, p2, p3, alt, cam='gopro', imgOvr=.05):
     camParam={'pi':{'ssizem':2.74, 'ssizep':3.76, 'flen':3.6, 'angN' : 0.7272647522337332, 'angW' : 0.9625338617968637, 'TangN':.8900036993, 'TangW':1.436087493},
               'canon':{'ssizem':5.7, 'ssizep':7.6, 'flen':5.2, 'angN' : 1.0027311229353408, 'angW' : 1.2621587749426584, 'TangN':1.566803225, 'TangW':3.1365079},
               'gopro':{'angN':2.792523803, 'angW':2.792523803, 'TangN':2.3857296493600746, 'TangW':2.3857296493600746}}
-    if isPerpendicular(p1,p2,p3):
+    perpendicularTestResult=isPerpendicular(p1,p2,p3)
+    if perpendicularTestResult=="Good" or perpendicularTestResult=="Warn":
         v21=sub(p1,p2)
         v23=sub(p3,p2)
+        picList.append(perpendicularTestResult)
 
         vectorAngle=atan(v21.n/v21.w)*180/pi
         if v21.n<0:
@@ -135,14 +153,16 @@ def rectMission(p1, p2, p3, alt, cam='gopro', imgOvr=.05):
         return picList
     else:
         print ("Error: Given points do not form a sufficiently perpindiucalr angle for optimal operation")
-        return None
+        return perpendicularTestResult
 missionList=rectMission(f1[0],f1[1],f1[2],20, 'pi')
 #missionList=rectMission(f2[2],f2[3],f2[0],20, 'canon')
 #missionList=rectMission(f3[2],f3[3],f3[0],20, 'pi')
 #missionList=rectMission(f1[0],f1[1],badPoints[2],20, 'pi')
 if missionList != None:
-    for x in missionList:
-        if x!=missionList[-1]:
+    for x in missionList :
+        if x == missionList[0]:
+            print(x)
+        elif x!=missionList[-1]:
             print(x.latitude,',',x.longitude)
         else:
             print(x.latitude,',',x.longitude,x.bearing,x.ordLoc)
