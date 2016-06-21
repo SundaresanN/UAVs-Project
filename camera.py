@@ -14,9 +14,12 @@ class Camera:
         You need to be sure that the GoPro is in "Photo mode"
         Check the API
         '''
-        self.camera.command('record', 'on')
-        print "Just took a picture..", self.name
-        time.sleep(3)
+
+        if self.camera.command('record', 'on'):
+            print "Just took a picture from ", self.name
+        else:
+            print "error from ", self.name
+        time.sleep(2)
 
     def __connectToMyNetwork__(self, connectionManager):
 		connectionManager.interface(self.networkInterface)

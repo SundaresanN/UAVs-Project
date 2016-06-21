@@ -40,7 +40,6 @@ def connectDrone():
     '''
     return jsonify({'data' : message})
 
-
 @app.route('/flight', methods=['POST'])
 def flight():
     data = request.get_json()

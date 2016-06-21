@@ -101,7 +101,7 @@ function init(map, drones){
 	$("#secondRow").append(liveFlightInformations)
 }
 
-function addMarker(x, y, typeOfMarker, droneName, drones){
+function addMarker(x, y, typeOfMarker, droneName, drones, typeOfSurvey){
 
 	var id = droneName
 	var iconPath = ""
@@ -117,8 +117,13 @@ function addMarker(x, y, typeOfMarker, droneName, drones){
 			break
 		case "location":
 			var size = 0
-			for(drone in drones){
-				size += drones[drone].locationsToReach.length
+			if (typeOfSurvey == 'rectangular') {
+				size += brain.rectangularSurveyLocations.length
+			}
+			if (typeOfSurvey == 'normal') {
+				for(drone in drones){
+					size += drones[drone].locationsToReach.length
+				}
 			}
 			id = id + size
 			iconPath = size
@@ -164,16 +169,21 @@ function showTableForLocationToAdd(latitude, longitude, drones){
 
 	$("#latitude").val(latitude)
 	$("#longitude").val(longitude)
-
-	for(index in drones){
-
-		$("#selectDrone").append("<option>" + drones[index].name + "</option>")
-
+	/*
+	this if allows me to discriminate between the normal survey mode. If suervy mode is setted as normal mode,
+	user will decide which drone has to reach location that I'm adding; otherwise if the survey mode is setted as rectangular, I cannot show the drones in the select list, this
+	because server will decide how to split locations to drones involved in the rectangular survey
+	*/
+	if(brain.typeOfSurvey == 'normal'){
+		for(index in drones){
+			$("#selectDrone").append("<option>" + drones[index].name + "</option>")
+		}
 	}
+
 
 }
 
-function addLocationIntoTableOfLocationsToReach(droneName, drones, latitude, longitude, altitude, type){
+function addLocationIntoTableOfLocationsToReach(droneName, array, latitude, longitude, altitude, type, typeOfSurvey){
 
 	if(this.firstLocationAdded == false){
 
@@ -203,8 +213,14 @@ function addLocationIntoTableOfLocationsToReach(droneName, drones, latitude, lon
 	}
 
 	var size = 0
-	for(drone in drones){
-		size += drones[drone].locationsToReach.length
+	if (typeOfSurvey == "normal") {
+		for(drone in array){
+			size += array[drone].locationsToReach.length
+		}
+	}
+	//In this case array will represent rectangularSurveyLocations of ClientBrain instance
+	if (typeOfSurvey == "rectangular") {
+		size += array.length
 	}
 	if(type == "location"){
 		var marker = String.fromCharCode(96 + size)
@@ -212,8 +228,7 @@ function addLocationIntoTableOfLocationsToReach(droneName, drones, latitude, lon
 	if (type == "home") {
 		var	marker = droneName + " home"
 	}
-
-	var buttons = " - "
+	
 	var locationToAppend = "<tr>" +
 								"<td>"+ droneName +"</td>" +
 			                    "<td>"+ marker +"</td>" +
@@ -221,72 +236,10 @@ function addLocationIntoTableOfLocationsToReach(droneName, drones, latitude, lon
 			                    '<td> ' + longitude + '</td>' +
 			                    '<td> ' + altitude + '</td>' +
 			                    "<td>" +
-			                 		buttons
+													 '<button type="button" class="btn btn-danger" onclick="deleteLocation(\'' +  droneName + '\', \'' +  latitude + '\', \'' +  longitude + '\')">Delete</button>'
 			                    "</td>" +
                       		"</tr>"
 
 	$("#locationsToReach tbody").append(locationToAppend)
 
-}
-
-function confirmedSurvey(){
-
-	var typeOfSurvey = $("#selectTypeOfSurvey option:selected").text()
-	switch (typeOfSurvey) {
-		case 'Normal Survey':
-			console.log(typeOfSurvey)
-			break;
-		case 'Rectangular Survey':
-			alert('message for user')
-			addGraphicsInfoForTheFlightSurvey()
-			break;
-			}
-}
-
-function addGraphicsInfoForTheFlightSurvey(){
-
-		$("#typeOfSurveyDiv").children().eq(0).children().eq(2).remove()
-		var checkbox = ''
-		for (element in brain.drones){
-			checkbox = "<div class='row'>" +
-										"<div class='col-lg-12'>" +
-											"<div class='checkbox'>" +
-													"<label><input type='checkbox' >" + brain.drones[element].name + "</label>" +
-										  "</div>" +
-										"</div>" +
-									"</div>"
-			$("#typeOfSurveyDiv").children().eq(0).append(checkbox)
-
-		}
-		var buttons = "<div class='row'>" +
-										"<div class='col-lg-12'>" +
-											"<button type='button' class='btn btn-primary' id='confirmRectangularSurvey'>Confirm</button>" +
-											"<button type='button' class='btn btn-danger' id='cancelSurvey'>Cancel</button>" +
-										"</div>" +
-									"</div>"
-		$("#typeOfSurveyDiv").children().eq(0).append(buttons)
-
-		$("#cancelSurvey").click(function(){
-				while($('#typeOfSurveyDiv').children().eq(0).children().eq(2).html() != undefined){
-					$('#typeOfSurveyDiv').children().eq(0).children().eq(2).remove()
-				}
-				var button = "<div class='row'>" +
-												"<div class='col-lg-12'>" +
-													"<button type='button' class='btn btn-primary' id='confirmedSurvey' onclick='confirmedSurvey()'>Confirm</button>" +
-												"</div>" +
-											"</div>"
-				$("#typeOfSurveyDiv").children().eq(0).append(button)
-		})
-
-		$("#confirmRectangularSurvey").click(function(){
-			var dronesSelected = []
-			var child = 2
-			while($('#typeOfSurveyDiv').children().eq(0).children().eq(child).children().eq(0).children().hasClass('checkbox')){
-				alert("checkbox")
-				if ($('#typeOfSurveyDiv').children().eq(0).children().eq(child).children().eq(0).children().attr('checked')) {
-					console.log("checked")
-				}
-			}
-
-		})
 }

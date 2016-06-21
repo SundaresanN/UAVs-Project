@@ -5,6 +5,7 @@ from flask_socketio import SocketIO, emit, send
 from flask import jsonify
 import eventlet
 import time
+import threading
 
 
 class ServerBrain:
@@ -20,6 +21,8 @@ class ServerBrain:
 			'Solo Gold' : None,
 			'Solo Green' : None
 		}
+
+		self.semaphore = threading.BoundedSemaphore()
 
 	'''
 	This method returns a list that contains the name of the drones in the system
@@ -80,7 +83,8 @@ class ServerBrain:
 	'''
 	def takeAFlight(self, drone):
 		eventlet.spawn(self.drones[drone].flight, self.connectionManager, self.socket)
-		#self.drones[drone].flight(self.connectionManager, self.socket)
+		#thread = self.drones[drone].flightSemaphore(self.connectionManager, self.socket, self.semaphore)
+		#thread.start()
 	'''
 	This method doesn't create a thread for the following kind of flight. We need to talk about
 	priority this method could have.

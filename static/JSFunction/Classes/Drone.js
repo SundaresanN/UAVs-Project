@@ -6,6 +6,8 @@ function Drone(name){
 
 	this.locationsToReach = new Array()
 
+	this.surveyMode = "normal"
+	
 	this.deleteElementWithLatitudeAndLongitude = deleteElementWithLatitudeAndLongitude
 }
 

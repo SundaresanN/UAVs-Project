@@ -66,6 +66,9 @@ function connectDrone(droneName){
 
 				var element = brain.getIndexDrone(droneName)
 				var buildPathButton = '<button type="button" class="btn btn-success" onclick="buildPath(\'' +  brain.drones[element].name + '\')">Build Path</button>'
+				if(brain.drones[element].surveyMode == 'rectangular'){
+						buildPathButton = 'Rectangular Survey Mode'
+				}
 
 				$("[id = '" + droneName + "']").children().eq(1).html(data['drone status'])
 				$("[id = '" + droneName + "']").children().eq(2).html(data['drone battery'])
