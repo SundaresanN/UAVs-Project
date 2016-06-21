@@ -16,10 +16,13 @@ class Camera:
         '''
 
         if self.camera.command('record', 'on'):
-            print "Just took a picture from ", self.name
+            time.sleep(1)
+            return True
         else:
             print "error from ", self.name
-        time.sleep(2)
+            time.sleep(1)
+            return False
+
 
     def __connectToMyNetwork__(self, connectionManager):
 		connectionManager.interface(self.networkInterface)

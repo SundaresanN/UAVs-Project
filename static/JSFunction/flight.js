@@ -91,7 +91,7 @@ function flightDrone(droneName){
 	}
 
 	brain.socket.on('Flight Information ' + droneName, function(data){
-		console.log("I'm here in Flight Information " + droneName + ", numberOfTimes: " + numberOfTimes)
+		console.log("receiving data from " + droneName + " for flight information")
 		var textToDisplay = "Drone " + data['name'] + "<br>" +
 										"Drone location: " + "<br>" +
 										" - latitude: " + data['location'][0] + "<br>" +
@@ -227,14 +227,6 @@ function addGraphicsInfoForTheFlightSurvey(){
 
 
 function prepareSurvey(drones){
-	//Adding button for building the rectangular path
-	var buildRectangularPathButton = "<div class='row'>" +
-													"<div class='col-lg-12'>" +
-														'<button type="button" class="btn btn-success" onclick="buildRectangularPath()">Build Rectangular Path</button>' +
-													"</div>" +
-												"</div>"
-
-	$("#typeOfSurveyDiv").children().eq(0).append(buildRectangularPathButton)
 	//Deleting the 'build path' buttons, if present, on the drones table and replacing them with the string 'rectangular survey mode'
 	for(element in drones){
 		var index = brain.getIndexDrone(drones[element])
@@ -243,6 +235,21 @@ function prepareSurvey(drones){
 			$("[id = '" + drones[element] + "']").children().eq(3).html('Rectangular Survey Mode')
 		}
 	}
+	//Adding button for building the rectangular path
+	var index = 0
+	while($("#typeOfSurveyDiv").children().eq(0).children().eq(index).html() != undefined){
+		if ($("#typeOfSurveyDiv").children().eq(0).children().eq(index).text() == "Build Rectangular Path") {
+			return
+		}
+		index++
+	}
+	var buildRectangularPathButton = "<div class='row'>" +
+													"<div class='col-lg-12'>" +
+														'<button type="button" class="btn btn-success" onclick="buildRectangularPath()">Build Rectangular Path</button>' +
+													"</div>" +
+												"</div>"
+
+	$("#typeOfSurveyDiv").children().eq(0).append(buildRectangularPathButton)
 }
 
 
@@ -270,7 +277,8 @@ function deleteDataOfRectangularSurvey(){
 		var buttonName = $("#dronesTable > tbody").children().eq(index).children().eq(3).text()
 		// I already know that drone is connected
 		if(buttonName == 'Rectangular Survey Mode'){
-			var buildPathButton = '<button type="button" class="btn btn-success" onclick="buildPath(\'' +  brain.drones[element].name + '\')">Build Path</button>'
+			var droneName = $("#dronesTable > tbody").children().eq(index).children().eq(0).text()
+			var buildPathButton = '<button type="button" class="btn btn-success" onclick="buildPath(\'' +  droneName + '\')">Build Path</button>'
 			$("#dronesTable > tbody").children().eq(index).children().eq(3).html(buildPathButton)
 		}
 	}

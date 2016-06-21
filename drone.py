@@ -154,23 +154,24 @@ class Drone(threading.Thread):
 				print 'Drone: ' + self.name + ' current location: ', droneCurrentLocation
 				remainingDistanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(currentDroneLocation, location)
 				print 'Drone: ' + self.name + ' remaining distance: ', remainingDistanceToNextLocation
-				#self.__sendFlightDataToClientUsingSocket__(socket, currentDroneLocation, reached = False, RTLMode = False)
+				self.__sendFlightDataToClientUsingSocket__(socket, currentDroneLocation, reached = False, RTLMode = False)
 
 				#If I've just reached the location, I need to take a picture
 				if remainingDistanceToNextLocation <= distanceToNextLocation*0.1:
 					if self.camera is not None:
 						print "Drone " + self.name + " is taking a picture..."
 						self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False)
-						self.camera.takeAPicture(connectionManager)
+						while self.camera.takeAPicture(connectionManager) is False:
+							# It's time to send the reached status to client
+							eventlet.sleep(self.__generatingRandomSleepTime__())
+						break
+				if self.camera is not None:
+					self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False)
+					print "Drone " + self.name + " is taking a picture..."
+					while self.camera.takeAPicture(connectionManager) is False:
 						# It's time to send the reached status to client
 						eventlet.sleep(self.__generatingRandomSleepTime__())
 					break
-				if self.camera is not None:
-					print "Drone " + self.name + " is taking a picture..."
-					self.camera.takeAPicture(connectionManager)
-					# It's time to send the reached status to client
-					eventlet.sleep(self.__generatingRandomSleepTime__())
-				self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False)
 				break
 		'''
 		Now it's time to come back home
@@ -181,6 +182,7 @@ class Drone(threading.Thread):
 		#self.vehicle.mode = VehicleMode('RTL')
 		self.__sendFlightDataToClientUsingSocket__(socket, self.vehicle.location.global_frame, reached = False, RTLMode = True)
 		print "self.vehicle.mode = VehicleMode('RTL')"
+		time.sleep(2)
 
 	def flightSemaphore(self, connectionManager, socket, semaphore):
 		semaphore.acquire()

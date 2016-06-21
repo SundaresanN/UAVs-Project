@@ -222,13 +222,15 @@ function addLocationIntoTableOfLocationsToReach(droneName, array, latitude, long
 	if (typeOfSurvey == "rectangular") {
 		size += array.length
 	}
+	var buttonDelete = '<button type="button" class="btn btn-danger" onclick="deleteLocation(\'' +  droneName + '\', \'' +  latitude + '\', \'' +  longitude + '\')">Delete</button>'
 	if(type == "location"){
 		var marker = String.fromCharCode(96 + size)
 	}
 	if (type == "home") {
 		var	marker = droneName + " home"
+		buttonDelete = '-'
 	}
-	
+
 	var locationToAppend = "<tr>" +
 								"<td>"+ droneName +"</td>" +
 			                    "<td>"+ marker +"</td>" +
@@ -236,7 +238,7 @@ function addLocationIntoTableOfLocationsToReach(droneName, array, latitude, long
 			                    '<td> ' + longitude + '</td>' +
 			                    '<td> ' + altitude + '</td>' +
 			                    "<td>" +
-													 '<button type="button" class="btn btn-danger" onclick="deleteLocation(\'' +  droneName + '\', \'' +  latitude + '\', \'' +  longitude + '\')">Delete</button>'
+															buttonDelete +
 			                    "</td>" +
                       		"</tr>"
 
