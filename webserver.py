@@ -29,15 +29,17 @@ def connectDrone():
 
 @app.route('/flight', methods=['POST'])
 def flight():
+    print "Inside flight"
     data = request.get_json()
     brain.takeAFlight(data['name'])
     return 'Flight started'
 
 @app.route('/oscillationFlight', methods=['POST'])
 def oscillationFlight():
+    print "Inside oscillation flight"
     data = request.get_json()
-    brain.takeAnOscillationFlight(data['name'])
-    return 'Oscillation flight started'
+    rData = brain.takeAnOscillationFlight(data['name'])
+    return jsonify({'data' : rData})
 
 @app.route('/twoPointsFlight', methods=['POST'])
 def twoPointsFlight(data):

@@ -90,8 +90,9 @@ class ServerBrain:
 	This method allows the drone to have an oscillation flight.
 	'''
 	def takeAnOscillationFlight(self, drone):
-		eventlet.spawn(self.drones[drone].flight, self.connectionManager, self.socket)
-		self.drones[drone].oscillationFlight(self.connectionManager, self.socket)
+		data = self.drones[drone].oscillationFlight(self.connectionManager, self.socket)
+		print data
+		return data
 	'''
 	This method doesn't create a thread for the following kind of flight. We need to talk about
 	priority this method could have.

@@ -41,13 +41,16 @@ function flightDrone(droneName){
 	var index = brain.getIndexDrone(droneName)
 	//Check if we are in the oscillation survey mode
 	if(brain.drones[index].surveyMode == 'oscillation'){
+		console.log("Oscillation flight mode");
 		$.ajax({
 			type: 'POST',
 			url: '/oscillationFlight',
 			contentType: 'application/json',
 			data: JSON.stringify({ name: droneName }),
 			success: function(data){
-				console.log(data)
+				console.log("New version of response")
+				data = data['data']
+				updateGraphicAndDataStructureInformationOnOscillationSurvey(data)
 			},
 			error: function(){
 				console.log("There is an error on server side")
@@ -56,6 +59,7 @@ function flightDrone(droneName){
 	} else {
 		//This means that I have a "normal" flight to accomplish
 		//brain.socket.emit('flight', {'name': droneName})
+		console.log("Normal Flight Mode")
 		$.ajax({
 			type: 'POST',
 			url: '/flight',
@@ -80,7 +84,7 @@ function flightDrone(droneName){
 		if (data['reached'] == true) {
 			textToDisplay += "Reached location: " + data["reached"] + "<br>"
 			//something to delete the location to the table
-			updateGraphicAndDataStructureInformationsOnReachedLocation(data)
+			updateGraphicAndDataStructureInformationOnReachedLocation(data)
 		}
 		if (data['RTL'] == true) {
 			//Now that the flight has been just completed, I need to reset the 'Build Path' button for having another flight
@@ -96,6 +100,11 @@ function flightDrone(droneName){
 			console.log("Second time same thing")
 		}
 	})
+
+	brain.socket.on('Oscillation Survey Data', function(data){
+		console.log("Data inside Oscillation Survey Data: " + data)
+
+	})
 }
 
 /*
@@ -103,7 +112,7 @@ This function is used for updating data structure of Drone class for a particula
 The update we are going to implement is the deleting of a location(given latitude and longitude) in the array of locations to reach, which is a member of the class Drone.
 Moreover the marker on the map for the location to delete will be removed.
 */
-function updateGraphicAndDataStructureInformationsOnReachedLocation(data){
+function updateGraphicAndDataStructureInformationOnReachedLocation(data){
 
 			for(var index=0; index<$("#locationsToReach > tbody > tr").length; index++){
 
@@ -124,6 +133,40 @@ function updateGraphicAndDataStructureInformationsOnReachedLocation(data){
 		}
 }
 
+function updateGraphicAndDataStructureInformationOnOscillationSurvey(data){
+	var textToDisplay = "Oscillation Survey Data <br>" +
+									"Drone " + data['name'] + "<br>" +
+									" - battery: " + data['battery'] + "<br>" +
+									" - #oscillations: " + data['oscillations'] + "<br>"
+
+	textToDisplay = "Drone " + data['name'] + ' has completed its flight for the oscillation survey, now it is coming back home'
+	var divToDisplay = "<div class='well well-lg'>" + textToDisplay + "</div>"
+	$("#liveFlightInformation").children().eq(0).children().eq(0).children().eq(1).prepend(divToDisplay)
+
+	var buildPathButton = '<button type="button" class="btn btn-success" onclick="buildPath(\'' +  data['name'] + '\')">Build Path</button>'
+	$("[id = '" + data['name'] + "']").children().eq(3).html(buildPathButton)
+	$("[id = '" + data['name'] + "']").children().eq(2).html(data['battery'])
+	//Now I need to delete the markers, locations on the locations to reach table and the data on the Drone instance
+	var length = $("#locationsToReach > tbody > tr").length
+	for(var index=0; index<length; index++){
+		var latitude = $("#locationsToReach > tbody").children().eq(index).children().eq(2).html()
+		var longitude = $("#locationsToReach > tbody").children().eq(index).children().eq(3).html()
+		var droneIndex = brain.getIndexDrone(data['name'])
+		for (var i = 0; i < brain.drones[droneIndex].locationsToReach.length; i++) {
+			if (brain.drones[droneIndex].locationsToReach[i].latitude == latitude && brain.drones[droneIndex].locationsToReach[i].longitude == longitude) {
+				// These following 3 lines of code are used to remove the marker of the location just reached from map
+				var marker = $("#locationsToReach > tbody").children().eq(index).children().eq(1).html()
+				var idMarker = data['name'] + (marker.charCodeAt()-96)
+				$("[id = '" + idMarker + "']").remove()
+				//this line of code is used for deleting the row which represents a location just reached
+				$("#locationsToReach > tbody").children().eq(index).remove()
+				index = index-1
+			}
+		}
+	}
+	var droneIndex = brain.getIndexDrone(data['name'])
+	brain.drones[droneIndex].locationsToReach = new Array()
+}
 /********************************** RECTANGULAR AND OSCILLATION SURVEY *************************************/
 /*
 When I'm in rectangular survey mode, only drones involved in it can fly. The others must wait the end of rectangular survey.
@@ -133,11 +176,9 @@ function confirmedSurvey(){
 	var typeOfSurvey = $("#selectTypeOfSurvey option:selected").text()
 	switch (typeOfSurvey) {
 		case 'Normal Survey':
-			console.log(typeOfSurvey)
 			brain.typeOfSurvey = 'normal'
 			break;
 		case 'Rectangular Survey':
-			console.log(typeOfSurvey)
 			//Setting up this data member of the ClientBrain instance, I set up the rectangular survey mode, so only the drones involved in
 			// it can fly, the others must wait the end of the rectangular surbey flight.
 			brain.typeOfSurvey = 'rectangular'
@@ -172,13 +213,6 @@ function addGraphicsInfoForTheOscillationSurvey(){
 	$("#typeOfSurveyDiv").children().eq(0).append(buttons)
 
 	$("#confirmOscillationSurvey").click(function(){
-		//Check if someone has already added for this kind of survey
-		for (var index in brain.drones) {
-			if (brain.drones[index].surveyMode == "oscillation") {
-				alert(brain.drones[index].name + " has been already selected for the oscillation survey, if you want to change drone, please press on Cancel, choose Oscillation Survey and select your new drone")
-				return
-			}
-		}
 		var droneSelected = 0
 		var child = 2
 		while($('#typeOfSurveyDiv').children().eq(0).children().eq(child).children().eq(0).children().hasClass('checkbox')){
@@ -186,7 +220,6 @@ function addGraphicsInfoForTheOscillationSurvey(){
 			var index = brain.getIndexDrone(drone)
 			if ($('#typeOfSurveyDiv').children().eq(0).children().eq(child).children().eq(0).children().eq(0).children().eq(0).children().eq(0).is(':checked')) {
 				droneSelected = $('#typeOfSurveyDiv').children().eq(0).children().eq(child).children().eq(0).children().eq(0).children().eq(0).text()
-				console.log("Drone selected: " + droneSelected)
 				break
 			}
 			child = child + 1
@@ -195,8 +228,8 @@ function addGraphicsInfoForTheOscillationSurvey(){
 			alert("Please insert one drone for this type of survey.")
 			return
 		}
-		console.log("droneSelected: " + droneSelected)
 		prepareOscillationSurvey(droneSelected)
+		$("#confirmOscillationSurvey").remove()
 	})
 
 	$("#cancelOscillationSurvey").click(function(){
@@ -213,13 +246,13 @@ function addGraphicsInfoForTheOscillationSurvey(){
 
 		// Now I have to remove the data from the locations to reach table and from the drone that is in the oscillation mode
 		var index = -1
-		console.log(brain.drones)
 		for(el in brain.drones){
 			if(brain.drones[el].surveyMode == 'oscillation'){
 				index = el
 				break
 			}
 		}
+
 		console.log("Drone in oscillation mode index: " + index)
 		if(index == -1){
 			alert("No drone in oscillation mode")
@@ -321,8 +354,9 @@ function prepareOscillationSurvey(drone){
 	//Deleting the 'build path' button, if present, on the drones table and replacing it with the string 'oscillation survey mode'
 	var index = brain.getIndexDrone(drone)
 	brain.drones[index].surveyMode = "oscillation"
-	if($("[id = '" + drone + "']").children().eq(3).children().eq(0).text() == 'Build Path'){
-		$("[id = '" + drone + "']").children().eq(3).html('Oscillation Survey Mode')
+	if($("[id = '" + brain.drones[index].name + "']").children().eq(3).children().eq(0).text() == 'Build Path'){
+			var buildPathButton = '<button type="button" class="btn btn-success" onclick="buildPath(\'' +  brain.drones[index].name + '\')">Build Path</button>'
+		$("[id = '" + brain.drones[index].name + "']").children().eq(3).html(buildPathButton)
 	}
 
 

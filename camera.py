@@ -22,7 +22,6 @@ class Camera:
             time.sleep(1)
             return False
 
-
     def __connectToMyNetwork__(self, connectionManager):
 		connectionManager.interface(self.networkInterface)
 		connectionManager.connect(ssid = self.wifiNetwork, password = "Silvestri")

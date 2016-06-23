@@ -122,10 +122,8 @@ function addMarker(x, y, typeOfMarker, droneName, drones, typeOfSurvey){
 				size += brain.rectangularSurveyLocations.length
 			}
 			if (typeOfSurvey == 'normal' || typeOfSurvey == 'oscillation') {
-				console.log(typeOfSurvey);
 				for(drone in drones){
 					size += drones[drone].locationsToReach.length
-					console.log(size)
 				}
 			}
 			id = id + size

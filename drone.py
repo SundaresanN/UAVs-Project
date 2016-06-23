@@ -75,24 +75,19 @@ class Drone():
 			listToReturn.append(location)
 		return listToReturn
 
-	def __handlerTakeOff__(self, signum, frame):
-		raise Exception('The take off of ' + self.name + ' is taking too much time, need an abort')
 
 	'''
-	Sometimes could happen that the drone is not able to take off, so I must handle this situation and be
-	sure that this kind of "blocked situation" doesn't interfere with the flow of the events: I will use a signal that allows me to
-	check if drone has been taken off in an amount of seconds.
-	(You could do the same with the wifi network connection)
-	The "check code" is in the flight function.
+	This function is used for the drone's take off.
+	Inside the function, before the end of it, I will wait until drone reaches a "safe" altitude(this because I want to avoid the "grass problem")
 	This function is private because I don't want that someone could decide to only taking off, if the drone should consume battery, this consumption must be on flight.
 	'''
 	def __armAndTakeOff__(self):
-		'''
+
 		for i in xrange(0, 5):
 			print i
 			time.sleep(0.5)
 		return
-		'''
+
 		print self.name + " is armable: ", self.vehicle.is_armable
 		print self.name + " armed: ", self.vehicle.armed
 
@@ -118,14 +113,12 @@ class Drone():
 				return
 
 	'''
-	This method is based on the possibility to send flight news to client via socket.
+	This method is based on the possibility to send live flight information to client via socket.
 	This is why I need a Wireless object as parameter and the Socket object.
 	The Wireless object is used for switching connection and be sure that the command is sent to right drone
 	The Socket object is used for update the location on client side.
 	This method will be in concurrency with the other threads, so this is why I will use eventlet.sleep(random.random()) in
 	some some points of the code.
-	In this function there is the part of code that check if the 'arming and taking off' requires a lot of time and this is
-	not possible because I need to be sure that the system will not be blocked because this 'arming and taking off' doesn't work in the right manner
 	'''
 	def flight(self, connectionManager, socket):
 
@@ -154,20 +147,20 @@ class Drone():
 				print 'Drone: ' + self.name + ' current location: ', droneCurrentLocation
 				remainingDistanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(currentDroneLocation, location)
 				print 'Drone: ' + self.name + ' remaining distance: ', remainingDistanceToNextLocation
-				#self.__sendFlightDataToClientUsingSocket__(socket, currentDroneLocation, reached = False, RTLMode = False)
+				#self.__sendFlightDataToClientUsingSocket__(socket, currentDroneLocation, reached = False, RTLMode = False, 'normal', None)
 				#If I've just reached the location, I need to take a picture
 				if remainingDistanceToNextLocation <= distanceToNextLocation*0.05:
 					print "here before camera"
 					if self.camera is not None:
 						print "Drone " + self.name + " is taking a picture..."
-						self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False)
+						self.__sendFlightDataToClientUsingSocket__(socket, location, 'normal', None, reached = True, RTLMode = False, typeOfSurvey = 'normal', numberOfOscillations = None)
 						while self.camera.takeAPicture(connectionManager) is False:
 							# It's time to send the reached status to client
 							eventlet.sleep(self.__generatingRandomSleepTime__())
 						break
 				'''
 				if self.camera is not None:
-					self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False)
+					self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False, typeOfSurvey = 'normal', numberOfOscillations = None)
 					print "Drone " + self.name + " is taking a picture..."
 					while self.camera.takeAPicture(connectionManager) is False:
 						# It's time to send the reached status to client
@@ -181,77 +174,9 @@ class Drone():
 		self.__removeAllTheElementInTheListOfLocationsToReach__()
 		self.__connectToMyNetwork__(connectionManager)
 		self.vehicle.mode = VehicleMode('RTL')
-		self.__sendFlightDataToClientUsingSocket__(socket, self.vehicle.location.global_frame, reached = False, RTLMode = True)
+		self.__sendFlightDataToClientUsingSocket__(socket, self.vehicle.location.global_frame, reached = False, RTLMode = True, typeOfSurvey = 'normal', numberOfOscillations = None)
 		#print "self.vehicle.mode = VehicleMode('RTL')"
 		time.sleep(2)
-
-	def flightSemaphore(self, connectionManager, socket, semaphore):
-		semaphore.acquire()
-		print "Inside Flight ", self.name
-		self.__connectToMyNetwork__(connectionManager)
-		self.__armAndTakeOff__()
-		semaphore.release()
-
-		semaphore.acquire()
-		print self.name + " number of locations to reach: ", len(self.listOfLocationsToReach)
-		for location in self.listOfLocationsToReach:
-			print "Location to reach this time: ", location
-			self.__connectToMyNetwork__(connectionManager)
-			droneCurrentLocation = self.vehicle.location.global_relative_frame
-			distanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(droneCurrentLocation, location)
-			print "self.vehicle.simple_goto(location), ", location
-			#self.vehicle.simple_goto(location)
-			semaphore.release()
-			'''
-			Now I have to check the location of the drone in flight, this because dronekit API is thought in order to have
-			flight to single point and if I immediatelly send another location to reach, the drone will immediatelly change
-			direction of its flight and it will go towards the new location I've just sent.
-			'''
-			semaphore.acquire()
-			while True:
-				self.__connectToMyNetwork__(connectionManager)
-				currentDroneLocation = self.vehicle.location.global_relative_frame
-				print 'Drone: ' + self.name + ' current location: ', droneCurrentLocation
-				remainingDistanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(currentDroneLocation, location)
-				print 'Drone: ' + self.name + ' remaining distance: ', remainingDistanceToNextLocation
-				self.__sendFlightDataToClientUsingSocket__(socket, currentDroneLocation, reached = False, RTLMode = False)
-				'''
-				If I've just reached the location, I need to take a picture
-				'''
-				if remainingDistanceToNextLocation <= distanceToNextLocation*0.1:
-					if self.camera is not None:
-						print "Drone " + self.name + " is taking a picture..."
-						# It's time to send the reached status to client
-						self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False)
-						self.camera.takeAPicture(connectionManager)
-						semaphore.release()
-					break
-
-				if self.camera is not None:
-					print "Drone " + self.name + " is taking a picture..."
-					# It's time to send the reached status to client
-					self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False)
-					self.camera.takeAPicture(connectionManager)
-					semaphore.release()
-				break
-
-				semaphore.release()
-				semaphore.acquire()
-			semaphore.acquire()
-
-		semaphore.release()
-		'''
-		Now it's time to come back home
-		'''
-		semaphore.acquire()
-		print "Removing all the elements in the list of locations to reach"
-		self.__removeAllTheElementInTheListOfLocationsToReach__()
-		self.__connectToMyNetwork__(connectionManager)
-		#self.vehicle.mode = VehicleMode('RTL')
-		self.__sendFlightDataToClientUsingSocket__(socket, self.vehicle.location.global_frame, reached = False, RTLMode = True)
-		print "self.vehicle.mode = VehicleMode('RTL')"
-		semaphore.release()
-
 
 	'''
 	This method is used for flying continuously in two points until drone's battery reaches 20%.
@@ -260,42 +185,48 @@ class Drone():
 	'''
 	def oscillationFlight(self, connectionManager, socket):
 		self.__connectToMyNetwork__(connectionManager)
-
 		self.__armAndTakeOff__()
-		'''
-		while self.vehicle.location.global_relative_frame.alt <= self.takeOffAltitude:
-			print "Drone is taking off..."
-		'''
-		batteryLimit = 20
+
+		batteryLimit = 76
 		locationBool = False#it means the first location to reach
-
+		numberOfOscillations = 0
 		while self.vehicle.battery.level >= batteryLimit:
-
+			print "Battery: ", self.vehicle.battery.level
 			location = self.listOfLocationsToReach[locationBool]
 			droneCurrentLocation = self.vehicle.location.global_relative_frame
 			distanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(droneCurrentLocation, location)
 			print "Flying towards location: ", location
-			self.vehicle.simple_goto(location)
+			print "self.vehicle.simple_goto(location)"
 			'''
 			Waiting drone arrives to this location
 			'''
 			while True:
 				#self.__connectToMyNetwork__(connectionManager)
+				print "I'm going to sleep for 3 seconds.. "
+				time.sleep(3)
 				remainingDistanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(self.vehicle.location.global_relative_frame, location)
 				'''
 				If drone has just reached the location, I need go to the other location
 				'''
 				if remainingDistanceToNextLocation <= distanceToNextLocation * 0.05:
 					locationBool = not locationBool
+					if locationBool == 0:
+						numberOfOscillations = numberOfOscillations + 1
 					break
 				locationBool = not locationBool
+				if locationBool == 0:
+					numberOfOscillations = numberOfOscillations + 1
 				break
 
 		print "Removing locations to reach"
 		self.__removeAllTheElementInTheListOfLocationsToReach__(twoLocationsToRemove = True)
-		self.vehicle.mode = VehicleMode('RTL')
-		self.__sendFlightDataToClientUsingSocket__(socket, self.vehicle.location.global_frame, reached = False, RTLMode = True)
-
+		#self.__sendFlightDataToClientUsingSocket__(socket, None, reached = None, RTLMode = None, typeOfSurvey = 'oscillation', numberOfOscillations = numberOfOscillations)
+		print "self.vehicle.mode = VehicleMode('RTL')"
+		return {
+			'name' : self.name,
+			'battery' : self.vehicle.battery.level,
+			'oscillations' : numberOfOscillations
+			}
 	'''
 	With this function I set up the interface on the value of the this drone instance and after that I give
 	priority to the wifi network associated to this drone instance.
@@ -334,19 +265,34 @@ class Drone():
 				lenght = lenght - 1
 		else:
 			print "removing first two elements in the list of locations to reach..."
-			del self.listOfLocationsToReach[0]
-			del self.listOfLocationsToReach[1]
-			print self.listOfLocationsToReach
+			lenght = len(self.listOfLocationsToReach) - 1
+			while lenght >= 0:
+				del self.listOfLocationsToReach[lenght]
+				lenght = lenght - 1
 
+	def __sendFlightDataToClientUsingSocket__(self, socket, location, reached, RTLMode, typeOfSurvey, numberOfOscillations):
+		if typeOfSurvey == 'normal':
+			data = {
+				'name' : self.name,
+				'location' : [location.lat, location.lon, self.vehicle.location.global_relative_frame.alt],
+				'battery' : self.vehicle.battery.level,
+				'reached' : reached,
+				'RTL' : RTLMode
+			}
+			print "Sending data for ", self.name
+			socket.emit('Flight Information ' + self.name, data)
+			print "Data sent for ", self.name
+			time.sleep(1)
+			return
 
-	def __sendFlightDataToClientUsingSocket__(self, socket, location, reached, RTLMode):
-		data = {
-			'name' : self.name,
-			'location' : [location.lat, location.lon, self.vehicle.location.global_relative_frame.alt],
-			'battery' : self.vehicle.battery.level,
-			'reached' : reached,
-			'RTL' : RTLMode
-		}
-		print "Sending data for ", self.name
-		socket.emit('Flight Information ' + self.name, data)
-		print "Data sent for ", self.name
+		if typeOfSurvey == 'oscillation':
+			data = {
+				'name' : self.name,
+				'battery' : self.vehicle.battery.level,
+				'oscillations' : numberOfOscillations
+			}
+			print "Sending data for ", self.name
+			socket.emit('Oscillation Survey Data', data)
+			print "Data sent for ", self.name
+			time.sleep(1)
+			return
