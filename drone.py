@@ -14,11 +14,11 @@ Initializing the seed of the random class
 '''
 random.seed(random.random())
 
-class Drone(threading.Thread):
+class Drone():
 
 	def __init__(self, name, interface, network):
 
-		threading.Thread.__init__(self)
+		#threading.Thread.__init__(self)
 
 		self.name = name
 
@@ -87,12 +87,12 @@ class Drone(threading.Thread):
 	This function is private because I don't want that someone could decide to only taking off, if the drone should consume battery, this consumption must be on flight.
 	'''
 	def __armAndTakeOff__(self):
-
+		'''
 		for i in xrange(0, 5):
 			print i
 			time.sleep(0.5)
 		return
-
+		'''
 		print self.name + " is armable: ", self.vehicle.is_armable
 		print self.name + " armed: ", self.vehicle.armed
 
@@ -140,8 +140,8 @@ class Drone(threading.Thread):
 			self.__connectToMyNetwork__(connectionManager)
 			droneCurrentLocation = self.vehicle.location.global_relative_frame
 			distanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(droneCurrentLocation, location)
-			print "self.vehicle.simple_goto(location), ", location
-			#self.vehicle.simple_goto(location)
+			#print "self.vehicle.simple_goto(location), ", location
+			self.vehicle.simple_goto(location)
 			'''
 			Now I have to check the location of the drone in flight, this because dronekit API is thought in order to have
 			flight to single point and if I immediatelly send another location to reach, the drone will immediatelly change
@@ -154,10 +154,10 @@ class Drone(threading.Thread):
 				print 'Drone: ' + self.name + ' current location: ', droneCurrentLocation
 				remainingDistanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(currentDroneLocation, location)
 				print 'Drone: ' + self.name + ' remaining distance: ', remainingDistanceToNextLocation
-				self.__sendFlightDataToClientUsingSocket__(socket, currentDroneLocation, reached = False, RTLMode = False)
-
+				#self.__sendFlightDataToClientUsingSocket__(socket, currentDroneLocation, reached = False, RTLMode = False)
 				#If I've just reached the location, I need to take a picture
-				if remainingDistanceToNextLocation <= distanceToNextLocation*0.1:
+				if remainingDistanceToNextLocation <= distanceToNextLocation*0.05:
+					print "here before camera"
 					if self.camera is not None:
 						print "Drone " + self.name + " is taking a picture..."
 						self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False)
@@ -165,6 +165,7 @@ class Drone(threading.Thread):
 							# It's time to send the reached status to client
 							eventlet.sleep(self.__generatingRandomSleepTime__())
 						break
+				'''
 				if self.camera is not None:
 					self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False)
 					print "Drone " + self.name + " is taking a picture..."
@@ -172,16 +173,16 @@ class Drone(threading.Thread):
 						# It's time to send the reached status to client
 						eventlet.sleep(self.__generatingRandomSleepTime__())
 					break
-				break
+				'''
 		'''
 		Now it's time to come back home
 		'''
 		print "Removing all the elements in the list of locations to reach"
 		self.__removeAllTheElementInTheListOfLocationsToReach__()
 		self.__connectToMyNetwork__(connectionManager)
-		#self.vehicle.mode = VehicleMode('RTL')
+		self.vehicle.mode = VehicleMode('RTL')
 		self.__sendFlightDataToClientUsingSocket__(socket, self.vehicle.location.global_frame, reached = False, RTLMode = True)
-		print "self.vehicle.mode = VehicleMode('RTL')"
+		#print "self.vehicle.mode = VehicleMode('RTL')"
 		time.sleep(2)
 
 	def flightSemaphore(self, connectionManager, socket, semaphore):
@@ -253,21 +254,14 @@ class Drone(threading.Thread):
 
 
 	'''
-	This method is used for flying continuously in two points until drone's battery has reached 20%.
+	This method is used for flying continuously in two points until drone's battery reaches 20%.
 	We have to decide if we need exclusive priority for this kind of flight, so basically I don't wanto to interrupt this
 	kind of flight with other request.
 	'''
-	def twoPointsFlight(self, connectionManager, socket):
+	def oscillationFlight(self, connectionManager, socket):
 		self.__connectToMyNetwork__(connectionManager)
-		'''
-		signal.signal(signal.SIGALRM, self.__handlerTakeOff__)
-		signal.alarm(60)
-		try:
-			self.__armAndTakeOff__()
-		except Exception, exc:
-			return exc #if I return exc, this means that I have to notify the client about this issue.
-		'''
-		print "self.__armAndTakeOff__()"
+
+		self.__armAndTakeOff__()
 		'''
 		while self.vehicle.location.global_relative_frame.alt <= self.takeOffAltitude:
 			print "Drone is taking off..."
@@ -281,20 +275,17 @@ class Drone(threading.Thread):
 			droneCurrentLocation = self.vehicle.location.global_relative_frame
 			distanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(droneCurrentLocation, location)
 			print "Flying towards location: ", location
-			#self.vehicle.simple_goto(location)
+			self.vehicle.simple_goto(location)
 			'''
 			Waiting drone arrives to this location
 			'''
 			while True:
-				self.__connectToMyNetwork__(connectionManager)
+				#self.__connectToMyNetwork__(connectionManager)
 				remainingDistanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(self.vehicle.location.global_relative_frame, location)
 				'''
-				If drone has just reached the location, I need to take a picture
+				If drone has just reached the location, I need go to the other location
 				'''
 				if remainingDistanceToNextLocation <= distanceToNextLocation * 0.05:
-					#I don't know if a picture is required every time drone reaches the location
-					#you have to check if camera is not None
-					#self.camera.takeAPicture(connectionManager)
 					locationBool = not locationBool
 					break
 				locationBool = not locationBool
@@ -302,8 +293,8 @@ class Drone(threading.Thread):
 
 		print "Removing locations to reach"
 		self.__removeAllTheElementInTheListOfLocationsToReach__(twoLocationsToRemove = True)
-		print "self.vehicle.mode = VehicleMode('RTL')"
-
+		self.vehicle.mode = VehicleMode('RTL')
+		self.__sendFlightDataToClientUsingSocket__(socket, self.vehicle.location.global_frame, reached = False, RTLMode = True)
 
 	'''
 	With this function I set up the interface on the value of the this drone instance and after that I give

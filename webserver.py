@@ -25,19 +25,6 @@ def getDrones():
 def connectDrone():
     data = request.get_json()
     message = brain.connectDrone(data['droneName'])
-    '''
-    message = {
-        'drone status': 'available',
-        'home location' : {
-            'latitude': 0,
-            'longitude': 0,
-            'altitude': 0
-        },
-        'drone battery': 100,
-        'camera status': 'available',
-        'camera battery': '100'
-    }
-    '''
     return jsonify({'data' : message})
 
 @app.route('/flight', methods=['POST'])
@@ -45,6 +32,12 @@ def flight():
     data = request.get_json()
     brain.takeAFlight(data['name'])
     return 'Flight started'
+
+@app.route('/oscillationFlight', methods=['POST'])
+def oscillationFlight():
+    data = request.get_json()
+    brain.takeAnOscillationFlight(data['name'])
+    return 'Oscillation flight started'
 
 @app.route('/twoPointsFlight', methods=['POST'])
 def twoPointsFlight(data):

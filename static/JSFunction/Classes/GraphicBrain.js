@@ -70,6 +70,7 @@ function init(map, drones){
 										"<select class='form-control' id='selectTypeOfSurvey'> " +
 											"<option>Normal Survey</option>" +
 											"<option>Rectangular Survey</option>" +
+											"<option>Oscillation Survey</option>" +
 										"</select>" +
 									"</div>" +
 								"</div>" +
@@ -120,9 +121,11 @@ function addMarker(x, y, typeOfMarker, droneName, drones, typeOfSurvey){
 			if (typeOfSurvey == 'rectangular') {
 				size += brain.rectangularSurveyLocations.length
 			}
-			if (typeOfSurvey == 'normal') {
+			if (typeOfSurvey == 'normal' || typeOfSurvey == 'oscillation') {
+				console.log(typeOfSurvey);
 				for(drone in drones){
 					size += drones[drone].locationsToReach.length
+					console.log(size)
 				}
 			}
 			id = id + size
@@ -180,7 +183,27 @@ function showTableForLocationToAdd(latitude, longitude, drones){
 		}
 	}
 
-
+	if(brain.typeOfSurvey == 'oscillation'){
+		for(index in drones){
+			if (brain.drones[index].surveyMode == 'oscillation') {
+				$("#selectDrone").append("<option>" + drones[index].name + "</option>")
+				//Adding the NED coordinates that i need for the second point
+				var NEDCoordinates = "<div class='form-group'>"+
+																"<label for='north'>North</label>" +
+																"<input type='number' class='form-control' id='north' value='0'>" +
+														"</div>"+
+														"<div class='form-group'>"+
+																"<label for='east'>East</label>" +
+																"<input type='number' class='form-control' id='east' value='0'>" +
+														"</div>"+
+														"<div class='form-group'>"+
+																"<label for='down'>Down</label>" +
+																"<input type='number' class='form-control' id='down' value='0'>" +
+														"</div>"
+				$("#tableInfo").children().eq(4).after(NEDCoordinates)
+			}
+		}
+	}
 }
 
 function addLocationIntoTableOfLocationsToReach(droneName, array, latitude, longitude, altitude, type, typeOfSurvey){
@@ -213,7 +236,7 @@ function addLocationIntoTableOfLocationsToReach(droneName, array, latitude, long
 	}
 
 	var size = 0
-	if (typeOfSurvey == "normal") {
+	if (typeOfSurvey == "normal" || typeOfSurvey == 'oscillation') {
 		for(drone in array){
 			size += array[drone].locationsToReach.length
 		}
@@ -230,7 +253,6 @@ function addLocationIntoTableOfLocationsToReach(droneName, array, latitude, long
 		var	marker = droneName + " home"
 		buttonDelete = '-'
 	}
-
 	var locationToAppend = "<tr>" +
 								"<td>"+ droneName +"</td>" +
 			                    "<td>"+ marker +"</td>" +

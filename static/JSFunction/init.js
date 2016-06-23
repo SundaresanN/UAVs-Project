@@ -69,6 +69,9 @@ function connectDrone(droneName){
 				if(brain.drones[element].surveyMode == 'rectangular'){
 						buildPathButton = 'Rectangular Survey Mode'
 				}
+				if (brain.drones[element].surveyMode == 'oscillation') {
+					buildPathButton = 'Oscillation Mode'
+				}
 
 				$("[id = '" + droneName + "']").children().eq(1).html(data['drone status'])
 				$("[id = '" + droneName + "']").children().eq(2).html(data['drone battery'])

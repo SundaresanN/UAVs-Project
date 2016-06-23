@@ -39,40 +39,20 @@ When drone is on flight, it will send information about its location or its succ
 function flightDrone(droneName){
 
 	var index = brain.getIndexDrone(droneName)
-
-	//I need to check if the two points flight is checked, and if it is I need to check if the drone has at least to points to reach
-	if ($("[id = '" + droneName + "']").children().eq(6).children().eq(0).prop('checked') == true){
-
-		if (brain.drones[index].locationsToReach.length < 2){
-			alert(droneName + " cannot flight in 'two points flight' mode because this drone has not enough points(at least 2)")
-			$("[id = '" + droneName + "']").children().eq(6).children().eq(0).prop('checked', false)
-			return
-		} else{
-			$.ajax({
-				type: 'POST',
-				url: '/twoPointsFlight',
-				contentType: 'application/json',
-				data: JSON.stringify({ name: droneName }),
-				success: function(data){
-					console.log(data)
-					/*
-					var element = brain.getIndexDrone(data['drone'])
-					//adding the flight button in the dronesTable
-					var flightButton = '<button type="button" class="btn btn-success" onclick="flightDrone(\'' +  brain.drones[element].name + '\')">Flight</button>'
-					$("[id = '" + data['drone'] + "']").children().eq(3).html(flightButton)
-					*/
-				},
-				error: function(){
-					console.log("There is an error on server side")
-				}
-			})
-
-			/*
-			brain.socket.emit('two points flight', {'name' : droneName}, function(){
-					alert("Drone is flying with Two Points Flight..")
-				})
-			*/
+	//Check if we are in the oscillation survey mode
+	if(brain.drones[index].surveyMode == 'oscillation'){
+		$.ajax({
+			type: 'POST',
+			url: '/oscillationFlight',
+			contentType: 'application/json',
+			data: JSON.stringify({ name: droneName }),
+			success: function(data){
+				console.log(data)
+			},
+			error: function(){
+				console.log("There is an error on server side")
 			}
+		})
 	} else {
 		//This means that I have a "normal" flight to accomplish
 		//brain.socket.emit('flight', {'name': droneName})
@@ -144,7 +124,7 @@ function updateGraphicAndDataStructureInformationsOnReachedLocation(data){
 		}
 }
 
-/********************************** RECTANGULAR SURBEY *************************************/
+/********************************** RECTANGULAR AND OSCILLATION SURVEY *************************************/
 /*
 When I'm in rectangular survey mode, only drones involved in it can fly. The others must wait the end of rectangular survey.
 */
@@ -161,13 +141,95 @@ function confirmedSurvey(){
 			//Setting up this data member of the ClientBrain instance, I set up the rectangular survey mode, so only the drones involved in
 			// it can fly, the others must wait the end of the rectangular surbey flight.
 			brain.typeOfSurvey = 'rectangular'
-			addGraphicsInfoForTheFlightSurvey()
-			alert("You need to be connected with all the drones for having success with this kind of survey. So before you start to check the drone you want in the rectangular survey, please connect every drone available")
+			addGraphicsInfoForTheRectangularSurvey()
+			break;
+		case 'Oscillation Survey':
+			brain.typeOfSurvey = 'oscillation'
+			addGraphicsInfoForTheOscillationSurvey()
 			break;
 			}
 }
 
-function addGraphicsInfoForTheFlightSurvey(){
+function addGraphicsInfoForTheOscillationSurvey(){
+	removingAllTheOldStuffs()
+	$("#typeOfSurveyDiv").children().eq(0).children().eq(2).remove()
+	for (element in brain.drones){
+		checkbox = "<div class='row'>" +
+									"<div class='col-lg-12'>" +
+										"<div class='checkbox'>" +
+												"<label><input type='checkbox'>" + brain.drones[element].name + "</label>" +
+										"</div>" +
+									"</div>" +
+								"</div>"
+		$("#typeOfSurveyDiv").children().eq(0).append(checkbox)
+	}
+	var buttons = "<div class='row'>" +
+									"<div class='col-lg-12'>" +
+										"<button type='button' class='btn btn-primary' id='confirmOscillationSurvey'>Confirm</button>" +
+										"<button type='button' class='btn btn-danger' id='cancelOscillationSurvey'>Cancel</button>" +
+									"</div>" +
+								"</div>"
+	$("#typeOfSurveyDiv").children().eq(0).append(buttons)
+
+	$("#confirmOscillationSurvey").click(function(){
+		//Check if someone has already added for this kind of survey
+		for (var index in brain.drones) {
+			if (brain.drones[index].surveyMode == "oscillation") {
+				alert(brain.drones[index].name + " has been already selected for the oscillation survey, if you want to change drone, please press on Cancel, choose Oscillation Survey and select your new drone")
+				return
+			}
+		}
+		var droneSelected = 0
+		var child = 2
+		while($('#typeOfSurveyDiv').children().eq(0).children().eq(child).children().eq(0).children().hasClass('checkbox')){
+			var drone = $('#typeOfSurveyDiv').children().eq(0).children().eq(child).children().eq(0).children().eq(0).children().eq(0).text()
+			var index = brain.getIndexDrone(drone)
+			if ($('#typeOfSurveyDiv').children().eq(0).children().eq(child).children().eq(0).children().eq(0).children().eq(0).children().eq(0).is(':checked')) {
+				droneSelected = $('#typeOfSurveyDiv').children().eq(0).children().eq(child).children().eq(0).children().eq(0).children().eq(0).text()
+				console.log("Drone selected: " + droneSelected)
+				break
+			}
+			child = child + 1
+		}
+		if (droneSelected == 0) {
+			alert("Please insert one drone for this type of survey.")
+			return
+		}
+		console.log("droneSelected: " + droneSelected)
+		prepareOscillationSurvey(droneSelected)
+	})
+
+	$("#cancelOscillationSurvey").click(function(){
+		// Removing the elements on the column of the survey's selection
+		while($('#typeOfSurveyDiv').children().eq(0).children().eq(2).html() != undefined){
+			$('#typeOfSurveyDiv').children().eq(0).children().eq(2).remove()
+		}
+		var button = "<div class='row'>" +
+										"<div class='col-lg-12'>" +
+											"<button type='button' class='btn btn-primary' id='confirmedSurvey' onclick='confirmedSurvey()'>Confirm</button>" +
+										"</div>" +
+									"</div>"
+		$("#typeOfSurveyDiv").children().eq(0).append(button)
+
+		// Now I have to remove the data from the locations to reach table and from the drone that is in the oscillation mode
+		var index = -1
+		console.log(brain.drones)
+		for(el in brain.drones){
+			if(brain.drones[el].surveyMode == 'oscillation'){
+				index = el
+				break
+			}
+		}
+		console.log("Drone in oscillation mode index: " + index)
+		if(index == -1){
+			alert("No drone in oscillation mode")
+			return
+		}
+		deleteDataOfOscillationSurvey(brain.drones[index].name)
+	})
+}
+
+function addGraphicsInfoForTheRectangularSurvey(){
 		removingAllTheOldStuffs()
 		$("#typeOfSurveyDiv").children().eq(0).children().eq(2).remove()
 		var checkbox = ''
@@ -221,12 +283,13 @@ function addGraphicsInfoForTheFlightSurvey(){
 				return
 			}
 			console.log(dronesSelected)
-			prepareSurvey(dronesSelected)
+			prepareRectangularSurvey(dronesSelected)
 		})
 }
 
-
-function prepareSurvey(drones){
+//This function will remove the graphic components in the drones table and will replace them with the components correllated with the
+//retangular survey
+function prepareRectangularSurvey(drones){
 	//Deleting the 'build path' buttons, if present, on the drones table and replacing them with the string 'rectangular survey mode'
 	for(element in drones){
 		var index = brain.getIndexDrone(drones[element])
@@ -252,6 +315,18 @@ function prepareSurvey(drones){
 	$("#typeOfSurveyDiv").children().eq(0).append(buildRectangularPathButton)
 }
 
+//This function will remove the graphic components in the drones table and will replace them with the components correllated with the
+//retangular survey
+function prepareOscillationSurvey(drone){
+	//Deleting the 'build path' button, if present, on the drones table and replacing it with the string 'oscillation survey mode'
+	var index = brain.getIndexDrone(drone)
+	brain.drones[index].surveyMode = "oscillation"
+	if($("[id = '" + drone + "']").children().eq(3).children().eq(0).text() == 'Build Path'){
+		$("[id = '" + drone + "']").children().eq(3).html('Oscillation Survey Mode')
+	}
+
+
+}
 
 /*
 This function will be called when user presses on "Cancel" button. Basically I have to remove all the
@@ -292,6 +367,42 @@ function deleteDataOfRectangularSurvey(){
 			brain.drones[element].surveyMode = 'normal'
 		}
 	}
+}
+
+function deleteDataOfOscillationSurvey(drone){
+	//First of all removing points on the map and on the table of locations to reach shown
+	for(var index=$("#locationsToReach > tbody > tr").length-1; index>=0; index--){
+			// These following 3 lines of code are used to remove the marker of the location just reached from map
+			var marker = $("#locationsToReach > tbody").children().eq(index).children().eq(1).html()
+			if (marker.indexOf('home') == -1) {
+				var idMarker = drone + (marker.charCodeAt()-96)
+				$("[id = '" + idMarker + "']").remove()
+				//this line of code is used for deleting the row which represents a location just reached
+				$("#locationsToReach > tbody").children().eq(index).remove()
+			}
+			//index = $("#locationsToReach > tbody > tr").length
+		}
+
+	//Removing information in the table of the drones
+	for(var index=0; index<$("#dronesTable > tbody > tr").length; index++){
+		var droneName = $("#dronesTable > tbody").children().eq(index).children().eq(0).text()
+		// I already know that drone is connected
+		if(droneName == drone){
+			if($("#dronesTable > tbody").children().eq(index).children().eq(3).text() == "Connect"){
+				break
+			}
+			var buildPathButton = '<button type="button" class="btn btn-success" onclick="buildPath(\'' +  droneName + '\')">Build Path</button>'
+			$("#dronesTable > tbody").children().eq(index).children().eq(3).html(buildPathButton)
+		}
+	}
+	//Removing data from the array of locations for the oscillation survey
+	var index = brain.getIndexDrone(drone)
+	brain.drones[index].locationsToReach = new Array()
+	brain.typeOfSurvey = 'normal'
+
+	//Removing the 'oscillation' survey mode from the dron
+	brain.drones[index].surveyMode = 'normal'
+
 }
 
 function buildRectangularPath(){

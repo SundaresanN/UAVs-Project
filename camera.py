@@ -14,7 +14,6 @@ class Camera:
         You need to be sure that the GoPro is in "Photo mode"
         Check the API
         '''
-
         if self.camera.command('record', 'on'):
             time.sleep(1)
             return True
