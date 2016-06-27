@@ -187,7 +187,7 @@ class Drone():
 		self.__connectToMyNetwork__(connectionManager)
 		self.__armAndTakeOff__()
 
-		batteryLimit = 76
+		batteryLimit = 20
 		locationBool = False#it means the first location to reach
 		numberOfOscillations = 0
 		while self.vehicle.battery.level >= batteryLimit:
@@ -196,14 +196,12 @@ class Drone():
 			droneCurrentLocation = self.vehicle.location.global_relative_frame
 			distanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(droneCurrentLocation, location)
 			print "Flying towards location: ", location
-			print "self.vehicle.simple_goto(location)"
+			self.vehicle.simple_goto(location)
 			'''
 			Waiting drone arrives to this location
 			'''
 			while True:
 				#self.__connectToMyNetwork__(connectionManager)
-				print "I'm going to sleep for 3 seconds.. "
-				time.sleep(3)
 				remainingDistanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(self.vehicle.location.global_relative_frame, location)
 				'''
 				If drone has just reached the location, I need go to the other location
@@ -213,9 +211,6 @@ class Drone():
 					if locationBool == 0:
 						numberOfOscillations = numberOfOscillations + 1
 					break
-				locationBool = not locationBool
-				if locationBool == 0:
-					numberOfOscillations = numberOfOscillations + 1
 				break
 
 		print "Removing locations to reach"

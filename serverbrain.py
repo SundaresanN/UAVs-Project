@@ -91,7 +91,6 @@ class ServerBrain:
 	'''
 	def takeAnOscillationFlight(self, drone):
 		data = self.drones[drone].oscillationFlight(self.connectionManager, self.socket)
-		print data
 		return data
 	'''
 	This method doesn't create a thread for the following kind of flight. We need to talk about

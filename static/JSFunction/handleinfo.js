@@ -11,7 +11,7 @@ function addLocation(){
 		addingLocationForNormalSurvey(location, xycoords)
 	}
 	if (brain.typeOfSurvey == 'rectangular') {
-		if(addingLocationForRectangularSurvey() == -1){
+		if(addingLocationForRectangularSurvey(location, xycoords) == -1){
 			//This means that there are problems with the adding location for rectangular survey
 			return
 		}
@@ -45,7 +45,7 @@ function addingLocationForNormalSurvey(location, xycoords){
 	}
 }
 
-function addingLocationForRectangularSurvey(){
+function addingLocationForRectangularSurvey(location, xycoords){
 	//Remember that you need only 3 points for the rectangular survey
 	if(brain.rectangularSurveyLocations.length == 3){
 		alert("You have already inserted three locations, now you need to build the path for the survey!")
