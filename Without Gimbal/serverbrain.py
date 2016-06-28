@@ -37,7 +37,7 @@ class ServerBrain:
 		'''
 		Trying to find a free network for the drone
 		'''
-
+		print self.connectionManager.interfaces()
 		interface, network = self.__getNetwork__(droneName, 'drone')
 		if (interface, network) == (False, False):
 			return droneName + " network is not reacheable"
@@ -49,7 +49,20 @@ class ServerBrain:
 			infosToReturn['drone status'] = "available"
 			infosToReturn['home location'] = self.drones[droneName].getCurrentLocation()
 			infosToReturn['drone battery'] = self.drones[droneName].getBattery()
-			infosToReturn['camera status'] = 'available'
+
+			'''now it's the camera time '''
+			interface, network = self.__getNetwork__(droneName, 'camera')
+			if (interface, network) == (False, False):
+				print "Camera is not available for ", droneName
+				self.drones[droneName].camera = None
+				infosToReturn['camera status'] = 'not available'
+				infosToReturn['camera battery'] = 'info not reacheable'
+			else:
+				print "Camera is available ", droneName
+				self.drones[droneName].camera = Camera(interface, network, droneName)
+				infosToReturn['camera status'] = 'available'
+				infosToReturn['camera battery'] = '-'
+
 			return infosToReturn
 
 	'''
@@ -94,6 +107,9 @@ class ServerBrain:
 		if type == "drone":
 			print "Drone setting network"
 			wifiNetwork = "SoloLink_" + color + "Drone"
+		if type == "camera":
+			print "Camera setting network"
+			wifiNetwork = "Solo" + color + "CameraRGB"
 		return wifiNetwork
 
 	'''
@@ -103,16 +119,15 @@ class ServerBrain:
 	'''
 	def __getNetwork__(self, drone, type):
 		wifiNetwork = self.__getNetworkName__(type, drone)
-		print wifiNetwork
+
 		'''This for-loop checks if this network is already connected '''
 		for interface in self.connectionManager.interfaces():
 			self.connectionManager.interface(interface)
-			print self.connectionManager.current()
 			if self.connectionManager.current() == wifiNetwork:
 				print "You are already connected to this network, ", wifiNetwork
 				self.connectionManager.connect(ssid = wifiNetwork, password = "Silvestri")
 				return self.connectionManager.interface(), self.connectionManager.current()
-			print self.connectionManager.current()
+
 		'''This for-loop checks if this network has not a connection yet '''
 		for interface in self.connectionManager.interfaces():
 			self.connectionManager.interface(interface)

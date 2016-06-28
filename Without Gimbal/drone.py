@@ -6,7 +6,6 @@ import eventlet
 import math
 import time
 import threading
-from pymavlink import mavutil
 
 #eventlet.monkey_patch()
 
@@ -83,9 +82,6 @@ class Drone():
 	This function is private because I don't want that someone could decide to only taking off, if the drone should consume battery, this consumption must be on flight.
 	'''
 	def __armAndTakeOff__(self):
-		print "Inside take off"
-		time.sleep(3)
-		return
 
 		print self.name + " is armable: ", self.vehicle.is_armable
 		print self.name + " armed: ", self.vehicle.armed
@@ -108,7 +104,7 @@ class Drone():
 			'''
 			Waiting for a safe altitude for having a flight
 			'''
-			if self.vehicle.location.global_relative_frame.alt <= self.takeOffAltitude*0.25:
+			if self.vehicle.location.global_relative_frame.alt <= self.takeOffAltitude*0.5:
 				return
 
 	'''
@@ -132,8 +128,8 @@ class Drone():
 			self.__connectToMyNetwork__(connectionManager)
 			droneCurrentLocation = self.vehicle.location.global_relative_frame
 			distanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(droneCurrentLocation, location)
-			print "self.vehicle.simple_goto(location), ", location
-			#self.vehicle.simple_goto(location)
+			#print "self.vehicle.simple_goto(location), ", location
+			self.vehicle.simple_goto(location)
 			'''
 			Now I have to check the location of the drone in flight, this because dronekit API is thought in order to have
 			flight to single point and if I immediatelly send another location to reach, the drone will immediatelly change
@@ -149,24 +145,32 @@ class Drone():
 				#self.__sendFlightDataToClientUsingSocket__(socket, currentDroneLocation, reached = False, RTLMode = False, 'normal', None)
 				#If I've just reached the location, I need to take a picture
 				if remainingDistanceToNextLocation <= distanceToNextLocation*0.05:
-					print "Drone " + self.name + " is taking a picture..."
-					self.__takeAPicture__()
-					self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False, typeOfSurvey = 'normal', numberOfOscillations = None)
+					print "here before camera"
+					if self.camera is not None:
+						print "Drone " + self.name + " is taking a picture..."
+						self.__sendFlightDataToClientUsingSocket__(socket, location, 'normal', None, reached = True, RTLMode = False, typeOfSurvey = 'normal', numberOfOscillations = None)
+						while self.camera.takeAPicture(connectionManager) is False:
+							# It's time to send the reached status to client
+							eventlet.sleep(self.__generatingRandomSleepTime__())
 					break
-				self.__takeAPicture__()
-				self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False, typeOfSurvey = 'normal', numberOfOscillations = None)
-				print "############################################################"
-				break
-
+				'''
+				if self.camera is not None:
+					self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False, typeOfSurvey = 'normal', numberOfOscillations = None)
+					print "Drone " + self.name + " is taking a picture..."
+					while self.camera.takeAPicture(connectionManager) is False:
+						# It's time to send the reached status to client
+						eventlet.sleep(self.__generatingRandomSleepTime__())
+					break
+				'''
 		'''
 		Now it's time to come back home
 		'''
 		print "Removing all the elements in the list of locations to reach"
 		self.__removeAllTheElementInTheListOfLocationsToReach__()
 		self.__connectToMyNetwork__(connectionManager)
-		#self.vehicle.mode = VehicleMode('RTL')
+		self.vehicle.mode = VehicleMode('RTL')
 		self.__sendFlightDataToClientUsingSocket__(socket, self.vehicle.location.global_frame, reached = False, RTLMode = True, typeOfSurvey = 'normal', numberOfOscillations = None)
-		print "self.vehicle.mode = VehicleMode('RTL')"
+		#print "self.vehicle.mode = VehicleMode('RTL')"
 		time.sleep(2)
 
 	'''
@@ -281,8 +285,3 @@ class Drone():
 			print "Data sent for ", self.name
 			time.sleep(1)
 			return
-
-	def __takeAPicture__(self):
-		msg = self.vehicle.message_factory.gopro_set_request_encode(1, 154, mavutil.mavlink.GOPRO_COMMAND_SHUTTER, (1, 0, 0, 0))
-		self.vehicle.send_mavlink(msg)
-		self.vehicle.commands.upload()
