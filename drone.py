@@ -83,11 +83,6 @@ class Drone():
 	'''
 	def __armAndTakeOff__(self):
 
-		for i in xrange(0, 5):
-			print i
-			time.sleep(0.5)
-		return
-
 		print self.name + " is armable: ", self.vehicle.is_armable
 		print self.name + " armed: ", self.vehicle.armed
 
@@ -157,7 +152,7 @@ class Drone():
 						while self.camera.takeAPicture(connectionManager) is False:
 							# It's time to send the reached status to client
 							eventlet.sleep(self.__generatingRandomSleepTime__())
-						break
+					break
 				'''
 				if self.camera is not None:
 					self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False, typeOfSurvey = 'normal', numberOfOscillations = None)
@@ -186,8 +181,8 @@ class Drone():
 	def oscillationFlight(self, connectionManager, socket):
 		self.__connectToMyNetwork__(connectionManager)
 		self.__armAndTakeOff__()
-
-		batteryLimit = 20
+		time.sleep(2)
+		batteryLimit = 65
 		locationBool = False#it means the first location to reach
 		numberOfOscillations = 0
 		while self.vehicle.battery.level >= batteryLimit:
@@ -211,12 +206,11 @@ class Drone():
 					if locationBool == 0:
 						numberOfOscillations = numberOfOscillations + 1
 					break
-				break
 
 		print "Removing locations to reach"
 		self.__removeAllTheElementInTheListOfLocationsToReach__(twoLocationsToRemove = True)
 		#self.__sendFlightDataToClientUsingSocket__(socket, None, reached = None, RTLMode = None, typeOfSurvey = 'oscillation', numberOfOscillations = numberOfOscillations)
-		print "self.vehicle.mode = VehicleMode('RTL')"
+		self.vehicle.mode = VehicleMode('RTL')
 		return {
 			'name' : self.name,
 			'battery' : self.vehicle.battery.level,
