@@ -56,6 +56,7 @@ The algorithm assumes the orientation
 f1=[latlon(38.893866,-92.201769),latlon(38.893865, -92.201024),latlon(38.894552,-92.201016),latlon(38.894554,-92.201748), latlon(38.894035, -92.200937), latlon(38.894281, -92.200959) ]
 f2=[latlon(38.894687,-92.202445),latlon(38.894659,-92.201019),latlon(38.895398,-92.201018),latlon(38.895424,-92.202389)]
 f3=[latlon(38.202472,-91.736857),latlon(38.203990,-91.734097),latlon(38.205077,-91.735023),latlon(38.203475,-91.737941)]
+f4=[latlon(37.924969, -91.772384),latlon(37.924600, -91.772422),latlon(37.924641, -91.773143),latlon(37.925010, -91.773106), latlon(37.925031, -91.772746), latlon(37.924787, -91.772348) ]
 
 badPoints=[latlon(38.893968,-92.201754),latlon(38.893906, -92.201759),latlon(38.894549,-92.201091),latlon(38.894549, -92.201046)]
 badPoints2=[latlon(38.893866,-92.201769), latlon(38.893964, -92.201031), latlon(38.894561, -92.200889)]
@@ -125,17 +126,17 @@ def rectMission(p1, p2, p3, alt, cam='gopro', imgOvr=.05):
         outerspacing=alt*camParam[cam]['TangW']*(1-imgOvr)/mdeg
         innerstep=smult(sdiv(v21, mag(v21)),innerspacing)
         outerstep=smult(sdiv(v23, mag(v23)),outerspacing)
-        innerlimit=round(mag(sub(v21,sdiv(innerstep,2)))/mag(innerstep))
+        innerlimit=floor(mag(sub(v21,sdiv(innerstep,2)))/mag(innerstep))
         outerlimit=floor(mag(sub(v23,sdiv(outerstep,2)))/mag(outerstep))
         picNum=0
         position=add(add(p2,sdiv(outerstep,2)),sdiv(innerstep,2))
         picNum+=1
         rectSurvey['picList'].append(mission(position.n,position.e,alt,bearing,picNum))
-        print("pic append worked")
+        #print("pic append worked")
         #print (position.n, position.e)
         #print (str(position.n)+','+str(position.e))
         for i in range(0,int(outerlimit+1)):
-            for k in range(0,int(innerlimit-1)):
+            for k in range(0,int(innerlimit)):
                 if i%2==0:
                     position=add(position,innerstep)
                     #print (str(position.n)+','+str(position.e))
@@ -158,57 +159,45 @@ def rectMission(p1, p2, p3, alt, cam='gopro', imgOvr=.05):
 
 
 def missionDivision(pointList, droneList):
-    print("In missionDivision")
     dividedMission={'response':pointList['response'], 'locations':list()}
-    print("In missionDivision precondition")
     if len(droneList)==3:
-        print("Only one drone")
         dividedMission['locations'].append({'name':dronelist[0], 'points':pointList['picList']})
         return dividedMission
 
     elif len(droneList)==6:
-        print("two drones")
         drone1location=latlon(droneList[1],droneList[2])
         drone2location=latlon(droneList[4],droneList[5])
         numPoints=len(pointList['picList'])
-        print(numPoints)
         halfIndex=int(numPoints/2)
         distance4d1begd2half=mag(sub(drone1location,latlon(pointList['picList'][0].latitude, pointList['picList'][0].longitude)))+mag(sub(drone2location,latlon(pointList['picList'][halfIndex].latitude, pointList['picList'][halfIndex].longitude)))
         distance4d2begd1half=mag(sub(drone2location,latlon(pointList['picList'][0].latitude, pointList['picList'][0].longitude)))+mag(sub(drone1location,latlon(pointList['picList'][halfIndex].latitude, pointList['picList'][halfIndex].longitude)))
         if distance4d1begd2half <= distance4d2begd1half:
             dividedMission['locations'].append({'name':droneList[0], 'points':pointList['picList'][0:halfIndex]})
-            print(droneList[0])
             dividedMission['locations'].append({'name':droneList[3], 'points':pointList['picList'][halfIndex:numPoints+1]})
-            print(droneList[3])
-            print('d1 first d2 half')
         else:
             dividedMission['locations'].append({'name':droneList[3], 'points':pointList['picList'][0:halfIndex]})
             dividedMission['locations'].append({'name':droneList[0], 'points':pointList['picList'][halfIndex+1:numPoints+1]})
-            print('d2 first d1 half')
         return dividedMission
     else:
         print("Wrong")
         return
 
-
-surveyPlan=rectMission(f1[0],f1[1],f1[2],20, 'pi')
+surveyPlan=rectMission(f4[0],f4[1],f4[2],5)
 #missionList=rectMission(f2[2],f2[3],f2[0],20, 'canon')
 #missionList=rectMission(f3[2],f3[3],f3[0],20, 'pi')
 #missionList=rectMission(f1[0],f1[1],badPoints[2],20, 'pi')
-
+'''
 if surveyPlan != None:
-    print(surveyPlan['response'])
     for x in surveyPlan['picList'] :
         if x!=surveyPlan['picList'][-1]:
             print(x.latitude,',',x.longitude)
         else:
             print(x.latitude,',',x.longitude,x.bearing,x.ordLoc)
-
-dlist=["gold", f1[4].n, f1[4].e, "green", f1[5].n, f1[5].e]
+'''
+dlist=["gold", f4[4].n, f4[4].e, "green", f4[5].n, f4[5].e]
 
 data=missionDivision(surveyPlan, dlist)
-print('missionDivision worked')
-print()
+
 for location in data['locations']:
     print(location['name'])
     for point in location['points']:
