@@ -159,9 +159,9 @@ def rectMission(p1, p2, p3, alt, cam='gopro', imgOvr=.05):
 
 
 def missionDivision(pointList, droneList):
-    dividedMission={'response':pointList['response'], 'locations':list()}
+    dividedMission={'response':pointList['response'], 'UAVs':list()}
     if len(droneList)==3:
-        dividedMission['locations'].append({'name':dronelist[0], 'points':pointList['picList']})
+        dividedMission['UAVs'].append({'name':dronelist[0], 'points':pointList['picList']})
         return dividedMission
 
     elif len(droneList)==6:
@@ -172,17 +172,17 @@ def missionDivision(pointList, droneList):
         distance4d1begd2half=mag(sub(drone1location,latlon(pointList['picList'][0].latitude, pointList['picList'][0].longitude)))+mag(sub(drone2location,latlon(pointList['picList'][halfIndex].latitude, pointList['picList'][halfIndex].longitude)))
         distance4d2begd1half=mag(sub(drone2location,latlon(pointList['picList'][0].latitude, pointList['picList'][0].longitude)))+mag(sub(drone1location,latlon(pointList['picList'][halfIndex].latitude, pointList['picList'][halfIndex].longitude)))
         if distance4d1begd2half <= distance4d2begd1half:
-            dividedMission['locations'].append({'name':droneList[0], 'points':pointList['picList'][0:halfIndex]})
-            dividedMission['locations'].append({'name':droneList[3], 'points':pointList['picList'][halfIndex:numPoints+1]})
+            dividedMission['UAVs'].append({'name':droneList[0], 'points':pointList['picList'][0:halfIndex]})
+            dividedMission['UAVs'].append({'name':droneList[3], 'points':pointList['picList'][halfIndex:numPoints+1]})
         else:
-            dividedMission['locations'].append({'name':droneList[3], 'points':pointList['picList'][0:halfIndex]})
-            dividedMission['locations'].append({'name':droneList[0], 'points':pointList['picList'][halfIndex+1:numPoints+1]})
+            dividedMission['UAVs'].append({'name':droneList[3], 'points':pointList['picList'][0:halfIndex]})
+            dividedMission['UAVs'].append({'name':droneList[0], 'points':pointList['picList'][halfIndex+1:numPoints+1]})
         return dividedMission
     else:
         print("Wrong")
         return
 
-surveyPlan=rectMission(f4[0],f4[1],f4[2],5)
+surveyPlan=rectMission(f1[0],f1[1],f1[2],20)
 #missionList=rectMission(f2[2],f2[3],f2[0],20, 'canon')
 #missionList=rectMission(f3[2],f3[3],f3[0],20, 'pi')
 #missionList=rectMission(f1[0],f1[1],badPoints[2],20, 'pi')
@@ -194,11 +194,11 @@ if surveyPlan != None:
         else:
             print(x.latitude,',',x.longitude,x.bearing,x.ordLoc)
 '''
-dlist=["gold", f4[4].n, f4[4].e, "green", f4[5].n, f4[5].e]
+dlist=["gold", f1[4].n, f1[4].e, "green", f1[5].n, f1[5].e]
 
 data=missionDivision(surveyPlan, dlist)
 
-for location in data['locations']:
-    print(location['name'])
-    for point in location['points']:
+for drone in data['UAVs']:
+    print(drone['name'])
+    for point in drone['points']:
         print(point.latitude, point.longitude)
