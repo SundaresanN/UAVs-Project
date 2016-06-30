@@ -36,35 +36,12 @@ An AJAX request will be sent for starting the flight.
 When drone is on flight, it will send information about its location or its succes on flight via socket.
 
 */
-function flightDrone(droneName){
-
-	var index = brain.getIndexDrone(droneName)
-	//Check if we are in the oscillation survey mode
-	if(brain.drones[index].surveyMode == 'oscillation'){
-		console.log("Oscillation flight mode");
+function flightDrone(droneName, type){
+	if (type == 'rectangular') {
 		$.ajax({
 			type: 'POST',
-			url: '/oscillationFlight',
+			url: '/rectangularFlight',
 			contentType: 'application/json',
-			data: JSON.stringify({ name: droneName }),
-			success: function(data){
-				console.log("New version of response")
-				data = data['data']
-				updateGraphicAndDataStructureInformationOnOscillationSurvey(data)
-			},
-			error: function(){
-				console.log("There is an error on server side")
-			}
-		})
-	} else {
-		//This means that I have a "normal" flight to accomplish
-		//brain.socket.emit('flight', {'name': droneName})
-		console.log("Normal Flight Mode")
-		$.ajax({
-			type: 'POST',
-			url: '/flight',
-			contentType: 'application/json',
-			data: JSON.stringify({ name: droneName }),
 			success: function(data){
 				console.log(data)
 			},
@@ -72,8 +49,61 @@ function flightDrone(droneName){
 				console.log("There is an error on server side")
 			}
 		})
+		for (var i = 0; i < brain.drones.length; i++) {
+			if(brain.drones[i].surveyMode == 'rectangular'){
+				openSocket(brain.drones[i].name)
+			}
+		}
+	} else {
+		var index = brain.getIndexDrone(droneName)
+		//Check if we are in the oscillation survey mode
+		if(brain.drones[index].surveyMode == 'oscillation'){
+			console.log("Oscillation flight mode");
+			$.ajax({
+				type: 'POST',
+				url: '/oscillationFlight',
+				contentType: 'application/json',
+				data: JSON.stringify({ name: droneName }),
+				success: function(data){
+					console.log("New version of response")
+					data = data['data']
+					updateGraphicAndDataStructureInformationOnOscillationSurvey(data)
+				},
+				error: function(){
+					console.log("There is an error on server side")
+				}
+			})
+		} else {
+			//This means that I have a "normal" flight to accomplish
+			//brain.socket.emit('flight', {'name': droneName})
+			console.log("Normal Flight Mode")
+			$.ajax({
+				type: 'POST',
+				url: '/flight',
+				contentType: 'application/json',
+				data: JSON.stringify({ name: droneName }),
+				success: function(data){
+					console.log(data)
+				},
+				error: function(){
+					console.log("There is an error on server side")
+				}
+			})
+		}
+
+		openSocket(droneName)
+		brain.socket.on('Oscillation Survey Data', function(data){
+			console.log("Data inside Oscillation Survey Data: " + data)
+
+		})
+
+	}
 	}
 
+/*
+This function opens a socket for receiving live data to show for eache drone in flight mode
+*/
+function openSocket(droneName){
 	brain.socket.on('Flight Information ' + droneName, function(data){
 		console.log("receiving data from " + droneName + " for flight information")
 		var textToDisplay = "Drone " + data['name'] + "<br>" +
@@ -100,13 +130,7 @@ function flightDrone(droneName){
 			console.log("Second time same thing")
 		}
 	})
-
-	brain.socket.on('Oscillation Survey Data', function(data){
-		console.log("Data inside Oscillation Survey Data: " + data)
-
-	})
 }
-
 /*
 This function is used for updating data structure of Drone class for a particular drone, whose name will be given as parameter
 The update we are going to implement is the deleting of a location(given latitude and longitude) in the array of locations to reach, which is a member of the class Drone.
@@ -399,6 +423,7 @@ function deleteDataOfRectangularSurvey(){
 	for(element in brain.drones){
 		if(brain.drones[element].surveyMode == 'rectangular'){
 			brain.drones[element].surveyMode = 'normal'
+			brain.drones[element].locationsToReach = new Array()
 		}
 	}
 }
@@ -444,6 +469,69 @@ function buildRectangularPath(){
 	if(brain.rectangularSurveyLocations.length < 3){
 		alert("I need 3 points for the rectangular survey")
 		return
+	}
+	var dronesInvolved = new Array()
+	for(drone in brain.drones){
+		if (brain.drones[drone].surveyMode == "rectangular") {
+			dronesInvolved.push(brain.drones[drone].name)
+		}
+	}
+	//AJAX request to server for building points inside the rectangular area
+	$.ajax({
+		type: 'POST',
+		url: '/buildRectangularPath',
+		contentType: 'application/json',
+		data: JSON.stringify({drones: dronesInvolved, locationsList: brain.rectangularSurveyLocations}),
+		success: function(data){
+			console.log("here")
+			if (data['response'] == 'Wrong') {
+				alert("You need to put the points in a particular way.")
+				return
+			}
+			if(data['response'] == "Warning"){
+				alert("[WARNING] Could happen that points in the rectangle are not perferct")
+			}
+			locations = data['locations']
+			for (var index in locations) {
+				 var element = locations[index]
+				 var indexDrone = brain.getIndexDrone(element['name'])
+				 var pointsArray = element['points']
+				 for (var secondIndex in pointsArray) {
+				 	brain.drones[indexDrone].locationsToReach.push(new Location(pointsArray.latitude, pointsArray.longitude, pointsArray.altitude))
+				 }
+				}
+
+			addAllTheLocationsForRectangularSurvey()
+			//Now I need to remove the "build rectangular path" button and replace it with
+			//the "flight" button
+			var flightRectangularButton = "<div class='row'>" +
+																			"<div class='col-lg-12'>" +
+																				'<button type="button" class="btn btn-success" onclick="flightDrone(\'' +  null + '\', \'' +  'rectangular' + '\')">Flight</button>' +
+																			"</div>" +
+																		"</div>"
+			//Just need to understand what is the child for "build rectangular path" button and remove it.
+			$("#typeOfSurveyDiv").children().eq(0).children().eq(5).remove()
+			$("#typeOfSurveyDiv").children().eq(0).append(flightRectangularButton)
+		},
+		error: function(){
+			console.log("There is an error on server side in building the points for rectangular survey")
+		}
+	})
+}
+/*
+This function is used for adding all the locations of the rectangular survey in the map and in the
+table of list of locations to reach.
+*/
+function addAllTheLocationsForRectangularSurvey(){
+	for (var drone in brain.drones) {
+		if (brain.drones[drone].surveyMode == 'rectangular') {
+			for (var index in brain.drones[drone].locationsToReach) {
+				var point = brain.drones[drone].locationsToReach[index]
+				var xycoords = brain.converter.getXYCoordinatesFromLatitudeLongitudeCoordinates(point.latitude, point.longitude)
+				brain.graphicBrain.addMarker(xycoords.x, xycoords.y, "location", brain.drones[drone].name, brain.drones, 'normal')
+				brain.graphicBrain.addLocationIntoTableOfLocationsToReach(brain.drones[drone].name, brain.drones, point.latitude, point.longitude, point.altitude, "location", "normal")
+			}
+		}
 	}
 }
 

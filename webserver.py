@@ -41,6 +41,12 @@ def oscillationFlight():
     rData = brain.takeAnOscillationFlight(data['name'])
     return jsonify({'data' : rData})
 
+@app.route('/rectangularFlight', methods=['POST'])
+def rectangularFlight():
+    print "Inside rectangular flight"
+    brain.takeARectangularFlight()
+    return "rectangular flight launched"
+
 @app.route('/twoPointsFlight', methods=['POST'])
 def twoPointsFlight(data):
     print "Two points flight for ", data['name']
@@ -53,6 +59,13 @@ def buildPath():
     print data
     path = brain.buildPath(data['droneName'], data['locationsList'])
     return jsonify({'path' : path})
+
+@app.route('/buildRectangularPath', methods=['POST'])
+def buildRectangularPath():
+    data = request.get_json()
+    print data
+    brain.buildRectangularSurveyPoints(data)
+    return "b'kmbsnv"
 
 if __name__ == '__main__':
     brain = ServerBrain(socketio)

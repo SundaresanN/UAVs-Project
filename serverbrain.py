@@ -1,6 +1,5 @@
 from wireless import Wireless
 from drone import Drone
-from camera import Camera
 from flask_socketio import SocketIO, emit, send
 from flask import jsonify
 import eventlet
@@ -64,6 +63,33 @@ class ServerBrain:
 		return {'drone': droneName, 'locations to reach' : self.drones[droneName].serializeListOfLocationsToReach()}
 
 	'''
+	This method generates the points inside the rectangular area delimited by the 3 points sent by client.
+	If the 3 points are perfectly put from client, this method will return all the points to client and moreover it will assing these points to
+	each drone involved in the survey on server side.
+	'''
+	def buildRectangularSurveyPoints(self, data):
+		points = data['locationsList']
+		altitude = points[0]['altitude']
+		print altitude
+		involvedDrones = data['drones']
+		pointsNewFormat = []
+		import rectPlan
+		for point in points:
+			pointsNewFormat.append(rectPlan.latlon(point['latitude'], point['longitude']))
+
+		result = rectPlan.rectMission(pointsNewFormat[0], pointsNewFormat[1], pointsNewFormat[2], altitude)
+		print result['picList']
+		droneList = []
+		for drone in data['drones']:
+			droneList.append(drone)
+			location = self.drones[drone].getCurrentLocation()
+			droneList.append(location['latitude'])
+			droneList.append(location['longitude'])
+
+		missionDivisionData = rectPlan.missionDivision(result, droneList)
+		
+
+	'''
 	This method creates a thread for a drone's flight.
 	'''
 	def takeAFlight(self, drone):
@@ -78,6 +104,15 @@ class ServerBrain:
 		data = self.drones[drone].oscillationFlight(self.connectionManager, self.socket)
 		print data
 		return data
+
+	'''
+	This method starts the rectangular survey
+	'''
+	def takeARectangularFlight(self):
+		for drone in self.drones:
+			if len(self.drones[drone].listOfLocationsToReach)>0:
+				eventlet.spawn(self.drones[drone].flight, self.connectionManager, self.socket)
+				time.sleep(5)
 	'''
 	This method doesn't create a thread for the following kind of flight. We need to talk about
 	priority this method could have.
