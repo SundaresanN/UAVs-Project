@@ -26,6 +26,7 @@ class mission:
         self.bearing=angle
         self.ordLoc=number
 
+
 '''p2 must be the vertex between 1 and 3
 The algorithm assumes the orientation
     of the drone is toward the first point
@@ -161,39 +162,43 @@ def rectMission(p1, p2, p3, alt, cam='gopro', imgOvr=.05):
 
 
 def missionDivision(pointList, droneList):
-    print("In missionDivision")
-    dividedMission={'response':pointList['response'], 'locations':list()}
-    print("In missionDivision precondition")
+    dividedMission={'response':pointList['response'], 'UAVs':list()}
     if len(droneList)==3:
-        print("Only one drone")
-        dividedMission['locations'].append({'name':dronelist[0], 'points':pointList['picList']})
+        dividedMission['UAVs'].append({'name':dronelist[0], 'points':pointList['picList']})
         return dividedMission
 
     elif len(droneList)==6:
-        print("two drones")
         drone1location=latlon(droneList[1],droneList[2])
         drone2location=latlon(droneList[4],droneList[5])
         numPoints=len(pointList['picList'])
-        print(numPoints)
         halfIndex=int(numPoints/2)
         distance4d1begd2half=mag(sub(drone1location,latlon(pointList['picList'][0].latitude, pointList['picList'][0].longitude)))+mag(sub(drone2location,latlon(pointList['picList'][halfIndex].latitude, pointList['picList'][halfIndex].longitude)))
         distance4d2begd1half=mag(sub(drone2location,latlon(pointList['picList'][0].latitude, pointList['picList'][0].longitude)))+mag(sub(drone1location,latlon(pointList['picList'][halfIndex].latitude, pointList['picList'][halfIndex].longitude)))
         if distance4d1begd2half <= distance4d2begd1half:
-            dividedMission['locations'].append({'name':droneList[0], 'points':pointList['picList'][0:halfIndex]})
-            print(droneList[0])
-            dividedMission['locations'].append({'name':droneList[3], 'points':pointList['picList'][halfIndex:numPoints+1]})
-            print(droneList[3])
-            print('d1 first d2 half')
+            dividedMission['UAVs'].append({'name':droneList[0], 'points':pointList['picList'][0:halfIndex]})
+            dividedMission['UAVs'].append({'name':droneList[3], 'points':pointList['picList'][halfIndex:numPoints+1]})
         else:
-            dividedMission['locations'].append({'name':droneList[3], 'points':pointList['picList'][0:halfIndex]})
-            dividedMission['locations'].append({'name':droneList[0], 'points':pointList['picList'][halfIndex+1:numPoints+1]})
-            print('d2 first d1 half')
+            dividedMission['UAVs'].append({'name':droneList[3], 'points':pointList['picList'][0:halfIndex]})
+            dividedMission['UAVs'].append({'name':droneList[0], 'points':pointList['picList'][halfIndex+1:numPoints+1]})
         return dividedMission
     else:
         print("Wrong")
         return
 
-
+'''
+Function that serializes data for the client side.
+'''
+def serializeMissionData(missionDivisionData):
+    for indexLocations in xrange(0, len(missionDivisionData['UAVs'])):
+        for indexPoints in xrange(0, len(missionDivisionData['UAVs'][indexLocations]['points'])):
+            print missionDivisionData['UAVs'][indexLocations]
+            missionDivisionData['UAVs'][indexLocations]['points'][indexPoints] = {
+                    "latitude" : missionDivisionData['UAVs'][indexLocations]['points'][indexPoints].latitude,
+                    "longitude" : missionDivisionData['UAVs'][indexLocations]['points'][indexPoints].longitude,
+                    "altitude" : missionDivisionData['UAVs'][indexLocations]['points'][indexPoints].altitude,
+            }
+    return missionDivisionData
+    
 #surveyPlan=rectMission(f1[0],f1[1],f1[2],20, 'pi')
 #missionList=rectMission(f2[2],f2[3],f2[0],20, 'canon')
 #missionList=rectMission(f3[2],f3[3],f3[0],20, 'pi')

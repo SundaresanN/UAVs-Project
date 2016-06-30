@@ -70,7 +70,6 @@ class ServerBrain:
 	def buildRectangularSurveyPoints(self, data):
 		points = data['locationsList']
 		altitude = points[0]['altitude']
-		print altitude
 		involvedDrones = data['drones']
 		pointsNewFormat = []
 		import rectPlan
@@ -78,16 +77,51 @@ class ServerBrain:
 			pointsNewFormat.append(rectPlan.latlon(point['latitude'], point['longitude']))
 
 		result = rectPlan.rectMission(pointsNewFormat[0], pointsNewFormat[1], pointsNewFormat[2], altitude)
-		print result['picList']
+		if result == 'Bad':
+			return result
+		#print "Result: ", result['picList']
+
 		droneList = []
 		for drone in data['drones']:
 			droneList.append(drone)
-			location = self.drones[drone].getCurrentLocation()
+			#location = self.drones[drone].getCurrentLocation()
+			location = {}
+			if drone == 'Solo Gold':
+				location = {
+					'latitude': 37.924670,
+					'longitude': -91.772554
+				}
+			else:
+				location = {
+					'latitude': 37.924412,
+					'longitude': -91.76254
+				}
 			droneList.append(location['latitude'])
 			droneList.append(location['longitude'])
 
 		missionDivisionData = rectPlan.missionDivision(result, droneList)
-		
+		missionDivisionData = rectPlan.serializeMissionData(missionDivisionData)
+		'''
+		Assign locations to reach to each involved drone
+		'''
+		if missionDivisionData['response'] == 'Good' or missionDivisionData['response'] == 'Warn':
+			'''
+			Checking connection with all the drones involved.
+			'''
+			for UAVInfo in missionDivisionData['UAVs']:
+				drone = UAVInfo['name']
+				if self.drones[drone] == None:
+					missionDivisionData = {
+						'response' : 'Connection Error',
+						'body': 'You need to be connected with the drones involved in the rectangular survey'
+					}
+					return missionDivisionData
+				#filling the locations to reach array for each drone involved
+			for UAVInfo in missionDivisionData['UAVs']:
+				drone = UAVInfo['name']
+				self.drones[drone].buildListOfLocations(UAVInfo['points'])
+
+		return missionDivisionData
 
 	'''
 	This method creates a thread for a drone's flight.
@@ -106,7 +140,7 @@ class ServerBrain:
 		return data
 
 	'''
-	This method starts the rectangular survey
+	This method starts the rectangular survey flight.
 	'''
 	def takeARectangularFlight(self):
 		for drone in self.drones:

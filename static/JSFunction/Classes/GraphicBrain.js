@@ -11,6 +11,7 @@ function GraphicBrain(){
 	this.showTableForLocationToAdd = showTableForLocationToAdd
 
 	this.addLocationIntoTableOfLocationsToReach = addLocationIntoTableOfLocationsToReach
+
 }
 
 function init(map, drones){
@@ -102,7 +103,7 @@ function init(map, drones){
 	$("#secondRow").append(liveFlightInformations)
 }
 
-function addMarker(x, y, typeOfMarker, droneName, drones, typeOfSurvey){
+function addMarker(x, y, typeOfMarker, droneName, drones, typeOfSurvey, camera){
 
 	var id = droneName
 	var iconPath = ""
@@ -126,11 +127,19 @@ function addMarker(x, y, typeOfMarker, droneName, drones, typeOfSurvey){
 					size += drones[drone].locationsToReach.length
 				}
 			}
+			/*
+			if (camera == true) {
+				id = id
+				iconPath = id + " camera"
+			}else{
+				id = id + size
+				iconPath = size
+			}
+			*/
 			id = id + size
 			iconPath = size
 			break
 	}
-
 	var marker = "<img id='" + id + "' src='static/Images/Useful\ Images/" + iconPath + ".png' style='position: absolute' />"
 	$('#mapBox').append(marker)
 	$("[id='" + id + "']").css({top: y, left: x})
@@ -155,7 +164,7 @@ function showTableForLocationToAdd(latitude, longitude, drones){
 	            "<input type='number' min='0' class='form-control' id='altitude' value='0'>" +
 	        "</div>"+
 	        "<div class='form-group'>"+
-	            "<label for='selectCamera'>Select Drone</label>"+
+	            "<label for='selectDrone'>Select Drone</label>"+
 	            "<select class='form-control' id='selectDrone'>"+
 
 	            "</select>"+
@@ -180,7 +189,14 @@ function showTableForLocationToAdd(latitude, longitude, drones){
 			$("#selectDrone").append("<option>" + drones[index].name + "</option>")
 		}
 	}
-
+	if (brain.typeOfSurvey == "rectangular") {
+		//check if a location has been already added
+		if (brain.rectangularSurveyLocations.length>0) {
+			$("#altitude").attr("readonly", true)
+			$("#altitude").val(brain.rectangularSurveyLocations[0].altitude)
+		}
+		$("#selectDrone").parent().remove()
+	}
 	if(brain.typeOfSurvey == 'oscillation'){
 		for(index in drones){
 			if (brain.drones[index].surveyMode == 'oscillation') {
@@ -264,4 +280,29 @@ function addLocationIntoTableOfLocationsToReach(droneName, array, latitude, long
 
 	$("#locationsToReach tbody").append(locationToAppend)
 
+}
+
+/*
+################## function for some graphical modifies #################
+*/
+
+//This function removes from locations to reach table all the elements, but not the home location rows.
+//Moreover it delete all the elements from the map and set to empty the array of locations to reach for eache drone.
+function removingAllTheOldStuffs(){
+	//emptying the array of locations to reach for each drone
+	for (var i = 0; i < brain.drones.length; i++) {
+		brain.drones[i].locationsToReach = new Array()
+	}
+	//removing all the locations to reach from the table
+	for(var index=$("#locationsToReach > tbody > tr").length-1; index>=0; index--){
+			// These following 3 lines of code are used to remove the marker of the location just reached from map
+			var marker = $("#locationsToReach > tbody").children().eq(index).children().eq(1).html()
+			if (marker.indexOf('home') == -1) {
+				var idMarker = $("#locationsToReach > tbody").children().eq(index).children().eq(0).html() + (marker.charCodeAt()-96)
+				$("[id = '" + idMarker + "']").remove()
+				//this line of code is used for deleting the row which represents a location just reached
+				$("#locationsToReach > tbody").children().eq(index).remove()
+			}
+			//index = $("#locationsToReach > tbody > tr").length
+		}
 }

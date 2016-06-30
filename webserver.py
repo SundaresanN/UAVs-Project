@@ -63,9 +63,8 @@ def buildPath():
 @app.route('/buildRectangularPath', methods=['POST'])
 def buildRectangularPath():
     data = request.get_json()
-    print data
-    brain.buildRectangularSurveyPoints(data)
-    return "b'kmbsnv"
+    dataToReturn = brain.buildRectangularSurveyPoints(data)
+    return jsonify({'data' : dataToReturn})
 
 if __name__ == '__main__':
     brain = ServerBrain(socketio)
