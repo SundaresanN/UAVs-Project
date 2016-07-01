@@ -108,7 +108,8 @@ class ServerBrain:
 			'''
 			Checking connection with all the drones involved.
 			'''
-			for UAVInfo in missionDivisionData['UAVs']:
+
+			'''for UAVInfo in missionDivisionData['UAVs']:
 				drone = UAVInfo['name']
 				if self.drones[drone] == None:
 					missionDivisionData = {
@@ -119,8 +120,7 @@ class ServerBrain:
 				#filling the locations to reach array for each drone involved
 			for UAVInfo in missionDivisionData['UAVs']:
 				drone = UAVInfo['name']
-				self.drones[drone].buildListOfLocations(UAVInfo['points'])
-
+				self.drones[drone].buildListOfLocations(UAVInfo['points'])'''
 		return missionDivisionData
 
 	'''

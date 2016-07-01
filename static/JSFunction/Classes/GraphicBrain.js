@@ -140,9 +140,12 @@ function addMarker(x, y, typeOfMarker, droneName, drones, typeOfSurvey, camera){
 			iconPath = size
 			break
 	}
-	var marker = "<img id='" + id + "' src='static/Images/Useful\ Images/" + iconPath + ".png' style='position: absolute' />"
+	var marker = "<p id='" + id + "' style='position: absolute'>" +  + "</p>"
 	$('#mapBox').append(marker)
 	$("[id='" + id + "']").css({top: y, left: x})
+	var color = droneName.split(' ')
+	color = color.toLowerCase()
+	$("[id='" + id + "']").css({color: color})
 
 }
 
