@@ -205,7 +205,7 @@ function deleteDataOfRectangularSurvey(){
 			var marker = $("#locationsToReach > tbody").children().eq(index).children().eq(1).html()
 			if (marker.indexOf('home') == -1) {
 				var id = $("#locationsToReach > tbody").children().eq(index).children().eq(0).html()
-				var idMarker = id + (marker.charCodeAt()-96)
+				var idMarker = id + marker
 				console.log("I'm removing " + idMarker)
 				$("[id = '" + idMarker + "']").remove()
 				//this line of code is used for deleting the row which represents a location just reached
@@ -213,7 +213,10 @@ function deleteDataOfRectangularSurvey(){
 			}
 			//index = $("#locationsToReach > tbody > tr").length
 		}
-
+		//removing imagea of each vertix on the map.
+	for (var i = -3; i < 0; i++) {
+		$("[id = '"+  i + "']").remove()
+	}
 	//Removing information in the table of the drones
 	for(var index=0; index<$("#dronesTable > tbody > tr").length; index++){
 		var buttonName = $("#dronesTable > tbody").children().eq(index).children().eq(3).text()

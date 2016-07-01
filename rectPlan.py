@@ -139,7 +139,7 @@ def rectMission(p1, p2, p3, alt, cam='gopro', imgOvr=.05):
         #print (position.n, position.e)
         #print (str(position.n)+','+str(position.e))
         for i in range(0,int(outerlimit+1)):
-            for k in range(0,int(innerlimit-1)):
+            for k in range(0,int(innerlimit)):
                 if i%2==0:
                     position=add(position,innerstep)
                     #print (str(position.n)+','+str(position.e))
@@ -174,8 +174,8 @@ def missionDivision(pointList, droneList):
         drone2location=latlon(droneList[4],droneList[5])
         numPoints=len(pointList['picList'])
 
-        distance4d1begd2half=mag(sub(drone1location,latlon(pointList['picList'][0].latitude, pointList['picList'][0].longitude)))+mag(sub(drone2location,latlon(pointList['picList'][halfIndex].latitude, pointList['picList'][halfIndex].longitude)))
-        distance4d2begd1half=mag(sub(drone2location,latlon(pointList['picList'][0].latitude, pointList['picList'][0].longitude)))+mag(sub(drone1location,latlon(pointList['picList'][halfIndex].latitude, pointList['picList'][halfIndex].longitude)))
+        distance4d1begd2half=mag(sub(drone1location,latlon(pointList['picList'][0].latitude, pointList['picList'][0].longitude)))+mag(sub(drone2location,latlon(pointList['picList'][picListMidpoint].latitude, pointList['picList'][picListMidpoint].longitude)))
+        distance4d2begd1half=mag(sub(drone2location,latlon(pointList['picList'][0].latitude, pointList['picList'][0].longitude)))+mag(sub(drone1location,latlon(pointList['picList'][picListMidpoint].latitude, pointList['picList'][picListMidpoint].longitude)))
         if distance4d1begd2half <= distance4d2begd1half:
             dividedMission['UAVs'].append({'name':droneList[0], 'points':pointList['picList'][0:picListMidpoint]})
             dividedMission['UAVs'].append({'name':droneList[3], 'points':pointList['picList'][picListMidpoint:picListLength]})

@@ -140,11 +140,22 @@ function addMarker(x, y, typeOfMarker, droneName, drones, typeOfSurvey, camera){
 			iconPath = size
 			break
 	}
-	var marker = "<p id='" + id + "' style='position: absolute'>" +  + "</p>"
+	if (typeOfSurvey == 'rectangular') {
+
+		console.log(iconPath)
+		var marker = "<img id='" + id + "' src='static/Images/Useful\ Images/" + iconPath + ".png' style='position: absolute' />"
+		$('#mapBox').append(marker)
+		$("[id='" + id + "']").css({top: y, left: x})
+		console.log($("[id='" + id + "']").html());
+		return
+	}
+	var identificator = id.split(' ')
+	identificator = identificator[1].match(/\d+/)
+	var marker = "<p id='" + id + "' style='position: absolute'>" + identificator + "</p>"
 	$('#mapBox').append(marker)
 	$("[id='" + id + "']").css({top: y, left: x})
 	var color = droneName.split(' ')
-	color = color.toLowerCase()
+	color = color[1].toLowerCase()
 	$("[id='" + id + "']").css({color: color})
 
 }
@@ -264,7 +275,8 @@ function addLocationIntoTableOfLocationsToReach(droneName, array, latitude, long
 	}
 	var buttonDelete = '<button type="button" class="btn btn-danger" onclick="deleteLocation(\'' +  droneName + '\', \'' +  latitude + '\', \'' +  longitude + '\')">Delete</button>'
 	if(type == "location"){
-		var marker = String.fromCharCode(96 + size)
+		//var marker = String.fromCharCode(96 + size)
+		var marker = size
 	}
 	if (type == "home") {
 		var	marker = droneName + " home"

@@ -21,7 +21,7 @@ function updateGraphicAndDataStructureInformationOnOscillationSurvey(data){
 			if (brain.drones[droneIndex].locationsToReach[i].latitude == latitude && brain.drones[droneIndex].locationsToReach[i].longitude == longitude) {
 				// These following 3 lines of code are used to remove the marker of the location just reached from map
 				var marker = $("#locationsToReach > tbody").children().eq(index).children().eq(1).html()
-				var idMarker = data['name'] + (marker.charCodeAt()-96)
+				var idMarker = data['name'] + marker
 				$("[id = '" + idMarker + "']").remove()
 				//this line of code is used for deleting the row which represents a location just reached
 				$("#locationsToReach > tbody").children().eq(index).remove()
@@ -125,7 +125,7 @@ function deleteDataOfOscillationSurvey(drone){
 			// These following 3 lines of code are used to remove the marker of the location just reached from map
 			var marker = $("#locationsToReach > tbody").children().eq(index).children().eq(1).html()
 			if (marker.indexOf('home') == -1) {
-				var idMarker = drone + (marker.charCodeAt()-96)
+				var idMarker = drone + marker
 				$("[id = '" + idMarker + "']").remove()
 				//this line of code is used for deleting the row which represents a location just reached
 				$("#locationsToReach > tbody").children().eq(index).remove()
