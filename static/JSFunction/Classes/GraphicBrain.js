@@ -141,22 +141,22 @@ function addMarker(x, y, typeOfMarker, droneName, drones, typeOfSurvey, camera){
 			break
 	}
 	if (typeOfSurvey == 'rectangular') {
-
-		console.log(iconPath)
 		var marker = "<img id='" + id + "' src='static/Images/Useful\ Images/" + iconPath + ".png' style='position: absolute' />"
 		$('#mapBox').append(marker)
 		$("[id='" + id + "']").css({top: y, left: x})
-		console.log($("[id='" + id + "']").html());
 		return
 	}
 	var identificator = id.split(' ')
 	identificator = identificator[1].match(/\d+/)
-	var marker = "<p id='" + id + "' style='position: absolute'>" + identificator + "</p>"
-	$('#mapBox').append(marker)
-	$("[id='" + id + "']").css({top: y, left: x})
 	var color = droneName.split(' ')
 	color = color[1].toLowerCase()
-	$("[id='" + id + "']").css({color: color})
+
+	var marker = "<p id='" + id + "' style='position: absolute'>" + identificator + "</p>"
+	$('#mapBox').append(marker)
+	$("[id='" + id + "']").css({top: y, left: x, color: color})
+	$("[id='" + id + "']").css("background-color", "black")
+	$("[id='" + id + "']").css("font-size", "10pt")
+	$("[id='" + id + "']").css("font-weight", "bold")
 
 }
 
@@ -313,7 +313,7 @@ function removingAllTheOldStuffs(){
 			// These following 3 lines of code are used to remove the marker of the location just reached from map
 			var marker = $("#locationsToReach > tbody").children().eq(index).children().eq(1).html()
 			if (marker.indexOf('home') == -1) {
-				var idMarker = $("#locationsToReach > tbody").children().eq(index).children().eq(0).html() + (marker.charCodeAt()-96)
+				var idMarker = $("#locationsToReach > tbody").children().eq(index).children().eq(0).html() + marker
 				$("[id = '" + idMarker + "']").remove()
 				//this line of code is used for deleting the row which represents a location just reached
 				$("#locationsToReach > tbody").children().eq(index).remove()

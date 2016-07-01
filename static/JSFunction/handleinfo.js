@@ -129,7 +129,7 @@ function deleteLocation(drone, lat, lon){
 		if (lat == parseFloat(latitude) && lon == parseFloat(longitude)) {
 			// These following 3 lines of code are used to remove the marker of the location just reached from map
 			var marker = $("#locationsToReach > tbody").children().eq(index).children().eq(1).html()
-			var idMarker = drone + (marker.charCodeAt()-96)
+			var idMarker = drone + marker
 			$("[id = '" + idMarker + "']").remove()
 			//this line of code is used for deleting the row which represents a location just reached
 			$("#locationsToReach > tbody").children().eq(index).remove()

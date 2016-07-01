@@ -44,7 +44,7 @@ function updateGraphicAndDataStructureInformationOnReachedLocation(data){
 				if (data["location"][0] == latitude && data["location"][1] == longitude) {
 					// These following 3 lines of code are used to remove the marker of the location just reached from map
 					var marker = $("#locationsToReach > tbody").children().eq(index).children().eq(1).html()
-					var idMarker = data['name'] + (marker.charCodeAt()-96)
+					var idMarker = data['name'] + marker
 					$("[id = '" + idMarker + "']").remove()
 					//this line of code is used for deleting the row which represents a location just reached
 					$("#locationsToReach > tbody").children().eq(index).remove()

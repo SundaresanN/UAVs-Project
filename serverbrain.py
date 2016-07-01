@@ -84,8 +84,8 @@ class ServerBrain:
 		droneList = []
 		for drone in data['drones']:
 			droneList.append(drone)
-			#location = self.drones[drone].getCurrentLocation()
-			location = {}
+			location = self.drones[drone].getCurrentLocation()
+			'''location = {}
 			if drone == 'Solo Gold':
 				location = {
 					'latitude': 37.924670,
@@ -95,7 +95,7 @@ class ServerBrain:
 				location = {
 					'latitude': 37.924412,
 					'longitude': -91.76254
-				}
+				}'''
 			droneList.append(location['latitude'])
 			droneList.append(location['longitude'])
 
@@ -108,8 +108,7 @@ class ServerBrain:
 			'''
 			Checking connection with all the drones involved.
 			'''
-
-			'''for UAVInfo in missionDivisionData['UAVs']:
+			for UAVInfo in missionDivisionData['UAVs']:
 				drone = UAVInfo['name']
 				if self.drones[drone] == None:
 					missionDivisionData = {
@@ -120,7 +119,7 @@ class ServerBrain:
 				#filling the locations to reach array for each drone involved
 			for UAVInfo in missionDivisionData['UAVs']:
 				drone = UAVInfo['name']
-				self.drones[drone].buildListOfLocations(UAVInfo['points'])'''
+				self.drones[drone].buildListOfLocations(UAVInfo['points'])
 		return missionDivisionData
 
 	'''
@@ -136,7 +135,6 @@ class ServerBrain:
 	'''
 	def takeAnOscillationFlight(self, drone):
 		data = self.drones[drone].oscillationFlight(self.connectionManager, self.socket)
-		print data
 		return data
 
 	'''

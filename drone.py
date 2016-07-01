@@ -108,7 +108,7 @@ class Drone():
 			'''
 			Waiting for a safe altitude for having a flight
 			'''
-			if self.vehicle.location.global_relative_frame.alt <= self.takeOffAltitude*0.25:
+			if self.vehicle.location.global_relative_frame.alt <= self.takeOffAltitude*0.8:
 				return
 
 	'''
@@ -175,10 +175,13 @@ class Drone():
 	kind of flight with other request.
 	'''
 	def oscillationFlight(self, connectionManager, socket):
+		#I need to know if I have two differnt locations in terms of lat, lon and alt or I have same locations but with differnt altitude
+		sameLocation = self.listOfLocationsToReach[0].lat == self.listOfLocationsToReach[1].lat and self.listOfLocationsToReach[0].lat == self.listOfLocationsToReach[1].lat
+
 		self.__connectToMyNetwork__(connectionManager)
 		self.__armAndTakeOff__()
 		time.sleep(2)
-		batteryLimit = 65
+		batteryLimit = 20
 		locationBool = False#it means the first location to reach
 		numberOfOscillations = 0
 		while self.vehicle.battery.level >= batteryLimit:
@@ -193,15 +196,22 @@ class Drone():
 			'''
 			while True:
 				#self.__connectToMyNetwork__(connectionManager)
-				remainingDistanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(self.vehicle.location.global_relative_frame, location)
-				'''
-				If drone has just reached the location, I need go to the other location
-				'''
-				if remainingDistanceToNextLocation <= distanceToNextLocation * 0.05:
-					locationBool = not locationBool
-					if locationBool == 0:
-						numberOfOscillations = numberOfOscillations + 1
-					break
+			'''
+			If drone has just reached the location(even if there are same locations or not), I need go to the other location
+			'''
+				if sameLocation == True:
+					altitudeToReach = location.alt
+					if self.vehicle.location.global_relative_frame.alt <= altitudeToReach*0.95:
+						locationBool = not locationBool
+						if locationBool == 0:
+							numberOfOscillations = numberOfOscillations + 1
+				else:
+					remainingDistanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(self.vehicle.location.global_relative_frame, location)
+					if remainingDistanceToNextLocation <= distanceToNextLocation * 0.05:
+						locationBool = not locationBool
+						if locationBool == 0:
+							numberOfOscillations = numberOfOscillations + 1
+						break
 
 		print "Removing locations to reach"
 		self.__removeAllTheElementInTheListOfLocationsToReach__(twoLocationsToRemove = True)
