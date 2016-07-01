@@ -33,15 +33,15 @@ The algorithm assumes the orientation
     from the second: the shorter dimension of the
     camera is parallel with the vector from rectangle vertex 2 to 1.'''
 
-'''This algorithm returns a list with the first item in the list being
+'''This algorithm returns a dictionary with the item keyed as 'response' being
     the 'quality' of the generated rectangle. The values possible are
     'Good'
     'Warn'
     'Bad'
     and you can use these to decide what to do on the client side. For the Bad case,
     no missions are actually calculated since thre resulting survey will be too unstable.
-    In the case of the 'Good' or 'Warn' scenarios, the rest of the items in the list
-    consist  of 'missions' each with member variables latitude, longitude,
+    In the case of the 'Good' or 'Warn' scenarios, the dictionary item keyed as 'picList'
+    consists  of a list of 'mission' objects each with member variables latitude, longitude,
     altitude, bearing, and ordLoc. All are striaghtforward in meaning with ordLoc being the
     only exception. It denotes the position of that mission in the context of the
     larger planned survey in an ordinal manner. '''
