@@ -164,7 +164,7 @@ class Drone():
 				if remainingDistanceToNextLocation <= distanceToNextLocation*0.05:
 					print "Drone " + self.name + " is taking a picture..."
 					self.__takeAPicture__()
-					self.fileTest.write("Location:\n\t- latitude %f \n\t- longitude %f\n\t- altitude %f\n\t- battery %d\n", (location.lat, location.lon, location.alt,  self.getBattery())
+					self.fileTest.write("Location:\n\t- latitude %f \n\t- longitude %f\n\t- altitude %f\n\t- battery %d\n", %(location.lat, location.lon, location.alt,  self.getBattery())
 					self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False, typeOfSurvey = 'normal', numberOfOscillations = None)
 					break
 				'''self.__takeAPicture__()
@@ -213,7 +213,7 @@ class Drone():
 			droneCurrentLocation = self.vehicle.location.global_relative_frame
 			distanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(droneCurrentLocation, location)
 			#writing on the log file
-			self.fileTest.write("Location %d:\n\t- latitude %f \n\t- longitude %f\n\t- altitude %f\n\t- battery %d\n", (location.lat, location.lon, location.alt,  self.getBattery())
+			self.fileTest.write("Location %d:\n\t- latitude %f \n\t- longitude %f\n\t- altitude %f\n\t- battery %d\n", %(location.lat, location.lon, location.alt,  self.getBattery())
 
 			print "Flying towards location: ", location
 			self.vehicle.simple_goto(location)
