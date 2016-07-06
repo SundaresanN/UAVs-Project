@@ -8,8 +8,6 @@ import time
 import threading
 from pymavlink import mavutil
 
-#eventlet.monkey_patch()
-
 
 '''
 Initializing the seed of the random class
@@ -31,7 +29,6 @@ class Drone():
 		self.networkInterface = interface
 
 		self.listOfLocationsToReach = None
-		#self.camera = Camera()
 
 		self.fileTest = None
 
@@ -145,8 +142,8 @@ class Drone():
 			self.__connectToMyNetwork__(connectionManager)
 			droneCurrentLocation = self.vehicle.location.global_relative_frame
 			distanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(droneCurrentLocation, location)
-			print "self.vehicle.simple_goto(location), ", location
-			#self.vehicle.simple_goto(location)
+			#print "self.vehicle.simple_goto(location), ", location
+			self.vehicle.simple_goto(location)
 			'''
 			Now I have to check the location of the drone in flight, this because dronekit API is thought in order to have
 			flight to single point and if I immediatelly send another location to reach, the drone will immediatelly change
@@ -164,27 +161,26 @@ class Drone():
 				if remainingDistanceToNextLocation <= distanceToNextLocation*0.05:
 					print "Drone " + self.name + " is taking a picture..."
 					self.__takeAPicture__()
-					self.fileTest.write("Location:\n\t- latitude %f \n\t- longitude %f\n\t- altitude %f\n\t- battery %d\n", %(location.lat, location.lon, location.alt,  self.getBattery())
+					self.fileTest.write("Location:\n\t- latitude %f \n\t- longitude %f\n\t- altitude %f\n\t- battery %d\n", %(location.lat, location.lon, location.alt, self.getBattery())
 					self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False, typeOfSurvey = 'normal', numberOfOscillations = None)
 					break
+
 				'''self.__takeAPicture__()
 				self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False, typeOfSurvey = 'normal', numberOfOscillations = None)
 				print "############################################################"
 				break'''
-
 		'''
 		Now it's time to come back home
 		'''
 		print "Removing all the elements in the list of locations to reach"
 		self.__removeAllTheElementInTheListOfLocationsToReach__()
 		self.__connectToMyNetwork__(connectionManager)
-		#self.vehicle.mode = VehicleMode('RTL')
+		self.vehicle.mode = VehicleMode('RTL')
 		end = time.time()
 		self.fileTest.write("Flight time: ", (end-start))
 		self.fileTest.write("\n###########################################\n")
 		self.fileTest.close()
 		self.__sendFlightDataToClientUsingSocket__(socket, self.vehicle.location.global_frame, reached = False, RTLMode = True, typeOfSurvey = 'normal', numberOfOscillations = None)
-		print "self.vehicle.mode = VehicleMode('RTL')"
 		time.sleep(2)
 
 	'''
@@ -195,8 +191,8 @@ class Drone():
 	def oscillationFlight(self, connectionManager, socket):
 		#I need to know if I have two differnt locations in terms of lat, lon and alt or I have same locations but with differnt altitude
 		sameLocation = self.listOfLocationsToReach[0].lat == self.listOfLocationsToReach[1].lat and self.listOfLocationsToReach[0].lat == self.listOfLocationsToReach[1].lat
-
 		self.__connectToMyNetwork__(connectionManager)
+
 		start = time.time()
 		self.fileTest.write("Oscillation Flight starts on ", time.strftime("%c"))
 		self.fileTest.write("\nInitial Battery Level: ", self.getBattery())
@@ -204,8 +200,9 @@ class Drone():
 		self.__armAndTakeOff__()
 		time.sleep(2)
 		batteryLimit = 20
-		locationBool = False#it means the first location to reach
+		locationBool = False #it means the first location to reach
 		numberOfOscillations = 0
+
 		while self.vehicle.battery.level >= batteryLimit:
 			self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False, typeOfSurvey = 'normal', numberOfOscillations = None)
 			print "Battery: ", self.vehicle.battery.level
@@ -213,18 +210,16 @@ class Drone():
 			droneCurrentLocation = self.vehicle.location.global_relative_frame
 			distanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(droneCurrentLocation, location)
 			#writing on the log file
-			self.fileTest.write("Location %d:\n\t- latitude %f \n\t- longitude %f\n\t- altitude %f\n\t- battery %d\n", %(location.lat, location.lon, location.alt,  self.getBattery())
-
+			self.fileTest.write("Location %d:\n\t- latitude %f \n\t- longitude %f\n\t- altitude %f\n\t- battery %d\n", %(location.lat, location.lon, location.alt, self.getBattery())
 			print "Flying towards location: ", location
 			self.vehicle.simple_goto(location)
 			'''
 			Waiting drone arrives to this location
 			'''
 			while True:
-				#self.__connectToMyNetwork__(connectionManager)
-			'''
-			If drone has just reached the location(even if there are same locations or not), I need go to the other location
-			'''
+				'''
+				If drone has just reached the location(even if there are same locations or not), I need go to the other location
+				'''
 				if sameLocation == True:
 					altitudeToReach = location.alt
 					if self.vehicle.location.global_relative_frame.alt <= altitudeToReach*0.95:
@@ -254,6 +249,7 @@ class Drone():
 			'battery' : self.vehicle.battery.level,
 			'oscillations' : numberOfOscillations
 			}
+
 	'''
 	With this function I set up the interface on the value of the this drone instance and after that I give
 	priority to the wifi network associated to this drone instance.
