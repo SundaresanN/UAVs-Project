@@ -27,6 +27,12 @@ function openSocket(droneName){
 		}else{
 			console.log("Second time same thing")
 		}
+		/*
+		var indexDrone = brain.getIndexDrone(droneName)
+		if (brain.drones[indexDrone].surveyMode == 'rectangular') {
+			removeVertices()
+		}
+		*/
 	})
 }
 /*

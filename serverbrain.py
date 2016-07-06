@@ -118,6 +118,7 @@ class ServerBrain:
 					return missionDivisionData
 				#filling the locations to reach array for each drone involved
 			for UAVInfo in missionDivisionData['UAVs']:
+				print "Here"
 				drone = UAVInfo['name']
 				self.drones[drone].buildListOfLocations(UAVInfo['points'])
 		return missionDivisionData
@@ -127,8 +128,7 @@ class ServerBrain:
 	'''
 	def takeAFlight(self, drone):
 		eventlet.spawn(self.drones[drone].flight, self.connectionManager, self.socket)
-		#thread = self.drones[drone].flightSemaphore(self.connectionManager, self.socket, self.semaphore)
-		#thread.start()
+
 
 	'''
 	This method allows the drone to have an oscillation flight.
@@ -142,9 +142,11 @@ class ServerBrain:
 	'''
 	def takeARectangularFlight(self):
 		for drone in self.drones:
-			if len(self.drones[drone].listOfLocationsToReach)>0:
-				eventlet.spawn(self.drones[drone].flight, self.connectionManager, self.socket)
-				time.sleep(5)
+			if self.drones[drone] is not None:
+				if len(self.drones[drone].listOfLocationsToReach)>0:
+					print "rectangular flight for ", drone
+					eventlet.spawn(self.drones[drone].flight, self.connectionManager, self.socket)
+					time.sleep(5)
 	'''
 	This method doesn't create a thread for the following kind of flight. We need to talk about
 	priority this method could have.

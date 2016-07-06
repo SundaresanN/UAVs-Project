@@ -174,14 +174,15 @@ function deleteDeleteButtonsFromTableOfLocationsToReachInRectangularSurvey(){
 This function removes the vertices data on the map and on the table of locations to reach. Moreover it clears the array on ClientBrain instance.
 */
 function removeVertices(){
+	console.log("Inside remove vertices")
 	//removing all the locations to reach from the table
 	for(var index=$("#locationsToReach > tbody > tr").length-1; index>=0; index--){
 			// These following 3 lines of code are used to remove the marker of the location just reached from map
-			var marker = $("#locationsToReach > tbody").children().eq(index).children().eq(0).html()
-			if (marker == '-') {
-				var letter = $("#locationsToReach > tbody").children().eq(index).children().eq(1).html()
-				var idMarker = '-' + (letter.charCodeAt()-96)
-				console.log(idMarker)
+			var marker = $("#locationsToReach > tbody").children().eq(index).children().eq(1).html()
+			var id = $("#locationsToReach > tbody").children().eq(index).children().eq(0).html()
+			if (marker.indexOf('home') == -1 && id == '-') {
+				var idMarker = id + marker
+				console.log("I'm removing " + idMarker)
 				$("[id = '" + idMarker + "']").remove()
 				//this line of code is used for deleting the row which represents a location just reached
 				$("#locationsToReach > tbody").children().eq(index).remove()

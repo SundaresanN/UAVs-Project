@@ -4,7 +4,7 @@ function updateGraphicAndDataStructureInformationOnOscillationSurvey(data){
 									" - battery: " + data['battery'] + "<br>" +
 									" - #oscillations: " + data['oscillations'] + "<br>"
 
-	textToDisplay = "Drone " + data['name'] + ' has completed its flight for the oscillation survey, now it is coming back home'
+	textToDisplay += "Drone " + data['name'] + ' has completed its flight for the oscillation survey, now it is coming back home'
 	var divToDisplay = "<div class='well well-lg'>" + textToDisplay + "</div>"
 	$("#liveFlightInformation").children().eq(0).children().eq(0).children().eq(1).prepend(divToDisplay)
 

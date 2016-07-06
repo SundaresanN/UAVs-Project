@@ -35,7 +35,6 @@ class Drone():
 	def connect(self):
 		self.vehicle = connect('udpout:10.1.1.10:14560', wait_ready=True)
 		self.vehicle.airspeed = 1
-		self.fileTest = open("test" + self.name + ".txt", "a")
 
 	def getCurrentLocation(self):
 		location = self.vehicle.location.global_frame
@@ -84,35 +83,31 @@ class Drone():
 	This function is private because I don't want that someone could decide to only taking off, if the drone should consume battery, this consumption must be on flight.
 	'''
 	def __armAndTakeOff__(self):
+		print "Inside take off of ", self.name
 		start = time.time()
-
-		print "Inside take off"
-
-		print self.name + " is armable: ", self.vehicle.is_armable
-		print self.name + " armed: ", self.vehicle.armed
+		time.sleep(3)
+		end = time.time()
+		self.fileTest.write("Take off time required: " + str(end - start) + "\n")
+		return
 
 		print self.name + " is taking off..."
-
 		while not self.vehicle.is_armable:
 			print "Waiting for vehicle to initialise..."
-
 		self.vehicle.mode = VehicleMode('GUIDED')
 		self.vehicle.armed = True
 		print self.name + " armed: ", self.vehicle.armed
 		while not self.vehicle.armed:
 			print "Waiting for arming..."
 			time.sleep(1)
-
 		self.vehicle.simple_takeoff(self.takeOffAltitude)
 		#print "self.vehicle.simple_takeoff(self.takeOffAltitude), ", self.takeOffAltitude
+		'''
+		Waiting for a safe altitude for having a flight
+		'''
 		while True:
-			'''
-			Waiting for a safe altitude for having a flight
-			'''
 			if self.vehicle.location.global_relative_frame.alt <= self.takeOffAltitude*0.8:
 				end = time.time()
-				self.fileTest.write("Take off time required: ", (end - start))
-				self.fileTest.write("\n")
+				self.fileTest.write("Take off time required: " + str(end - start) + "\n")
 				return
 
 	'''
@@ -124,13 +119,13 @@ class Drone():
 	some some points of the code.
 	'''
 	def flight(self, connectionManager, socket):
-
+		self.fileTest = open("test " + self.name + ".txt", "a")
 		print "Inside Flight ", self.name
 		self.__connectToMyNetwork__(connectionManager)
 
 		start = time.time()
-		self.fileTest.write("Flight starts on ", time.strftime("%c"))
-		self.fileTest.write("\nInitial Battery Level: ", self.getBattery())
+		self.fileTest.write("Flight starts on " +  str(time.strftime("%c")))
+		self.fileTest.write("\nInitial Battery Level: " +  str(self.getBattery()))
 		self.fileTest.write("\n")
 
 		self.__armAndTakeOff__()
@@ -142,14 +137,16 @@ class Drone():
 			self.__connectToMyNetwork__(connectionManager)
 			droneCurrentLocation = self.vehicle.location.global_relative_frame
 			distanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(droneCurrentLocation, location)
-			#print "self.vehicle.simple_goto(location), ", location
-			self.vehicle.simple_goto(location)
+			print "self.vehicle.simple_goto(location), ", location
+			#self.vehicle.simple_goto(location)
 			'''
 			Now I have to check the location of the drone in flight, this because dronekit API is thought in order to have
 			flight to single point and if I immediatelly send another location to reach, the drone will immediatelly change
 			direction of its flight and it will go towards the new location I've just sent.
 			'''
 			while True:
+				print "Checking distance from location to reach..."
+				tollerance = 1
 				eventlet.sleep(self.__generatingRandomSleepTime__())
 				self.__connectToMyNetwork__(connectionManager)
 				currentDroneLocation = self.vehicle.location.global_relative_frame
@@ -158,26 +155,25 @@ class Drone():
 				print 'Drone: ' + self.name + ' remaining distance: ', remainingDistanceToNextLocation
 				#self.__sendFlightDataToClientUsingSocket__(socket, currentDroneLocation, reached = False, RTLMode = False, 'normal', None)
 				#If I've just reached the location, I need to take a picture
-				if remainingDistanceToNextLocation <= distanceToNextLocation*0.05:
+				if remainingDistanceToNextLocation <= distanceToNextLocation*tollerance:
 					print "Drone " + self.name + " is taking a picture..."
-					self.__takeAPicture__()
-					self.fileTest.write("Location:\n\t- latitude %f \n\t- longitude %f\n\t- altitude %f\n\t- battery %d\n", %(location.lat, location.lon, location.alt, self.getBattery())
+					#self.__takeAPicture__()
+					self.fileTest.write("Location:\n\t- latitude: " + str(location.lat))
+					self.fileTest.write("\n\t- longitude: " +  str(location.lon))
+					self.fileTest.write("\n\t- altitude: " + str(location.alt))
+					self.fileTest.write("\n\t- battery: " + str(self.getBattery()) + "\n")
 					self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False, typeOfSurvey = 'normal', numberOfOscillations = None)
 					break
 
-				'''self.__takeAPicture__()
-				self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False, typeOfSurvey = 'normal', numberOfOscillations = None)
-				print "############################################################"
-				break'''
 		'''
 		Now it's time to come back home
 		'''
 		print "Removing all the elements in the list of locations to reach"
 		self.__removeAllTheElementInTheListOfLocationsToReach__()
 		self.__connectToMyNetwork__(connectionManager)
-		self.vehicle.mode = VehicleMode('RTL')
+		print "self.vehicle.mode = VehicleMode('RTL')"
 		end = time.time()
-		self.fileTest.write("Flight time: ", (end-start))
+		self.fileTest.write("\nFlight time: " + str(end-start))
 		self.fileTest.write("\n###########################################\n")
 		self.fileTest.close()
 		self.__sendFlightDataToClientUsingSocket__(socket, self.vehicle.location.global_frame, reached = False, RTLMode = True, typeOfSurvey = 'normal', numberOfOscillations = None)
@@ -189,38 +185,45 @@ class Drone():
 	kind of flight with other request.
 	'''
 	def oscillationFlight(self, connectionManager, socket):
+		self.fileTest = open("test " + self.name + ".txt", "a")
 		#I need to know if I have two differnt locations in terms of lat, lon and alt or I have same locations but with differnt altitude
-		sameLocation = self.listOfLocationsToReach[0].lat == self.listOfLocationsToReach[1].lat and self.listOfLocationsToReach[0].lat == self.listOfLocationsToReach[1].lat
-		self.__connectToMyNetwork__(connectionManager)
-
+		sameLocation = self.listOfLocationsToReach[0].lat == self.listOfLocationsToReach[1].lat and self.listOfLocationsToReach[0].lon == self.listOfLocationsToReach[1].lon
+		if sameLocation is True:
+			print "Same location but different altitude"
+		#self.__connectToMyNetwork__(connectionManager)
 		start = time.time()
-		self.fileTest.write("Oscillation Flight starts on ", time.strftime("%c"))
-		self.fileTest.write("\nInitial Battery Level: ", self.getBattery())
-		self.fileTest.write("\n")
+		self.fileTest.write("Oscillation Flight starts on " +  str(time.strftime("%c")))
+		self.fileTest.write("\nInitial Battery Level: " + str(self.getBattery()))
 		self.__armAndTakeOff__()
 		time.sleep(2)
-		batteryLimit = 20
+		batteryLimit = 84
 		locationBool = False #it means the first location to reach
 		numberOfOscillations = 0
 
 		while self.vehicle.battery.level >= batteryLimit:
-			self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False, typeOfSurvey = 'normal', numberOfOscillations = None)
 			print "Battery: ", self.vehicle.battery.level
 			location = self.listOfLocationsToReach[locationBool]
 			droneCurrentLocation = self.vehicle.location.global_relative_frame
 			distanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(droneCurrentLocation, location)
 			#writing on the log file
-			self.fileTest.write("Location %d:\n\t- latitude %f \n\t- longitude %f\n\t- altitude %f\n\t- battery %d\n", %(location.lat, location.lon, location.alt, self.getBattery())
+			self.fileTest.write("Location:\n\t- latitude: " + str(location.lat))
+			self.fileTest.write("\n\t- longitude: " + str(location.lon))
+			self.fileTest.write("\n\t- altitude: " + str(location.alt))
+			self.fileTest.write("\n\t- battery: " + str(self.getBattery()) + "\n")
+
 			print "Flying towards location: ", location
-			self.vehicle.simple_goto(location)
+			#self.vehicle.simple_goto(location)
 			'''
 			Waiting drone arrives to this location
 			'''
 			while True:
+				time.sleep(5)
 				'''
 				If drone has just reached the location(even if there are same locations or not), I need go to the other location
 				'''
+				print "Checking distance from location to reach..."
 				if sameLocation == True:
+					print "Same location flight"
 					altitudeToReach = location.alt
 					if self.vehicle.location.global_relative_frame.alt <= altitudeToReach*0.95:
 						locationBool = not locationBool
@@ -228,8 +231,10 @@ class Drone():
 							numberOfOscillations = numberOfOscillations + 1
 						break
 				else:
+					tollerance = 1
 					remainingDistanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(self.vehicle.location.global_relative_frame, location)
-					if remainingDistanceToNextLocation <= distanceToNextLocation * 0.05:
+					if remainingDistanceToNextLocation <= distanceToNextLocation * tollerance:
+						print "Changing location to reach for the oscillation flight"
 						locationBool = not locationBool
 						if locationBool == 0:
 							numberOfOscillations = numberOfOscillations + 1
@@ -237,11 +242,10 @@ class Drone():
 
 		print "Removing locations to reach"
 		self.__removeAllTheElementInTheListOfLocationsToReach__(twoLocationsToRemove = True)
-		#self.__sendFlightDataToClientUsingSocket__(socket, None, reached = None, RTLMode = None, typeOfSurvey = 'oscillation', numberOfOscillations = numberOfOscillations)
-		self.vehicle.mode = VehicleMode('RTL')
+		print "self.vehicle.mode = VehicleMode('RTL')"
 		end = time.time()
-		self.fileTest.write("Number of oscillations: ", numberOfOscillations)
-		self.fileTest.write("Flight time: ", (end-start))
+		self.fileTest.write("\nNumber of oscillations: " + str(numberOfOscillations))
+		self.fileTest.write("\nFlight time: " + str(end-start))
 		self.fileTest.write("\n###########################################\n")
 		self.fileTest.close()
 		return {

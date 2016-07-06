@@ -166,7 +166,7 @@ def missionDivision(pointList, droneList):
     picListLength=len(pointList['picList'])
     picListMidpoint=int(picListLength/2)
     if len(droneList)==3:
-        dividedMission['UAVs'].append({'name':dronelist[0], 'points':pointList['picList']})
+        dividedMission['UAVs'].append({'name': droneList[0], 'points': pointList['picList']})
         return dividedMission
 
     elif len(droneList)==6:
