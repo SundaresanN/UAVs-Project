@@ -127,7 +127,7 @@ class ServerBrain:
 	This method creates a thread for a drone's flight.
 	'''
 	def takeAFlight(self, drone):
-		eventlet.spawn(self.drones[drone].flight, self.connectionManager, self.socket)
+		eventlet.spawn(self.drones[drone].missionFlight, self.connectionManager, self.socket)
 
 
 	'''
@@ -145,7 +145,7 @@ class ServerBrain:
 			if self.drones[drone] is not None:
 				if len(self.drones[drone].listOfLocationsToReach)>0:
 					print "rectangular flight for ", drone
-					eventlet.spawn(self.drones[drone].flight, self.connectionManager, self.socket)
+					eventlet.spawn(self.drones[drone].missionFlight, self.connectionManager, self.socket)
 					time.sleep(5)
 	'''
 	This method doesn't create a thread for the following kind of flight. We need to talk about

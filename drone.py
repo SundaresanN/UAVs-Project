@@ -1,4 +1,4 @@
-from dronekit import connect, VehicleMode, LocationGlobal, LocationGlobalRelative
+from dronekit import connect, VehicleMode, LocationGlobal, LocationGlobalRelative, Command
 from flask import jsonify
 import random
 from wireless import Wireless
@@ -118,6 +118,80 @@ class Drone():
 	This method will be in concurrency with the other threads, so this is why I will use eventlet.sleep(random.random()) in
 	some some points of the code.
 	'''
+	def missionFlight(self, connectionManager, socket):
+		print "Inside Mission Flight ", self.name
+		self.fileTest = open("test " + self.name + ".txt", "a")
+		print "len: ", len(self.listOfLocationsToReach)
+		self.__connectToMyNetwork__(connectionManager)
+
+		cmds = self.vehicle.commands
+		cmds.download()
+		cmds.wait_ready()
+		cmds.clear()
+		#adding take off command
+		takeOffCmd = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, 0, 0, 0, 0, 0, self.takeOffAltitude)
+		cmds.add(takeOffCmd)
+		#adding waypoint and takeAPicture commands
+		for location in self.listOfLocationsToReach:
+			locationCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, location.lat, location.lon, location.alt)
+			pictureCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_DO_DIGICAM_CONTROL, 0, 0, 1, 0, 0, 0, 1, 0, 0)
+			cmds.add(locationCommand)
+			cmds.add(pictureCommand)
+
+		cmds.upload() #sending commands to UAV
+		self.vehicle.commands.next = 0 #reset mission set to first(0) waypoint
+		start = time.time()
+		self.vehicle.mode = VehicleMode('AUTO') #starting the mission
+		#writing on the file
+		self.fileTest.write("Mission Flight starts on " +  str(time.strftime("%c")))
+		self.fileTest.write("\nInitial Battery Level: " +  str(self.getBattery()) + "\n")
+		print "Vehicle Mode: " + str(self.vehicle.mode)
+		eventlet.sleep(self.__generatingRandomSleepTime__())
+		exit = False
+		lastLocationsIndex = len(self.listOfLocationsToReach)-1
+		for cmd in self.vehicle.commands:
+			print cmd
+
+		while exit is False:
+			print "inside the while"
+			for index in xrange(0, len(self.listOfLocationsToReach)):
+				self.__connectToMyNetwork__(connectionManager)
+				next = self.vehicle.commands.next
+				print "Next: ", next
+				#checks if UAV has reached the last locations
+				if next == lastLocationsIndex*2+1:
+					exit = True
+					#clean everything -> send all the information to client
+					for location in self.listOfLocationsToReach:
+						if self.listOfLocationsToReach[index] is not None:
+							self.fileTest.write("Location:\n\t- latitude: " + str(location.lat))
+							self.fileTest.write("\n\t- longitude: " +  str(location.lon))
+							self.fileTest.write("\n\t- altitude: " + str(location.alt))
+							self.fileTest.write("\n\t- battery: " + str(self.getBattery()) + "\n")
+							self.__sendFlightDataToClientUsingSocket__(socket, self.listOfLocationsToReach[index], reached = True, RTLMode = False, typeOfSurvey = 'normal', numberOfOscillations = None)
+				if next > (index*2+1):
+					self.listOfLocationsToReach[index] = None
+					if self.listOfLocationsToReach[index] is not None:
+						self.fileTest.write("Location:\n\t- latitude: " + str(self.listOfLocationsToReach[index].lat))
+						self.fileTest.write("\n\t- longitude: " +  str(self.listOfLocationsToReach[index].lon))
+						self.fileTest.write("\n\t- altitude: " + str(self.listOfLocationsToReach[index].alt))
+						self.fileTest.write("\n\t- battery: " + str(self.getBattery()) + "\n")
+						self.__sendFlightDataToClientUsingSocket__(socket, self.listOfLocationsToReach[index], reached = True, RTLMode = False, typeOfSurvey = 'normal', numberOfOscillations = None)
+				print "Next cycle"
+				eventlet.sleep(self.__generatingRandomSleepTime__())
+
+		self.__removeAllTheElementInTheListOfLocationsToReach__()
+		self.__connectToMyNetwork__(connectionManager)
+		self.vehicle.mode = VehicleMode('GUIDED')
+		self.vehicle.mode = VehicleMode('RTL')
+		end = time.time()
+		self.fileTest.write("\nFlight time: " + str(end-start))
+		self.fileTest.write("\n###########################################\n")
+		self.fileTest.close()
+		self.__sendFlightDataToClientUsingSocket__(socket, self.vehicle.location.global_frame, reached = False, RTLMode = True, typeOfSurvey = 'normal', numberOfOscillations = None)
+		time.sleep(2)
+
+
 	def flight(self, connectionManager, socket):
 		self.fileTest = open("test " + self.name + ".txt", "a")
 		print "Inside Flight ", self.name
