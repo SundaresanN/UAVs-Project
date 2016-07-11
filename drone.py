@@ -128,9 +128,14 @@ class Drone():
 		cmds.download()
 		cmds.wait_ready()
 		cmds.clear()
+		'''
+		I need to decide which take off command I want, MAVLink message or private method built in this class
+		'''
+		#self.__armAndTakeOff__()
 		#adding take off command
 		takeOffCmd = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, 0, 0, 0, 0, 0, self.takeOffAltitude)
 		cmds.add(takeOffCmd)
+
 		#adding waypoint and takeAPicture commands
 		for location in self.listOfLocationsToReach:
 			locationCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, location.lat, location.lon, location.alt)
@@ -327,6 +332,67 @@ class Drone():
 			'battery' : self.vehicle.battery.level,
 			'oscillations' : numberOfOscillations
 			}
+
+
+	def missionOscillationFlight(self):
+		self.fileTest = open("test " + self.name + ".txt", "a")
+
+		cmds = self.vehicle.commands
+		cmds.download()
+		cmds.wait_ready()
+		cmds.clear()
+		'''
+		I need to decide which take off command I want, MAVLink message or private method built in this class
+		'''
+		#self.__armAndTakeOff__()
+		#adding take off command
+		takeOffCmd = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, 0, 0, 0, 0, 0, self.takeOffAltitude)
+		cmds.add(takeOffCmd)
+		for value in xrange(0, 100):
+			#even
+			if value%2 == 0:
+				locationCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, self.listOfLocationsToReach[0].lat, self.listOfLocationsToReach[0].lon, self.listOfLocationsToReach[0].alt)
+			#odd
+			else:
+				locationCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, self.listOfLocationsToReach[1].lat, self.listOfLocationsToReach[1].lon, self.listOfLocationsToReach[1].alt)
+			cmds.add(locationCommand)
+		cmds.upload() #sending commands to UAV
+		self.vehicle.commands.next = 0 #reset mission set to first(0) waypoint
+		start = time.time() #starting timer
+		self.vehicle.mode = VehicleMode('AUTO') #starting the mission
+		#writing on the file
+		self.fileTest.write("Mission Flight starts on " +  str(time.strftime("%c")))
+		self.fileTest.write("\nInitial Battery Level: " +  str(self.getBattery()) + "\n")
+		numberOfOscillations = 0
+		batteryLimit = 20
+		while self.vehicle.battery.level >= batteryLimit:
+			next = self.vehicle.commands.next
+			print "Next command index: ", next
+			print "Next: ", self.vehicle.commands[next]
+			if next%2 != 0 and next > 1:
+				numberOfOscillations += 1
+
+			location = self.vehicle.location.global_relative_frame
+			self.fileTest.write("Location:\n\t- latitude: " + str(location.lat))
+			self.fileTest.write("\n\t- longitude: " + str(location.lon))
+			self.fileTest.write("\n\t- altitude: " + str(location.alt))
+			self.fileTest.write("\n\t- battery: " + str(self.getBattery()) + "\n")
+			time.sleep(2)
+
+		print "Removing locations to reach"
+		self.__removeAllTheElementInTheListOfLocationsToReach__(twoLocationsToRemove = True)
+		print "self.vehicle.mode = VehicleMode('RTL')"
+		end = time.time()
+		self.fileTest.write("\nNumber of oscillations: " + str(numberOfOscillations))
+		self.fileTest.write("\nFlight time: " + str(end-start))
+		self.fileTest.write("\n###########################################\n")
+		self.fileTest.close()
+		return {
+			'name' : self.name,
+			'battery' : self.vehicle.battery.level,
+			'oscillations' : numberOfOscillations
+			}
+
 
 	'''
 	With this function I set up the interface on the value of the this drone instance and after that I give

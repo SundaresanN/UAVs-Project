@@ -85,17 +85,6 @@ class ServerBrain:
 		for drone in data['drones']:
 			droneList.append(drone)
 			location = self.drones[drone].getCurrentLocation()
-			'''location = {}
-			if drone == 'Solo Gold':
-				location = {
-					'latitude': 37.924670,
-					'longitude': -91.772554
-				}
-			else:
-				location = {
-					'latitude': 37.924412,
-					'longitude': -91.76254
-				}'''
 			droneList.append(location['latitude'])
 			droneList.append(location['longitude'])
 
@@ -134,7 +123,7 @@ class ServerBrain:
 	This method allows the drone to have an oscillation flight.
 	'''
 	def takeAnOscillationFlight(self, drone):
-		data = self.drones[drone].oscillationFlight(self.connectionManager, self.socket)
+		data = self.drones[drone].missionOscillationFlight()
 		return data
 
 	'''
