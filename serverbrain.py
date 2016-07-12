@@ -68,9 +68,18 @@ class ServerBrain:
 	each drone involved in the survey on server side.
 	'''
 	def buildRectangularSurveyPoints(self, data):
+
 		points = data['locationsList']
 		altitude = points[0]['altitude']
 		involvedDrones = data['drones']
+		#check if involved drones are connected
+		for drone in involvedDrones:
+			if self.drones[drone] == None:
+				missionDivisionData = {
+					'response' : 'Connection Error',
+					'body': 'You need to be connected with the drones involved in the rectangular survey'
+				}
+				return missionDivisionData
 		pointsNewFormat = []
 		import rectPlan
 		for point in points:
@@ -94,18 +103,7 @@ class ServerBrain:
 		Assign locations to reach to each involved drone
 		'''
 		if missionDivisionData['response'] == 'Good' or missionDivisionData['response'] == 'Warn':
-			'''
-			Checking connection with all the drones involved.
-			'''
-			for UAVInfo in missionDivisionData['UAVs']:
-				drone = UAVInfo['name']
-				if self.drones[drone] == None:
-					missionDivisionData = {
-						'response' : 'Connection Error',
-						'body': 'You need to be connected with the drones involved in the rectangular survey'
-					}
-					return missionDivisionData
-				#filling the locations to reach array for each drone involved
+			#filling the locations to reach array for each drone involved
 			for UAVInfo in missionDivisionData['UAVs']:
 				drone = UAVInfo['name']
 				self.drones[drone].buildListOfLocations(UAVInfo['points'])

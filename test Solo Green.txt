@@ -1,0 +1,17 @@
+Mission Flight starts on Tue Jul 12 10:49:44 2016
+Initial Battery Level: 91
+Mission Flight starts on Tue Jul 12 11:00:37 2016
+Initial Battery Level: 87
+Take off time required: 9.53674316406e-07
+Mission Flight starts on Tue Jul 12 11:03:30 2016
+Initial Battery Level: 86
+Take off time required: 1.90734863281e-06
+Mission Flight starts on Tue Jul 12 11:06:42 2016
+Initial Battery Level: 84
+Take off time required: 9.53674316406e-07
+Mission Flight starts on Tue Jul 12 11:13:43 2016
+Initial Battery Level: 82
+Mission Flight starts on Tue Jul 12 11:15:04 2016
+Initial Battery Level: 82
+Mission Flight starts on Tue Jul 12 11:25:17 2016
+Initial Battery Level: 79
