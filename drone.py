@@ -118,23 +118,17 @@ class Drone():
 	some some points of the code.
 	'''
 	def missionFlight(self, connectionManager, socket):
-		print "Inside Mission Flight ", self.name
-		self.fileTest = open("test " + self.name + ".txt", "a")
-		print "len: ", len(self.listOfLocationsToReach)
-		self.__connectToMyNetwork__(connectionManager)
 
+		print "Mission Flight for ", self.name
+		self.fileTest = open("test " + self.name + ".txt", "a")
+		self.__connectToMyNetwork__(connectionManager)
+		#taking off command
+		self.__armAndTakeOff__()
+		#downloading and clearing the commands actually in the drone's memory
 		cmds = self.vehicle.commands
 		cmds.download()
 		cmds.wait_ready()
 		cmds.clear()
-		'''
-		I need to decide which take off command I want, MAVLink message or private method built in this class
-		'''
-		#self.__armAndTakeOff__()
-		#adding take off command
-		takeOffCmd = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, 0, 0, 0, 0, 0, self.takeOffAltitude)
-		cmds.add(takeOffCmd)
-
 		#adding waypoint and takeAPicture commands
 		for location in self.listOfLocationsToReach:
 			locationCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, location.lat, location.lon, location.alt)
@@ -142,14 +136,16 @@ class Drone():
 			cmds.add(locationCommand)
 			cmds.add(pictureCommand)
 
-		cmds.upload() #sending commands to UAV
+		#sending commands to UAV
+		cmds.upload()
 		self.vehicle.commands.next = 0 #reset mission set to first(0) waypoint
+
 		start = time.time()
 		self.vehicle.mode = VehicleMode('AUTO') #starting the mission
 		#writing on the file
 		self.fileTest.write("Mission Flight starts on " +  str(time.strftime("%c")))
 		self.fileTest.write("\nInitial Battery Level: " +  str(self.getBattery()) + "\n")
-		print "Vehicle Mode: " + str(self.vehicle.mode)
+
 		eventlet.sleep(self.__generatingRandomSleepTime__())
 
 		index = 0
@@ -161,15 +157,15 @@ class Drone():
 				next-=1
 			while index >= (next/2):
 				location == self.listOfLocationsToReach[index]
-				#printing in the file
+				#writing on the file
 				self.fileTest.write("Location:\n\t- latitude: " + str(location.lat))
 				self.fileTest.write("\n\t- longitude: " +  str(location.lon))
 				self.fileTest.write("\n\t- altitude: " + str(location.alt))
 				self.fileTest.write("\n\t- battery: " + str(self.getBattery()) + "\n")
-				#socket
+				#sending information via socket
 				self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False, typeOfSurvey = 'normal', numberOfOscillations = None)
 				index+=1
-
+			#checking if drone has endend its trip
 			if index == len(self.listOfLocationsToReach):
 				break
 			eventlet.sleep(self.__generatingRandomSleepTime__())
