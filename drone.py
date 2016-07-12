@@ -85,10 +85,9 @@ class Drone():
 	def __armAndTakeOff__(self):
 		print "Inside take off of ", self.name
 		start = time.time()
-		time.sleep(3)
+
 		end = time.time()
 		self.fileTest.write("Take off time required: " + str(end - start) + "\n")
-		return
 
 		print self.name + " is taking off..."
 		while not self.vehicle.is_armable:
@@ -152,38 +151,28 @@ class Drone():
 		self.fileTest.write("\nInitial Battery Level: " +  str(self.getBattery()) + "\n")
 		print "Vehicle Mode: " + str(self.vehicle.mode)
 		eventlet.sleep(self.__generatingRandomSleepTime__())
-		exit = False
-		lastLocationsIndex = len(self.listOfLocationsToReach)-1
-		for cmd in self.vehicle.commands:
-			print cmd
 
-		while exit is False:
-			print "inside the while"
-			for index in xrange(0, len(self.listOfLocationsToReach)):
-				self.__connectToMyNetwork__(connectionManager)
-				next = self.vehicle.commands.next
-				print "Next: ", next
-				#checks if UAV has reached the last locations
-				if next == lastLocationsIndex*2+1:
-					exit = True
-					#clean everything -> send all the information to client
-					for location in self.listOfLocationsToReach:
-						if self.listOfLocationsToReach[index] is not None:
-							self.fileTest.write("Location:\n\t- latitude: " + str(location.lat))
-							self.fileTest.write("\n\t- longitude: " +  str(location.lon))
-							self.fileTest.write("\n\t- altitude: " + str(location.alt))
-							self.fileTest.write("\n\t- battery: " + str(self.getBattery()) + "\n")
-							self.__sendFlightDataToClientUsingSocket__(socket, self.listOfLocationsToReach[index], reached = True, RTLMode = False, typeOfSurvey = 'normal', numberOfOscillations = None)
-				if next > (index*2+1):
-					self.listOfLocationsToReach[index] = None
-					if self.listOfLocationsToReach[index] is not None:
-						self.fileTest.write("Location:\n\t- latitude: " + str(self.listOfLocationsToReach[index].lat))
-						self.fileTest.write("\n\t- longitude: " +  str(self.listOfLocationsToReach[index].lon))
-						self.fileTest.write("\n\t- altitude: " + str(self.listOfLocationsToReach[index].alt))
-						self.fileTest.write("\n\t- battery: " + str(self.getBattery()) + "\n")
-						self.__sendFlightDataToClientUsingSocket__(socket, self.listOfLocationsToReach[index], reached = True, RTLMode = False, typeOfSurvey = 'normal', numberOfOscillations = None)
-				print "Next cycle"
-				eventlet.sleep(self.__generatingRandomSleepTime__())
+		index = 0
+		while True:
+			self.__connectToMyNetwork__(connectionManager)
+			#I'm getting next command from drone in flight
+			next = self.vehicle.commands.next
+			if next%2!=0:
+				next-=1
+			while index >= (next/2):
+				location == self.listOfLocationsToReach[index]
+				#printing in the file
+				self.fileTest.write("Location:\n\t- latitude: " + str(location.lat))
+				self.fileTest.write("\n\t- longitude: " +  str(location.lon))
+				self.fileTest.write("\n\t- altitude: " + str(location.alt))
+				self.fileTest.write("\n\t- battery: " + str(self.getBattery()) + "\n")
+				#socket
+				self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False, typeOfSurvey = 'normal', numberOfOscillations = None)
+				index+=1
+
+			if index == len(self.listOfLocationsToReach):
+				break
+			eventlet.sleep(self.__generatingRandomSleepTime__())
 
 		self.__removeAllTheElementInTheListOfLocationsToReach__()
 		self.__connectToMyNetwork__(connectionManager)
@@ -195,7 +184,6 @@ class Drone():
 		self.fileTest.close()
 		self.__sendFlightDataToClientUsingSocket__(socket, self.vehicle.location.global_frame, reached = False, RTLMode = True, typeOfSurvey = 'normal', numberOfOscillations = None)
 		time.sleep(2)
-
 
 	def flight(self, connectionManager, socket):
 		self.fileTest = open("test " + self.name + ".txt", "a")
@@ -291,7 +279,7 @@ class Drone():
 			self.fileTest.write("\n\t- battery: " + str(self.getBattery()) + "\n")
 
 			print "Flying towards location: ", location
-			#self.vehicle.simple_goto(location)
+			self.vehicle.simple_goto(location)
 			'''
 			Waiting drone arrives to this location
 			'''
@@ -310,7 +298,7 @@ class Drone():
 							numberOfOscillations = numberOfOscillations + 1
 						break
 				else:
-					tollerance = 1
+					tollerance = 0.1
 					remainingDistanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(self.vehicle.location.global_relative_frame, location)
 					if remainingDistanceToNextLocation <= distanceToNextLocation * tollerance:
 						print "Changing location to reach for the oscillation flight"
@@ -321,7 +309,7 @@ class Drone():
 
 		print "Removing locations to reach"
 		self.__removeAllTheElementInTheListOfLocationsToReach__(twoLocationsToRemove = True)
-		print "self.vehicle.mode = VehicleMode('RTL')"
+		self.vehicle.mode = VehicleMode('RTL')
 		end = time.time()
 		self.fileTest.write("\nNumber of oscillations: " + str(numberOfOscillations))
 		self.fileTest.write("\nFlight time: " + str(end-start))
@@ -337,18 +325,12 @@ class Drone():
 	def missionOscillationFlight(self):
 		self.fileTest = open("test " + self.name + ".txt", "a")
 
+		self.__armAndTakeOff__()
 		cmds = self.vehicle.commands
 		cmds.download()
 		cmds.wait_ready()
 		cmds.clear()
-		'''
-		I need to decide which take off command I want, MAVLink message or private method built in this class
-		'''
-		#self.__armAndTakeOff__()
-		#adding take off command
-		takeOffCmd = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, 0, 0, 0, 0, 0, self.takeOffAltitude)
-		cmds.add(takeOffCmd)
-		for value in xrange(0, 100):
+		for value in xrange(0, 200):
 			#even
 			if value%2 == 0:
 				locationCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, self.listOfLocationsToReach[0].lat, self.listOfLocationsToReach[0].lon, self.listOfLocationsToReach[0].alt)
@@ -369,7 +351,7 @@ class Drone():
 			next = self.vehicle.commands.next
 			print "Next command index: ", next
 			print "Next: ", self.vehicle.commands[next]
-			if next%2 != 0 and next > 1:
+			if next%2 == 0 and next > 1:
 				numberOfOscillations += 1
 
 			location = self.vehicle.location.global_relative_frame
@@ -381,7 +363,8 @@ class Drone():
 
 		print "Removing locations to reach"
 		self.__removeAllTheElementInTheListOfLocationsToReach__(twoLocationsToRemove = True)
-		print "self.vehicle.mode = VehicleMode('RTL')"
+		self.vehicle.mode = VehicleMode('GUIDED')
+		self.vehicle.mode = VehicleMode('RTL')
 		end = time.time()
 		self.fileTest.write("\nNumber of oscillations: " + str(numberOfOscillations))
 		self.fileTest.write("\nFlight time: " + str(end-start))

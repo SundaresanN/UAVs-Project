@@ -1,0 +1,396 @@
+Mission Flight starts on Mon Jul 11 17:26:16 2016
+Initial Battery Level: 98
+Location:
+	- latitude: 37.9243594
+	- longitude: -91.7722665
+	- altitude: 2.13
+	- battery: 98
+Location:
+	- latitude: 37.9243596
+	- longitude: -91.7722658
+	- altitude: 2.28
+	- battery: 98
+Location:
+	- latitude: 37.9243599
+	- longitude: -91.7722662
+	- altitude: 2.31
+	- battery: 98
+Location:
+	- latitude: 37.92436
+	- longitude: -91.7722666
+	- altitude: 2.33
+	- battery: 98
+Location:
+	- latitude: 37.9243602
+	- longitude: -91.7722669
+	- altitude: 2.34
+	- battery: 98
+Location:
+	- latitude: 37.9243604
+	- longitude: -91.7722669
+	- altitude: 2.39
+	- battery: 98
+Location:
+	- latitude: 37.9243605
+	- longitude: -91.7722669
+	- altitude: 2.41
+	- battery: 98
+Location:
+	- latitude: 37.9243604
+	- longitude: -91.772267
+	- altitude: 2.46
+	- battery: 98
+Location:
+	- latitude: 37.9243602
+	- longitude: -91.7722671
+	- altitude: 2.45
+	- battery: 98
+Location:
+	- latitude: 37.9243603
+	- longitude: -91.7722671
+	- altitude: 2.32
+	- battery: 98
+Location:
+	- latitude: 37.9243607
+	- longitude: -91.772267
+	- altitude: 2.27
+	- battery: 98
+Location:
+	- latitude: 37.9243605
+	- longitude: -91.7722672
+	- altitude: 2.26
+	- battery: 98
+Location:
+	- latitude: 37.9243603
+	- longitude: -91.7722673
+	- altitude: 2.31
+	- battery: 98
+Location:
+	- latitude: 37.9243602
+	- longitude: -91.7722675
+	- altitude: 2.4
+	- battery: 98
+Location:
+	- latitude: 37.9243602
+	- longitude: -91.7722675
+	- altitude: 2.38
+	- battery: 98
+Location:
+	- latitude: 37.9243601
+	- longitude: -91.7722675
+	- altitude: 2.36
+	- battery: 98
+Location:
+	- latitude: 37.9243599
+	- longitude: -91.7722675
+	- altitude: 2.33
+	- battery: 98
+Location:
+	- latitude: 37.9243599
+	- longitude: -91.7722678
+	- altitude: 2.29
+	- battery: 98
+Location:
+	- latitude: 37.9243602
+	- longitude: -91.7722681
+	- altitude: 2.28
+	- battery: 98
+Location:
+	- latitude: 37.9243602
+	- longitude: -91.7722681
+	- altitude: 2.26
+	- battery: 98
+Location:
+	- latitude: 37.9243595
+	- longitude: -91.7722682
+	- altitude: 2.29
+	- battery: 98
+Location:
+	- latitude: 37.9243591
+	- longitude: -91.7722681
+	- altitude: 2.32
+	- battery: 98
+Location:
+	- latitude: 37.9243594
+	- longitude: -91.7722673
+	- altitude: 2.41
+	- battery: 98
+Location:
+	- latitude: 37.9243593
+	- longitude: -91.7722669
+	- altitude: 2.5
+	- battery: 98
+Location:
+	- latitude: 37.9243588
+	- longitude: -91.7722666
+	- altitude: 2.5
+	- battery: 98
+Location:
+	- latitude: 37.9243582
+	- longitude: -91.7722665
+	- altitude: 2.54
+	- battery: 98
+Location:
+	- latitude: 37.9243578
+	- longitude: -91.7722663
+	- altitude: 2.52
+	- battery: 98
+Location:
+	- latitude: 37.9243572
+	- longitude: -91.7722662
+	- altitude: 2.53
+	- battery: 98
+Location:
+	- latitude: 37.924357
+	- longitude: -91.7722661
+	- altitude: 2.54
+	- battery: 98
+Location:
+	- latitude: 37.9243566
+	- longitude: -91.7722661
+	- altitude: 2.54
+	- battery: 98
+Location:
+	- latitude: 37.9243562
+	- longitude: -91.7722664
+	- altitude: 2.53
+	- battery: 98
+Location:
+	- latitude: 37.924356
+	- longitude: -91.7722668
+	- altitude: 2.49
+	- battery: 98
+Location:
+	- latitude: 37.9243562
+	- longitude: -91.7722668
+	- altitude: 2.43
+	- battery: 98
+Location:
+	- latitude: 37.9243564
+	- longitude: -91.7722666
+	- altitude: 2.46
+	- battery: 98
+Location:
+	- latitude: 37.9243562
+	- longitude: -91.7722665
+	- altitude: 2.55
+	- battery: 98
+Location:
+	- latitude: 37.924356
+	- longitude: -91.7722661
+	- altitude: 2.67
+	- battery: 98
+Location:
+	- latitude: 37.9243557
+	- longitude: -91.772266
+	- altitude: 2.68
+	- battery: 98
+Location:
+	- latitude: 37.9243557
+	- longitude: -91.7722659
+	- altitude: 2.59
+	- battery: 98
+Location:
+	- latitude: 37.9243559
+	- longitude: -91.7722657
+	- altitude: 2.57
+	- battery: 98
+Location:
+	- latitude: 37.924356
+	- longitude: -91.7722658
+	- altitude: 2.56
+	- battery: 98
+Location:
+	- latitude: 37.9243559
+	- longitude: -91.7722657
+	- altitude: 2.54
+	- battery: 98
+Location:
+	- latitude: 37.9243559
+	- longitude: -91.7722659
+	- altitude: 2.59
+	- battery: 98
+Location:
+	- latitude: 37.924356
+	- longitude: -91.7722661
+	- altitude: 2.59
+	- battery: 98
+Location:
+	- latitude: 37.9243562
+	- longitude: -91.7722667
+	- altitude: 2.59
+	- battery: 98
+Location:
+	- latitude: 37.9243568
+	- longitude: -91.772267
+	- altitude: 2.64
+	- battery: 98
+Location:
+	- latitude: 37.9243573
+	- longitude: -91.7722672
+	- altitude: 2.68
+	- battery: 98
+Location:
+	- latitude: 37.9243575
+	- longitude: -91.7722672
+	- altitude: 2.7
+	- battery: 98
+Location:
+	- latitude: 37.9243577
+	- longitude: -91.772267
+	- altitude: 2.75
+	- battery: 98
+Location:
+	- latitude: 37.924358
+	- longitude: -91.7722669
+	- altitude: 2.73
+	- battery: 98
+Location:
+	- latitude: 37.924358
+	- longitude: -91.7722669
+	- altitude: 2.71
+	- battery: 98
+Location:
+	- latitude: 37.9243582
+	- longitude: -91.7722668
+	- altitude: 2.69
+	- battery: 98
+Location:
+	- latitude: 37.9243585
+	- longitude: -91.7722669
+	- altitude: 2.64
+	- battery: 98
+Location:
+	- latitude: 37.9243582
+	- longitude: -91.7722671
+	- altitude: 2.68
+	- battery: 98
+Location:
+	- latitude: 37.9243583
+	- longitude: -91.772267
+	- altitude: 2.76
+	- battery: 98
+Location:
+	- latitude: 37.9243583
+	- longitude: -91.7722671
+	- altitude: 2.83
+	- battery: 98
+Location:
+	- latitude: 37.9243583
+	- longitude: -91.7722676
+	- altitude: 2.9
+	- battery: 98
+Location:
+	- latitude: 37.9243584
+	- longitude: -91.7722679
+	- altitude: 2.95
+	- battery: 98
+Location:
+	- latitude: 37.9243586
+	- longitude: -91.7722679
+	- altitude: 3.02
+	- battery: 98
+Location:
+	- latitude: 37.9243586
+	- longitude: -91.7722679
+	- altitude: 3.02
+	- battery: 98
+Location:
+	- latitude: 37.9243587
+	- longitude: -91.7722682
+	- altitude: 3.03
+	- battery: 98
+Location:
+	- latitude: 37.9243588
+	- longitude: -91.7722682
+	- altitude: 2.95
+	- battery: 98
+Location:
+	- latitude: 37.9243591
+	- longitude: -91.772268
+	- altitude: 2.87
+	- battery: 98
+Location:
+	- latitude: 37.9243592
+	- longitude: -91.7722684
+	- altitude: 2.77
+	- battery: 98
+Location:
+	- latitude: 37.9243594
+	- longitude: -91.7722684
+	- altitude: 2.71
+	- battery: 98
+Location:
+	- latitude: 37.9243594
+	- longitude: -91.7722684
+	- altitude: 2.73
+	- battery: 98
+Oscillation Flight starts on Mon Jul 11 17:30:14 2016
+Initial Battery Level: 97Take off time required: 3.00304198265
+Location:
+	- latitude: 37.9243078014
+	- longitude: -91.7718898294
+	- altitude: 10
+	- battery: 97
+Oscillation Flight starts on Mon Jul 11 17:32:36 2016
+Initial Battery Level: 97Take off time required: 0.0
+Take off time required: 3.00369596481
+Location:
+	- latitude: 37.9243204961
+	- longitude: -91.7718871472
+	- altitude: 10
+	- battery: 97
+Location:
+	- latitude: 37.9244103276
+	- longitude: -91.7718871472
+	- altitude: 10
+	- battery: 96
+Location:
+	- latitude: 37.9243204961
+	- longitude: -91.7718871472
+	- altitude: 10
+	- battery: 95
+Location:
+	- latitude: 37.9244103276
+	- longitude: -91.7718871472
+	- altitude: 10
+	- battery: 95
+Location:
+	- latitude: 37.9243204961
+	- longitude: -91.7718871472
+	- altitude: 10
+	- battery: 94
+Location:
+	- latitude: 37.9244103276
+	- longitude: -91.7718871472
+	- altitude: 10
+	- battery: 93
+Location:
+	- latitude: 37.9243204961
+	- longitude: -91.7718871472
+	- altitude: 10
+	- battery: 93
+Location:
+	- latitude: 37.9244103276
+	- longitude: -91.7718871472
+	- altitude: 10
+	- battery: 92
+Location:
+	- latitude: 37.9243204961
+	- longitude: -91.7718871472
+	- altitude: 10
+	- battery: 92
+Location:
+	- latitude: 37.9244103276
+	- longitude: -91.7718871472
+	- altitude: 10
+	- battery: 92
+Location:
+	- latitude: 37.9243204961
+	- longitude: -91.7718871472
+	- altitude: 10
+	- battery: 91
+Take off time required: 0.0
+Take off time required: 3.00371003151
+Mission Flight starts on Mon Jul 11 17:39:59 2016
+Initial Battery Level: 87

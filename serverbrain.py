@@ -107,7 +107,6 @@ class ServerBrain:
 					return missionDivisionData
 				#filling the locations to reach array for each drone involved
 			for UAVInfo in missionDivisionData['UAVs']:
-				print "Here"
 				drone = UAVInfo['name']
 				self.drones[drone].buildListOfLocations(UAVInfo['points'])
 		return missionDivisionData
