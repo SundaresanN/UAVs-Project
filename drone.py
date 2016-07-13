@@ -145,29 +145,29 @@ class Drone():
 		#writing on the file
 		self.fileTest.write("Mission Flight starts on " +  str(time.strftime("%c")))
 		self.fileTest.write("\nInitial Battery Level: " +  str(self.getBattery()) + "\n")
-
 		eventlet.sleep(self.__generatingRandomSleepTime__())
-
 		index = 0
+		next = -1
 		while True:
 			self.__connectToMyNetwork__(connectionManager)
 			#I'm getting next command from drone in flight
-			next = self.vehicle.commands.next
-			if next%2!=0:
-				next-=1
-			while index >= (next/2):
-				location == self.listOfLocationsToReach[index]
-				#writing on the file
-				self.fileTest.write("Location:\n\t- latitude: " + str(location.lat))
-				self.fileTest.write("\n\t- longitude: " +  str(location.lon))
-				self.fileTest.write("\n\t- altitude: " + str(location.alt))
-				self.fileTest.write("\n\t- battery: " + str(self.getBattery()) + "\n")
-				#sending information via socket
-				self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False, typeOfSurvey = 'normal', numberOfOscillations = None)
-				index+=1
-			#checking if drone has endend its trip
-			if index == len(self.listOfLocationsToReach):
-				break
+			if next != self.vehicle.commands.next:
+				next = self.vehicle.commands.next
+				if next%2!=0:
+					next-=1
+				while index >= (next/2):
+					location == self.listOfLocationsToReach[index]
+					#writing on the file
+					self.fileTest.write("Location:\n\t- latitude: " + str(location.lat))
+					self.fileTest.write("\n\t- longitude: " +  str(location.lon))
+					self.fileTest.write("\n\t- altitude: " + str(location.alt))
+					self.fileTest.write("\n\t- battery: " + str(self.getBattery()) + "\n")
+					#sending information via socket
+					self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False, typeOfSurvey = 'normal', numberOfOscillations = None)
+					index+=1
+				#checking if drone has endend its trip
+				if index == len(self.listOfLocationsToReach):
+					break
 			eventlet.sleep(self.__generatingRandomSleepTime__())
 
 		self.__removeAllTheElementInTheListOfLocationsToReach__()
@@ -326,7 +326,7 @@ class Drone():
 		cmds.download()
 		cmds.wait_ready()
 		cmds.clear()
-		for value in xrange(0, 200):
+		for value in xrange(0, 600):
 			#even
 			if value%2 == 0:
 				locationCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, self.listOfLocationsToReach[0].lat, self.listOfLocationsToReach[0].lon, self.listOfLocationsToReach[0].alt)
@@ -343,18 +343,18 @@ class Drone():
 		self.fileTest.write("\nInitial Battery Level: " +  str(self.getBattery()) + "\n")
 		numberOfOscillations = 0
 		batteryLimit = 20
+		next == -1
 		while self.vehicle.battery.level >= batteryLimit:
-			next = self.vehicle.commands.next
-			print "Next command index: ", next
-			print "Next: ", self.vehicle.commands[next]
-			if next%2 == 0 and next > 1:
-				numberOfOscillations += 1
-
-			location = self.vehicle.location.global_relative_frame
-			self.fileTest.write("Location:\n\t- latitude: " + str(location.lat))
-			self.fileTest.write("\n\t- longitude: " + str(location.lon))
-			self.fileTest.write("\n\t- altitude: " + str(location.alt))
-			self.fileTest.write("\n\t- battery: " + str(self.getBattery()) + "\n")
+			if next != self.vehicle.commands.next:
+				next = self.vehicle.commands.next
+				#counting the number of oscillations
+				if next%2 == 0 and next > 1:
+					numberOfOscillations += 1
+				location = self.vehicle.location.global_relative_frame
+				self.fileTest.write("Location:\n\t- latitude: " + str(location.lat))
+				self.fileTest.write("\n\t- longitude: " + str(location.lon))
+				self.fileTest.write("\n\t- altitude: " + str(location.alt))
+				self.fileTest.write("\n\t- battery: " + str(self.getBattery()) + "\n")
 			time.sleep(2)
 
 		print "Removing locations to reach"
