@@ -86,9 +86,6 @@ class Drone():
 		print "Inside take off of ", self.name
 		start = time.time()
 
-		end = time.time()
-		self.fileTest.write("Take off time required: " + str(end - start) + "\n")
-
 		print self.name + " is taking off..."
 		while not self.vehicle.is_armable:
 			print "Waiting for vehicle to initialise..."
@@ -122,8 +119,6 @@ class Drone():
 		print "Mission Flight for ", self.name
 		self.fileTest = open("test " + self.name + ".txt", "a")
 		self.__connectToMyNetwork__(connectionManager)
-		#taking off command
-		self.__armAndTakeOff__()
 		#downloading and clearing the commands actually in the drone's memory
 		cmds = self.vehicle.commands
 		cmds.download()
@@ -138,6 +133,9 @@ class Drone():
 
 		#sending commands to UAV
 		cmds.upload()
+		#taking off command
+		self.__armAndTakeOff__()
+
 		self.vehicle.commands.next = 0 #reset mission set to first(0) waypoint
 
 		start = time.time()
@@ -319,59 +317,59 @@ class Drone():
 
 
 	def missionOscillationFlight(self):
-		self.fileTest = open("test " + self.name + ".txt", "a")
+	  self.fileTest = open("test " + self.name + ".txt", "a")
 
-		self.__armAndTakeOff__()
-		cmds = self.vehicle.commands
-		cmds.download()
-		cmds.wait_ready()
-		cmds.clear()
-		for value in xrange(0, 600):
-			#even
-			if value%2 == 0:
-				locationCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, self.listOfLocationsToReach[0].lat, self.listOfLocationsToReach[0].lon, self.listOfLocationsToReach[0].alt)
-			#odd
-			else:
-				locationCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, self.listOfLocationsToReach[1].lat, self.listOfLocationsToReach[1].lon, self.listOfLocationsToReach[1].alt)
-			cmds.add(locationCommand)
-		cmds.upload() #sending commands to UAV
-		self.vehicle.commands.next = 0 #reset mission set to first(0) waypoint
-		start = time.time() #starting timer
-		self.vehicle.mode = VehicleMode('AUTO') #starting the mission
-		#writing on the file
-		self.fileTest.write("Mission Flight starts on " +  str(time.strftime("%c")))
-		self.fileTest.write("\nInitial Battery Level: " +  str(self.getBattery()) + "\n")
-		numberOfOscillations = 0
-		batteryLimit = 20
-		next == -1
-		while self.vehicle.battery.level >= batteryLimit:
-			if next != self.vehicle.commands.next:
-				next = self.vehicle.commands.next
-				#counting the number of oscillations
-				if next%2 == 0 and next > 1:
-					numberOfOscillations += 1
-				location = self.vehicle.location.global_relative_frame
-				self.fileTest.write("Location:\n\t- latitude: " + str(location.lat))
-				self.fileTest.write("\n\t- longitude: " + str(location.lon))
-				self.fileTest.write("\n\t- altitude: " + str(location.alt))
-				self.fileTest.write("\n\t- battery: " + str(self.getBattery()) + "\n")
-			time.sleep(2)
+	  cmds = self.vehicle.commands
+	  cmds.download()
+	  cmds.wait_ready()
+	  cmds.clear()
+	  for value in xrange(0, 500):
+	    #even
+	    if value%2 == 0:
+	      locationCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, self.listOfLocationsToReach[0].lat, self.listOfLocationsToReach[0].lon, self.listOfLocationsToReach[0].alt)
+	    #odd
+	    else:
+	      locationCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, self.listOfLocationsToReach[1].lat, self.listOfLocationsToReach[1].lon, self.listOfLocationsToReach[1].alt)
+	    cmds.add(locationCommand)
+	  cmds.upload() #sending commands to UAV
 
-		print "Removing locations to reach"
-		self.__removeAllTheElementInTheListOfLocationsToReach__(twoLocationsToRemove = True)
-		self.vehicle.mode = VehicleMode('GUIDED')
-		self.vehicle.mode = VehicleMode('RTL')
-		end = time.time()
-		self.fileTest.write("\nNumber of oscillations: " + str(numberOfOscillations))
-		self.fileTest.write("\nFlight time: " + str(end-start))
-		self.fileTest.write("\n###########################################\n")
-		self.fileTest.close()
-		return {
-			'name' : self.name,
-			'battery' : self.vehicle.battery.level,
-			'oscillations' : numberOfOscillations
-			}
+	  self.vehicle.commands.next = 0 #reset mission set to first(0) waypoint
+	  self.__armAndTakeOff__()
+	  start = time.time() #starting timer
+	  self.vehicle.mode = VehicleMode('AUTO') #starting the mission
+	  #writing on the file
+	  self.fileTest.write("Mission Flight starts on " +  str(time.strftime("%c")))
+	  self.fileTest.write("\nInitial Battery Level: " +  str(self.getBattery()) + "\n")
+	  numberOfOscillations = 0
+	  batteryLimit = 20
+	  next = -1
+	  while self.vehicle.battery.level >= batteryLimit:
+	    if next != self.vehicle.commands.next:
+	      next = self.vehicle.commands.next
+	      #counting the number of oscillations
+	      if next%2 == 0 and next > 1:
+	        numberOfOscillations += 1
+	      location = self.vehicle.location.global_relative_frame
+	      self.fileTest.write("Location:\n\t- latitude: " + str(location.lat))
+	      self.fileTest.write("\n\t- longitude: " + str(location.lon))
+	      self.fileTest.write("\n\t- altitude: " + str(location.alt))
+	      self.fileTest.write("\n\t- battery: " + str(self.getBattery()) + "\n")
+	    time.sleep(2)
 
+	  print "Removing locations to reach"
+	  self.__removeAllTheElementInTheListOfLocationsToReach__(twoLocationsToRemove = True)
+	  self.vehicle.mode = VehicleMode('GUIDED')
+	  self.vehicle.mode = VehicleMode('RTL')
+	  end = time.time()
+	  self.fileTest.write("\nNumber of oscillations: " + str(numberOfOscillations))
+	  self.fileTest.write("\nFlight time: " + str(end-start))
+	  self.fileTest.write("\n###########################################\n")
+	  self.fileTest.close()
+	  return {
+	    'name' : self.name,
+	    'battery' : self.vehicle.battery.level,
+	    'oscillations' : numberOfOscillations
+	    }
 
 	'''
 	With this function I set up the interface on the value of the this drone instance and after that I give

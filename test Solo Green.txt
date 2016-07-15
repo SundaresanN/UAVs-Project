@@ -1846,3 +1846,9 @@ Location:
 Number of oscillations: 191
 Flight time: 736.698817015
 ###########################################
+Take off time required: 0.0
+Take off time required: 3.00307416916
+Take off time required: 9.53674316406e-07
+Take off time required: 3.00344085693
+Take off time required: 0.0
+Take off time required: 0.0
