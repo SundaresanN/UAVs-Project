@@ -321,6 +321,7 @@ class Drone():
 
 	  cmds = self.vehicle.commands
 	  cmds.download()
+	  time.sleep(45)
 	  cmds.wait_ready()
 	  cmds.clear()
 	  for value in xrange(0, 500):
@@ -331,6 +332,7 @@ class Drone():
 	    else:
 	      locationCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, self.listOfLocationsToReach[1].lat, self.listOfLocationsToReach[1].lon, self.listOfLocationsToReach[1].alt)
 	    cmds.add(locationCommand)
+
 	  cmds.upload() #sending commands to UAV
 
 	  self.vehicle.commands.next = 0 #reset mission set to first(0) waypoint

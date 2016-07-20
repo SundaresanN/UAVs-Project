@@ -3706,3 +3706,1063 @@ Location:
 Number of oscillations: 178
 Flight time: 886.817167997
 ###########################################
+Take off time required: 3.00346779823
+Mission Flight starts on Fri Jul 15 08:36:54 2016
+Initial Battery Level: 98
+Location:
+	- latitude: 37.9243746
+	- longitude: -91.7723447
+	- altitude: -0.03
+	- battery: 98
+Location:
+	- latitude: 37.9245488
+	- longitude: -91.7723355
+	- altitude: 9.41
+	- battery: 97
+Location:
+	- latitude: 37.9246221
+	- longitude: -91.7723338
+	- altitude: 10.03
+	- battery: 97
+Location:
+	- latitude: 37.9245834
+	- longitude: -91.772333
+	- altitude: 9.94
+	- battery: 97
+Location:
+	- latitude: 37.9246157
+	- longitude: -91.7723261
+	- altitude: 10.0
+	- battery: 96
+Location:
+	- latitude: 37.9245728
+	- longitude: -91.7723352
+	- altitude: 9.82
+	- battery: 96
+Location:
+	- latitude: 37.9246232
+	- longitude: -91.7723316
+	- altitude: 9.93
+	- battery: 95
+Location:
+	- latitude: 37.9245938
+	- longitude: -91.7723397
+	- altitude: 9.8
+	- battery: 95
+Location:
+	- latitude: 37.9246027
+	- longitude: -91.7723397
+	- altitude: 9.92
+	- battery: 95
+Location:
+	- latitude: 37.9245794
+	- longitude: -91.7723358
+	- altitude: 9.99
+	- battery: 94
+Location:
+	- latitude: 37.9246281
+	- longitude: -91.7723303
+	- altitude: 10.1
+	- battery: 94
+Location:
+	- latitude: 37.9245915
+	- longitude: -91.7723316
+	- altitude: 10.0
+	- battery: 94
+Location:
+	- latitude: 37.9246036
+	- longitude: -91.7723326
+	- altitude: 10.18
+	- battery: 93
+Location:
+	- latitude: 37.9245817
+	- longitude: -91.772338
+	- altitude: 10.07
+	- battery: 93
+Location:
+	- latitude: 37.9246294
+	- longitude: -91.7723325
+	- altitude: 10.15
+	- battery: 93
+Location:
+	- latitude: 37.9245838
+	- longitude: -91.7723381
+	- altitude: 10.11
+	- battery: 92
+Location:
+	- latitude: 37.9246076
+	- longitude: -91.7723356
+	- altitude: 10.06
+	- battery: 92
+Location:
+	- latitude: 37.9245808
+	- longitude: -91.772338
+	- altitude: 10.01
+	- battery: 91
+Location:
+	- latitude: 37.9246278
+	- longitude: -91.7723327
+	- altitude: 10.08
+	- battery: 91
+Location:
+	- latitude: 37.9245839
+	- longitude: -91.7723379
+	- altitude: 10.11
+	- battery: 91
+Location:
+	- latitude: 37.9246131
+	- longitude: -91.7723341
+	- altitude: 10.04
+	- battery: 91
+Location:
+	- latitude: 37.9246079
+	- longitude: -91.7723332
+	- altitude: 9.99
+	- battery: 90
+Location:
+	- latitude: 37.9246281
+	- longitude: -91.7723313
+	- altitude: 10.14
+	- battery: 90
+Location:
+	- latitude: 37.9245818
+	- longitude: -91.772339
+	- altitude: 10.11
+	- battery: 89
+Location:
+	- latitude: 37.9246149
+	- longitude: -91.7723352
+	- altitude: 10.02
+	- battery: 89
+Location:
+	- latitude: 37.9246045
+	- longitude: -91.7723356
+	- altitude: 10.03
+	- battery: 89
+Location:
+	- latitude: 37.9246258
+	- longitude: -91.7723312
+	- altitude: 10.05
+	- battery: 88
+Location:
+	- latitude: 37.9245799
+	- longitude: -91.7723356
+	- altitude: 10.12
+	- battery: 88
+Location:
+	- latitude: 37.9246217
+	- longitude: -91.7723328
+	- altitude: 9.93
+	- battery: 88
+Location:
+	- latitude: 37.9245992
+	- longitude: -91.7723317
+	- altitude: 9.96
+	- battery: 87
+Location:
+	- latitude: 37.9246279
+	- longitude: -91.7723319
+	- altitude: 10.09
+	- battery: 87
+Location:
+	- latitude: 37.9245796
+	- longitude: -91.7723385
+	- altitude: 10.08
+	- battery: 87
+Location:
+	- latitude: 37.9246255
+	- longitude: -91.7723337
+	- altitude: 10.0
+	- battery: 86
+Location:
+	- latitude: 37.9245918
+	- longitude: -91.7723348
+	- altitude: 10.03
+	- battery: 86
+Location:
+	- latitude: 37.9245963
+	- longitude: -91.7723349
+	- altitude: 10.08
+	- battery: 86
+Location:
+	- latitude: 37.9245792
+	- longitude: -91.7723313
+	- altitude: 10.05
+	- battery: 85
+Location:
+	- latitude: 37.9246294
+	- longitude: -91.7723256
+	- altitude: 10.03
+	- battery: 85
+Location:
+	- latitude: 37.9245825
+	- longitude: -91.7723357
+	- altitude: 10.16
+	- battery: 84
+Location:
+	- latitude: 37.92461
+	- longitude: -91.77233
+	- altitude: 9.97
+	- battery: 84
+Location:
+	- latitude: 37.9245795
+	- longitude: -91.7723318
+	- altitude: 9.97
+	- battery: 84
+Location:
+	- latitude: 37.9246309
+	- longitude: -91.7723278
+	- altitude: 10.17
+	- battery: 83
+Location:
+	- latitude: 37.9245777
+	- longitude: -91.7723358
+	- altitude: 9.98
+	- battery: 83
+Location:
+	- latitude: 37.9246235
+	- longitude: -91.7723311
+	- altitude: 10.03
+	- battery: 83
+Location:
+	- latitude: 37.9245986
+	- longitude: -91.7723319
+	- altitude: 10.01
+	- battery: 82
+Location:
+	- latitude: 37.9246308
+	- longitude: -91.7723304
+	- altitude: 10.14
+	- battery: 82
+Location:
+	- latitude: 37.9245761
+	- longitude: -91.7723355
+	- altitude: 10.01
+	- battery: 81
+Location:
+	- latitude: 37.9246281
+	- longitude: -91.7723284
+	- altitude: 10.08
+	- battery: 81
+Location:
+	- latitude: 37.9245954
+	- longitude: -91.7723323
+	- altitude: 9.99
+	- battery: 81
+Location:
+	- latitude: 37.9246302
+	- longitude: -91.7723299
+	- altitude: 10.17
+	- battery: 80
+Location:
+	- latitude: 37.9245736
+	- longitude: -91.7723362
+	- altitude: 10.05
+	- battery: 80
+Location:
+	- latitude: 37.9246279
+	- longitude: -91.7723289
+	- altitude: 10.13
+	- battery: 80
+Location:
+	- latitude: 37.9246004
+	- longitude: -91.7723326
+	- altitude: 10.05
+	- battery: 80
+Location:
+	- latitude: 37.9246283
+	- longitude: -91.77233
+	- altitude: 10.14
+	- battery: 79
+Location:
+	- latitude: 37.9245709
+	- longitude: -91.7723377
+	- altitude: 9.98
+	- battery: 79
+Location:
+	- latitude: 37.9246252
+	- longitude: -91.7723309
+	- altitude: 10.1
+	- battery: 78
+Location:
+	- latitude: 37.9246013
+	- longitude: -91.772334
+	- altitude: 10.09
+	- battery: 78
+Location:
+	- latitude: 37.9246276
+	- longitude: -91.7723291
+	- altitude: 10.12
+	- battery: 77
+Location:
+	- latitude: 37.9245743
+	- longitude: -91.7723358
+	- altitude: 10.12
+	- battery: 77
+Location:
+	- latitude: 37.9246199
+	- longitude: -91.7723299
+	- altitude: 10.15
+	- battery: 77
+Location:
+	- latitude: 37.9246027
+	- longitude: -91.7723352
+	- altitude: 9.96
+	- battery: 76
+Location:
+	- latitude: 37.9246238
+	- longitude: -91.7723322
+	- altitude: 9.97
+	- battery: 76
+Location:
+	- latitude: 37.9245801
+	- longitude: -91.7723349
+	- altitude: 10.02
+	- battery: 76
+Location:
+	- latitude: 37.9246261
+	- longitude: -91.77233
+	- altitude: 10.09
+	- battery: 75
+Location:
+	- latitude: 37.9245925
+	- longitude: -91.7723329
+	- altitude: 9.98
+	- battery: 75
+Location:
+	- latitude: 37.9246163
+	- longitude: -91.7723335
+	- altitude: 9.96
+	- battery: 74
+Location:
+	- latitude: 37.9245776
+	- longitude: -91.7723351
+	- altitude: 10.04
+	- battery: 74
+Location:
+	- latitude: 37.9246242
+	- longitude: -91.7723329
+	- altitude: 10.1
+	- battery: 74
+Location:
+	- latitude: 37.924585
+	- longitude: -91.7723351
+	- altitude: 9.99
+	- battery: 73
+Location:
+	- latitude: 37.9246044
+	- longitude: -91.7723345
+	- altitude: 10.09
+	- battery: 73
+Location:
+	- latitude: 37.9245811
+	- longitude: -91.7723346
+	- altitude: 10.09
+	- battery: 73
+Location:
+	- latitude: 37.92463
+	- longitude: -91.7723311
+	- altitude: 10.12
+	- battery: 72
+Location:
+	- latitude: 37.924584
+	- longitude: -91.7723349
+	- altitude: 10.07
+	- battery: 72
+Location:
+	- latitude: 37.9246105
+	- longitude: -91.772335
+	- altitude: 10.04
+	- battery: 72
+Location:
+	- latitude: 37.9246078
+	- longitude: -91.7723319
+	- altitude: 10.05
+	- battery: 71
+Location:
+	- latitude: 37.9246249
+	- longitude: -91.7723294
+	- altitude: 10.1
+	- battery: 71
+Location:
+	- latitude: 37.9245792
+	- longitude: -91.7723336
+	- altitude: 10.1
+	- battery: 70
+Location:
+	- latitude: 37.9246184
+	- longitude: -91.7723327
+	- altitude: 9.95
+	- battery: 70
+Location:
+	- latitude: 37.9246022
+	- longitude: -91.7723307
+	- altitude: 10.02
+	- battery: 70
+Location:
+	- latitude: 37.9246246
+	- longitude: -91.7723307
+	- altitude: 9.99
+	- battery: 69
+Location:
+	- latitude: 37.9245781
+	- longitude: -91.7723337
+	- altitude: 10.19
+	- battery: 69
+Location:
+	- latitude: 37.9246209
+	- longitude: -91.7723336
+	- altitude: 9.88
+	- battery: 69
+Location:
+	- latitude: 37.924597
+	- longitude: -91.7723302
+	- altitude: 10.06
+	- battery: 68
+Location:
+	- latitude: 37.9246199
+	- longitude: -91.7723279
+	- altitude: 9.74
+	- battery: 68
+Location:
+	- latitude: 37.9245768
+	- longitude: -91.7723325
+	- altitude: 9.99
+	- battery: 67
+Location:
+	- latitude: 37.9246312
+	- longitude: -91.7723303
+	- altitude: 9.98
+	- battery: 67
+Location:
+	- latitude: 37.9245821
+	- longitude: -91.7723365
+	- altitude: 9.88
+	- battery: 67
+Location:
+	- latitude: 37.9246
+	- longitude: -91.7723321
+	- altitude: 10.02
+	- battery: 67
+Location:
+	- latitude: 37.924582
+	- longitude: -91.7723352
+	- altitude: 9.91
+	- battery: 66
+Location:
+	- latitude: 37.924636
+	- longitude: -91.7723302
+	- altitude: 10.16
+	- battery: 66
+Location:
+	- latitude: 37.9245834
+	- longitude: -91.7723361
+	- altitude: 9.96
+	- battery: 65
+Location:
+	- latitude: 37.9246108
+	- longitude: -91.7723329
+	- altitude: 10.03
+	- battery: 65
+Location:
+	- latitude: 37.924577
+	- longitude: -91.7723354
+	- altitude: 9.93
+	- battery: 64
+Location:
+	- latitude: 37.9246297
+	- longitude: -91.7723294
+	- altitude: 10.15
+	- battery: 64
+Location:
+	- latitude: 37.924576
+	- longitude: -91.7723339
+	- altitude: 9.93
+	- battery: 64
+Location:
+	- latitude: 37.9246201
+	- longitude: -91.7723324
+	- altitude: 10.01
+	- battery: 64
+Location:
+	- latitude: 37.924612
+	- longitude: -91.7723335
+	- altitude: 10.12
+	- battery: 63
+Location:
+	- latitude: 37.9246328
+	- longitude: -91.7723323
+	- altitude: 10.17
+	- battery: 63
+Location:
+	- latitude: 37.9245766
+	- longitude: -91.7723353
+	- altitude: 10.13
+	- battery: 62
+Location:
+	- latitude: 37.9245962
+	- longitude: -91.7723332
+	- altitude: 10.09
+	- battery: 62
+Location:
+	- latitude: 37.9245818
+	- longitude: -91.7723374
+	- altitude: 9.94
+	- battery: 61
+Location:
+	- latitude: 37.9246272
+	- longitude: -91.7723322
+	- altitude: 10.04
+	- battery: 61
+Location:
+	- latitude: 37.9245818
+	- longitude: -91.7723353
+	- altitude: 10.03
+	- battery: 61
+Location:
+	- latitude: 37.9246128
+	- longitude: -91.7723318
+	- altitude: 10.11
+	- battery: 60
+Location:
+	- latitude: 37.924611
+	- longitude: -91.7723337
+	- altitude: 10.02
+	- battery: 60
+Location:
+	- latitude: 37.9246234
+	- longitude: -91.7723325
+	- altitude: 9.94
+	- battery: 60
+Location:
+	- latitude: 37.9245732
+	- longitude: -91.7723365
+	- altitude: 9.99
+	- battery: 59
+Location:
+	- latitude: 37.9246193
+	- longitude: -91.7723317
+	- altitude: 9.98
+	- battery: 59
+Location:
+	- latitude: 37.9246022
+	- longitude: -91.7723325
+	- altitude: 10.03
+	- battery: 59
+Location:
+	- latitude: 37.9246267
+	- longitude: -91.7723316
+	- altitude: 9.88
+	- battery: 58
+Location:
+	- latitude: 37.9245777
+	- longitude: -91.7723331
+	- altitude: 9.97
+	- battery: 58
+Location:
+	- latitude: 37.9246219
+	- longitude: -91.7723301
+	- altitude: 10.14
+	- battery: 57
+Location:
+	- latitude: 37.9245904
+	- longitude: -91.7723331
+	- altitude: 10.0
+	- battery: 57
+Location:
+	- latitude: 37.9245894
+	- longitude: -91.7723342
+	- altitude: 10.09
+	- battery: 57
+Location:
+	- latitude: 37.9245775
+	- longitude: -91.7723361
+	- altitude: 10.04
+	- battery: 56
+Location:
+	- latitude: 37.9246262
+	- longitude: -91.772332
+	- altitude: 10.07
+	- battery: 56
+Location:
+	- latitude: 37.9245952
+	- longitude: -91.7723313
+	- altitude: 9.95
+	- battery: 56
+Location:
+	- latitude: 37.9245938
+	- longitude: -91.7723322
+	- altitude: 10.09
+	- battery: 55
+Location:
+	- latitude: 37.9245779
+	- longitude: -91.7723339
+	- altitude: 10.1
+	- battery: 55
+Location:
+	- latitude: 37.9246301
+	- longitude: -91.7723304
+	- altitude: 10.1
+	- battery: 54
+Location:
+	- latitude: 37.924585
+	- longitude: -91.7723332
+	- altitude: 10.01
+	- battery: 54
+Location:
+	- latitude: 37.9246053
+	- longitude: -91.7723329
+	- altitude: 10.07
+	- battery: 54
+Location:
+	- latitude: 37.9245785
+	- longitude: -91.7723327
+	- altitude: 10.09
+	- battery: 53
+Location:
+	- latitude: 37.9246292
+	- longitude: -91.7723303
+	- altitude: 10.06
+	- battery: 53
+Location:
+	- latitude: 37.9245859
+	- longitude: -91.7723323
+	- altitude: 10.04
+	- battery: 52
+Location:
+	- latitude: 37.9246017
+	- longitude: -91.7723326
+	- altitude: 10.05
+	- battery: 52
+Location:
+	- latitude: 37.9245807
+	- longitude: -91.7723331
+	- altitude: 10.09
+	- battery: 52
+Location:
+	- latitude: 37.9246252
+	- longitude: -91.7723302
+	- altitude: 10.0
+	- battery: 51
+Location:
+	- latitude: 37.9245789
+	- longitude: -91.7723291
+	- altitude: 10.03
+	- battery: 51
+Location:
+	- latitude: 37.9246182
+	- longitude: -91.7723265
+	- altitude: 9.71
+	- battery: 51
+Location:
+	- latitude: 37.9245975
+	- longitude: -91.7723337
+	- altitude: 9.82
+	- battery: 50
+Location:
+	- latitude: 37.9246307
+	- longitude: -91.7723326
+	- altitude: 10.05
+	- battery: 50
+Location:
+	- latitude: 37.9245802
+	- longitude: -91.7723351
+	- altitude: 9.87
+	- battery: 50
+Location:
+	- latitude: 37.9246262
+	- longitude: -91.7723317
+	- altitude: 10.03
+	- battery: 49
+Location:
+	- latitude: 37.9246055
+	- longitude: -91.7723325
+	- altitude: 9.99
+	- battery: 49
+Location:
+	- latitude: 37.9246335
+	- longitude: -91.7723296
+	- altitude: 10.09
+	- battery: 48
+Location:
+	- latitude: 37.9245764
+	- longitude: -91.7723344
+	- altitude: 9.96
+	- battery: 48
+Location:
+	- latitude: 37.9246215
+	- longitude: -91.7723312
+	- altitude: 10.07
+	- battery: 48
+Location:
+	- latitude: 37.9246004
+	- longitude: -91.7723319
+	- altitude: 9.98
+	- battery: 47
+Location:
+	- latitude: 37.9246335
+	- longitude: -91.7723276
+	- altitude: 10.14
+	- battery: 47
+Location:
+	- latitude: 37.9245769
+	- longitude: -91.7723352
+	- altitude: 9.97
+	- battery: 46
+Location:
+	- latitude: 37.9246215
+	- longitude: -91.7723309
+	- altitude: 10.05
+	- battery: 46
+Location:
+	- latitude: 37.9246026
+	- longitude: -91.7723303
+	- altitude: 9.99
+	- battery: 46
+Location:
+	- latitude: 37.9246297
+	- longitude: -91.7723284
+	- altitude: 10.11
+	- battery: 45
+Location:
+	- latitude: 37.9245732
+	- longitude: -91.7723337
+	- altitude: 9.86
+	- battery: 45
+Location:
+	- latitude: 37.9246239
+	- longitude: -91.7723298
+	- altitude: 9.95
+	- battery: 44
+Location:
+	- latitude: 37.9246005
+	- longitude: -91.7723325
+	- altitude: 10.01
+	- battery: 44
+Location:
+	- latitude: 37.9246269
+	- longitude: -91.7723317
+	- altitude: 10.04
+	- battery: 43
+Location:
+	- latitude: 37.9245834
+	- longitude: -91.7723366
+	- altitude: 10.02
+	- battery: 43
+Location:
+	- latitude: 37.9246241
+	- longitude: -91.7723348
+	- altitude: 10.03
+	- battery: 43
+Location:
+	- latitude: 37.9245983
+	- longitude: -91.7723339
+	- altitude: 9.96
+	- battery: 42
+Location:
+	- latitude: 37.9246215
+	- longitude: -91.7723329
+	- altitude: 9.95
+	- battery: 42
+Location:
+	- latitude: 37.9245739
+	- longitude: -91.7723341
+	- altitude: 9.98
+	- battery: 42
+Location:
+	- latitude: 37.9246204
+	- longitude: -91.7723332
+	- altitude: 9.99
+	- battery: 41
+Location:
+	- latitude: 37.9245969
+	- longitude: -91.7723321
+	- altitude: 9.94
+	- battery: 41
+Location:
+	- latitude: 37.9246225
+	- longitude: -91.7723315
+	- altitude: 9.99
+	- battery: 40
+Location:
+	- latitude: 37.9245805
+	- longitude: -91.7723317
+	- altitude: 10.12
+	- battery: 40
+Location:
+	- latitude: 37.9246247
+	- longitude: -91.7723326
+	- altitude: 10.09
+	- battery: 40
+Location:
+	- latitude: 37.9245853
+	- longitude: -91.7723314
+	- altitude: 9.99
+	- battery: 39
+Location:
+	- latitude: 37.9245994
+	- longitude: -91.7723317
+	- altitude: 10.07
+	- battery: 39
+Location:
+	- latitude: 37.9245801
+	- longitude: -91.7723313
+	- altitude: 10.08
+	- battery: 38
+Location:
+	- latitude: 37.9246258
+	- longitude: -91.7723305
+	- altitude: 10.06
+	- battery: 38
+Location:
+	- latitude: 37.9245892
+	- longitude: -91.7723301
+	- altitude: 9.99
+	- battery: 38
+Location:
+	- latitude: 37.924603
+	- longitude: -91.7723324
+	- altitude: 10.11
+	- battery: 38
+Location:
+	- latitude: 37.9245808
+	- longitude: -91.7723345
+	- altitude: 10.04
+	- battery: 37
+Location:
+	- latitude: 37.9246275
+	- longitude: -91.7723342
+	- altitude: 10.03
+	- battery: 37
+Location:
+	- latitude: 37.9245838
+	- longitude: -91.7723323
+	- altitude: 10.11
+	- battery: 36
+Location:
+	- latitude: 37.9246139
+	- longitude: -91.7723314
+	- altitude: 10.04
+	- battery: 36
+Location:
+	- latitude: 37.9246066
+	- longitude: -91.7723314
+	- altitude: 9.98
+	- battery: 36
+Location:
+	- latitude: 37.9246282
+	- longitude: -91.7723321
+	- altitude: 9.98
+	- battery: 35
+Location:
+	- latitude: 37.9245816
+	- longitude: -91.7723335
+	- altitude: 10.09
+	- battery: 35
+Location:
+	- latitude: 37.9246206
+	- longitude: -91.7723316
+	- altitude: 9.96
+	- battery: 35
+Location:
+	- latitude: 37.9246005
+	- longitude: -91.7723315
+	- altitude: 9.96
+	- battery: 34
+Location:
+	- latitude: 37.9246271
+	- longitude: -91.7723317
+	- altitude: 9.99
+	- battery: 34
+Location:
+	- latitude: 37.9245774
+	- longitude: -91.7723321
+	- altitude: 10.08
+	- battery: 33
+Location:
+	- latitude: 37.924619
+	- longitude: -91.7723293
+	- altitude: 10.05
+	- battery: 33
+Location:
+	- latitude: 37.9246005
+	- longitude: -91.7723292
+	- altitude: 9.96
+	- battery: 33
+Location:
+	- latitude: 37.9246247
+	- longitude: -91.7723316
+	- altitude: 9.93
+	- battery: 32
+Location:
+	- latitude: 37.9245775
+	- longitude: -91.7723344
+	- altitude: 10.07
+	- battery: 32
+Location:
+	- latitude: 37.9246207
+	- longitude: -91.7723344
+	- altitude: 10.02
+	- battery: 31
+Location:
+	- latitude: 37.9245956
+	- longitude: -91.7723335
+	- altitude: 9.93
+	- battery: 31
+Location:
+	- latitude: 37.9246245
+	- longitude: -91.7723313
+	- altitude: 9.99
+	- battery: 31
+Location:
+	- latitude: 37.924577
+	- longitude: -91.7723356
+	- altitude: 10.03
+	- battery: 30
+Location:
+	- latitude: 37.9246245
+	- longitude: -91.7723328
+	- altitude: 10.02
+	- battery: 30
+Location:
+	- latitude: 37.9245914
+	- longitude: -91.7723319
+	- altitude: 9.97
+	- battery: 30
+Location:
+	- latitude: 37.9245939
+	- longitude: -91.7723307
+	- altitude: 10.1
+	- battery: 29
+Location:
+	- latitude: 37.9245814
+	- longitude: -91.7723342
+	- altitude: 10.07
+	- battery: 29
+Location:
+	- latitude: 37.9246291
+	- longitude: -91.7723305
+	- altitude: 9.99
+	- battery: 28
+Location:
+	- latitude: 37.9245891
+	- longitude: -91.772332
+	- altitude: 9.9
+	- battery: 28
+Location:
+	- latitude: 37.9246016
+	- longitude: -91.7723342
+	- altitude: 10.05
+	- battery: 28
+Location:
+	- latitude: 37.9245794
+	- longitude: -91.7723325
+	- altitude: 9.98
+	- battery: 27
+Location:
+	- latitude: 37.9246254
+	- longitude: -91.7723286
+	- altitude: 10.04
+	- battery: 27
+Location:
+	- latitude: 37.9245848
+	- longitude: -91.7723305
+	- altitude: 9.86
+	- battery: 26
+Location:
+	- latitude: 37.9246092
+	- longitude: -91.7723309
+	- altitude: 10.04
+	- battery: 26
+Location:
+	- latitude: 37.9245829
+	- longitude: -91.7723308
+	- altitude: 9.98
+	- battery: 26
+Location:
+	- latitude: 37.9246265
+	- longitude: -91.7723307
+	- altitude: 9.99
+	- battery: 25
+Location:
+	- latitude: 37.9245824
+	- longitude: -91.7723339
+	- altitude: 9.9
+	- battery: 25
+Location:
+	- latitude: 37.9246132
+	- longitude: -91.7723337
+	- altitude: 9.93
+	- battery: 25
+Location:
+	- latitude: 37.9246057
+	- longitude: -91.772332
+	- altitude: 9.94
+	- battery: 24
+Location:
+	- latitude: 37.9246252
+	- longitude: -91.7723309
+	- altitude: 10.02
+	- battery: 24
+Location:
+	- latitude: 37.9245778
+	- longitude: -91.7723336
+	- altitude: 10.06
+	- battery: 24
+Location:
+	- latitude: 37.924617
+	- longitude: -91.7723322
+	- altitude: 9.88
+	- battery: 23
+Location:
+	- latitude: 37.9246018
+	- longitude: -91.7723307
+	- altitude: 9.93
+	- battery: 23
+Location:
+	- latitude: 37.9246265
+	- longitude: -91.7723314
+	- altitude: 9.98
+	- battery: 22
+Location:
+	- latitude: 37.9245813
+	- longitude: -91.7723322
+	- altitude: 10.1
+	- battery: 22
+Location:
+	- latitude: 37.9246236
+	- longitude: -91.7723318
+	- altitude: 10.02
+	- battery: 22
+Location:
+	- latitude: 37.9245991
+	- longitude: -91.7723321
+	- altitude: 9.95
+	- battery: 21
+Location:
+	- latitude: 37.9246244
+	- longitude: -91.7723321
+	- altitude: 9.94
+	- battery: 21
+Location:
+	- latitude: 37.9245784
+	- longitude: -91.7723339
+	- altitude: 10.0
+	- battery: 20
+Location:
+	- latitude: 37.9246257
+	- longitude: -91.7723328
+	- altitude: 10.02
+	- battery: 20
+Location:
+	- latitude: 37.9245929
+	- longitude: -91.7723345
+	- altitude: 9.91
+	- battery: 20
+
+Number of oscillations: 105
+Flight time: 520.487426996
+###########################################
+Take off time required: 4.00451183319
+Mission Flight starts on Tue Jul 19 09:17:14 2016
+Initial Battery Level: 12
