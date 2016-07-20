@@ -154,7 +154,7 @@ class Drone():
 				if next%2!=0:
 					next-=1
 				while index >= (next/2):
-					location == self.listOfLocationsToReach[index]
+					location = self.listOfLocationsToReach[index]
 					#writing on the file
 					self.fileTest.write("Location:\n\t- latitude: " + str(location.lat))
 					self.fileTest.write("\n\t- longitude: " +  str(location.lon))
