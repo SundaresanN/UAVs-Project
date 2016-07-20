@@ -66,6 +66,7 @@ def buildRectangularPath():
     dataToReturn = brain.buildRectangularSurveyPoints(data)
     return jsonify({'data' : dataToReturn})
 
+
 if __name__ == '__main__':
     brain = ServerBrain(socketio)
     app.debug = True

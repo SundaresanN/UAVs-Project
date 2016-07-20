@@ -31,6 +31,18 @@ class ServerBrain:
 			droneList.append(drone)
 		return droneList
 
+	def getDronesInitialInformation(self):
+		initialData = {}
+		droneList = list()
+		for drone in self.drones:
+			droneList.append(drone)
+		initialData['droneList'] = droneList
+
+		fileWithOldLocationsToReach = open("cheatingLocations.txt", "r").read()
+		dict = eval(fileWithOldLocationsToReach)
+		initialData['oldSurveys'] = dict
+		return initialData
+
 
 	def connectDrone(self, droneName):
 		'''
@@ -103,12 +115,28 @@ class ServerBrain:
 		Assign locations to reach to each involved drone
 		'''
 		if missionDivisionData['response'] == 'Good' or missionDivisionData['response'] == 'Warn':
-			#filling the locations to reach array for each drone involved
+			#cheating with the UAVs I really have
+			return cheatingDataForTheExperiments(missionDivisionData)
+			'''#filling the locations to reach array for each drone involved
 			for UAVInfo in missionDivisionData['UAVs']:
 				drone = UAVInfo['name']
 				self.drones[drone].buildListOfLocations(UAVInfo['points'])
-		return missionDivisionData
+		return missionDivisionData'''
 
+	def cheatingDataForTheExperiments(self, missionDivisionData):
+		#This because I need to modify data inside missionDivisionData for cheating experiments
+		realMissionDivisionDataToReturn = missionDivisionData
+
+		for index in xrange(0, len(self.drones)):
+			UAVInfo = missionDivisionData['UAVs'][index]
+			drone = UAVInfo['name']
+			self.drones[drone].buildListOfLocations(UAVInfo['points'])
+			#Setting to None the element in the array, this correctly save data in the file
+			missionDivisionData['UAVs'][index] = None
+
+		cheatingFile = open("cheatingLocations.txt", "w").write(missionDivisionData)
+		cheatingFile.close()
+		return realMissionDivisionDataToReturn
 	'''
 	This method creates a thread for a drone's flight.
 	'''
