@@ -67,7 +67,7 @@ function init(map, drones){
 								"<div class='col-lg-12'>" +
 									"<div class='form-group'>" +
 										"<br />" +
-										"<label for='selectTypeOfSurvey'>Select type of flight (select one):</label>" +
+										"<label for='selectTypeOfSurvey'>Select type of survey:</label>" +
 										"<select class='form-control' id='selectTypeOfSurvey'> " +
 											"<option>Normal Survey</option>" +
 											"<option>Rectangular Survey</option>" +
@@ -76,15 +76,19 @@ function init(map, drones){
 									"</div>" +
 								"</div>" +
 							"</div>" +
+							/*
 							"<div class='row'>" +
 								"<div class='col-lg-12'>" +
 									"<button type='button' class='btn btn-primary' id='confirmedSurvey' onclick='confirmedSurvey()'>Confirm</button>" +
 								"</div>" +
 							"</div>" +
+						*/
 						"</div>" +
 					"</div>"
 	$("#firstRow").append(typeOfSurveyDiv)
-
+	$("#selectTypeOfSurvey").click(function(){
+			confirmingSurvey()
+	})
 	var liveFlightInformations = "" +
 		"<div id='liveFlightInformation' class='col-lg-6' style='width: 45%;>" +
 					"<div class='container-fluid pre-scrollable'>" +

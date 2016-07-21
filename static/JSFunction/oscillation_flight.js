@@ -49,13 +49,24 @@ function addGraphicsInfoForTheOscillationSurvey(){
 	}
 	var buttons = "<div class='row'>" +
 									"<div class='col-lg-12'>" +
-										"<button type='button' class='btn btn-primary' id='confirmOscillationSurvey'>Confirm</button>" +
-										"<button type='button' class='btn btn-danger' id='cancelOscillationSurvey'>Cancel</button>" +
+										"<div class='row'>" +
+											"<div class='col-lg-6'>" +
+												"<p>" +
+													"<a class='btn btn-success' id='confirmOscillationSurvey'>Confirm</a>" +
+												"</p>" +
+											"</div>" +
+											"<div class='col-lg-6'>" +
+												"<p>" +
+													"<a class='btn btn-danger' id='cancelOscillationSurvey'>Cancel</a>" +
+												"</p>" +
+											"</div>" +
+										"</div>" +
 									"</div>" +
 								"</div>"
 	$("#typeOfSurveyDiv").children().eq(0).append(buttons)
 
 	$("#confirmOscillationSurvey").click(function(){
+		$(this).attr('disabled', 'disabled');
 		var droneSelected = 0
 		var child = 2
 		while($('#typeOfSurveyDiv').children().eq(0).children().eq(child).children().eq(0).children().hasClass('checkbox')){
@@ -72,37 +83,33 @@ function addGraphicsInfoForTheOscillationSurvey(){
 			return
 		}
 		prepareOscillationSurvey(droneSelected)
-		$("#confirmOscillationSurvey").remove()
 	})
 
 	$("#cancelOscillationSurvey").click(function(){
-		// Removing the elements on the column of the survey's selection
-		while($('#typeOfSurveyDiv').children().eq(0).children().eq(2).html() != undefined){
-			$('#typeOfSurveyDiv').children().eq(0).children().eq(2).remove()
-		}
-		var button = "<div class='row'>" +
-										"<div class='col-lg-12'>" +
-											"<button type='button' class='btn btn-primary' id='confirmedSurvey' onclick='confirmedSurvey()'>Confirm</button>" +
-										"</div>" +
-									"</div>"
-		$("#typeOfSurveyDiv").children().eq(0).append(button)
-
-		// Now I have to remove the data from the locations to reach table and from the drone that is in the oscillation mode
-		var index = -1
-		for(el in brain.drones){
-			if(brain.drones[el].surveyMode == 'oscillation'){
-				index = el
-				break
-			}
-		}
-
-		console.log("Drone in oscillation mode index: " + index)
-		if(index == -1){
-			alert("No drone in oscillation mode")
-			return
-		}
-		deleteDataOfOscillationSurvey(brain.drones[index].name)
+		cancelOscillationSurvey()
 	})
+}
+
+function cancelOscillationSurvey(){
+	// Removing the elements on the column of the survey's selection
+	while($('#typeOfSurveyDiv').children().eq(0).children().eq(2).html() != undefined){
+		$('#typeOfSurveyDiv').children().eq(0).children().eq(2).remove()
+	}
+
+	// Now I have to remove the data from the locations to reach table and from the drone that is in the oscillation mode
+	var index = -1
+	for(el in brain.drones){
+		if(brain.drones[el].surveyMode == 'oscillation'){
+			index = el
+			break
+		}
+	}
+
+	console.log("Drone in oscillation mode index: " + index)
+	if(index == -1){
+		return
+	}
+	deleteDataOfOscillationSurvey(brain.drones[index].name)
 }
 
 //This function will remove the graphic components in the drones table and will replace them with the components correllated with the

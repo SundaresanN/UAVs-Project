@@ -24,26 +24,15 @@ class ServerBrain:
 	'''
 	This method returns a list that contains the name of the drones in the system
 	'''
-
 	def getDroneNames(self):
 		droneList = list()
 		for drone in self.drones:
 			droneList.append(drone)
 		return droneList
 
-	def getDronesInitialInformation(self):
-		initialData = {}
-		droneList = list()
-		for drone in self.drones:
-			droneList.append(drone)
-		initialData['droneList'] = droneList
-
-		fileWithOldLocationsToReach = open("cheatingLocations.txt", "r").read()
-		dict = eval(fileWithOldLocationsToReach)
-		initialData['oldSurveys'] = dict
-		return initialData
-
-
+	'''
+	This method is used for connecting Drone object with real drone
+	'''
 	def connectDrone(self, droneName):
 		'''
 		Trying to find a free network for the drone
@@ -79,7 +68,7 @@ class ServerBrain:
 	If the 3 points are perfectly put from client, this method will return all the points to client and moreover it will assing these points to
 	each drone involved in the survey on server side.
 	'''
-	def buildRectangularSurveyPoints(self, data):
+	def buildRectangularSurveyPointsReal(self, data):
 
 		points = data['locationsList']
 		altitude = points[0]['altitude']
@@ -115,28 +104,103 @@ class ServerBrain:
 		Assign locations to reach to each involved drone
 		'''
 		if missionDivisionData['response'] == 'Good' or missionDivisionData['response'] == 'Warn':
-			#cheating with the UAVs I really have
-			return cheatingDataForTheExperiments(missionDivisionData)
-			'''#filling the locations to reach array for each drone involved
+			#filling the locations to reach array for each drone involved
 			for UAVInfo in missionDivisionData['UAVs']:
 				drone = UAVInfo['name']
 				self.drones[drone].buildListOfLocations(UAVInfo['points'])
-		return missionDivisionData'''
+		return missionDivisionData
 
-	def cheatingDataForTheExperiments(self, missionDivisionData):
-		#This because I need to modify data inside missionDivisionData for cheating experiments
-		realMissionDivisionDataToReturn = missionDivisionData
+	'''
+	Same of precedent method but cheating...
+	'''
+	def buildRectangularSurveyPointsCheating(self, data):
+		points = data['locationsList']
+		altitude = points[0]['altitude']
+		involvedDrones = data['drones']
+		#check if involved drones are connected
+		for drone in involvedDrones:
+			if self.drones[drone] == None:
+				missionDivisionData = {
+					'response' : 'Connection Error',
+					'body': 'You need to be connected with the drones involved in the rectangular survey'
+				}
+				return missionDivisionData
+		pointsNewFormat = []
+		import rectPlan
+		for point in points:
+			pointsNewFormat.append(rectPlan.latlon(point['latitude'], point['longitude']))
 
-		for index in xrange(0, len(self.drones)):
-			UAVInfo = missionDivisionData['UAVs'][index]
-			drone = UAVInfo['name']
-			self.drones[drone].buildListOfLocations(UAVInfo['points'])
-			#Setting to None the element in the array, this correctly save data in the file
-			missionDivisionData['UAVs'][index] = None
+		result = rectPlan.rectMission(pointsNewFormat[0], pointsNewFormat[1], pointsNewFormat[2], altitude)
+		if result == 'Bad':
+			return result
+		#print "Result: ", result['picList']
 
-		cheatingFile = open("cheatingLocations.txt", "w").write(missionDivisionData)
-		cheatingFile.close()
-		return realMissionDivisionDataToReturn
+		droneList = []
+		for drone in data['drones']:
+			droneList.append(drone)
+			location = self.drones[drone].getCurrentLocation()
+			droneList.append(location['latitude'])
+			droneList.append(location['longitude'])
+
+		#missionDivisionData = rectPlan.missionDivision(result, droneList, data['total'])
+		missionDivisionData = rectPlan.missionDivision(result, droneList)
+		missionDivisionData = rectPlan.serializeMissionData(missionDivisionData)
+		#dataToReturt is required for keeping data on missionDivisionData correct. In fact with the modify of "completed" field in eache UAVInfo object,
+		#the risk is that client could not understand which points to show. File will be modified with the missionDivisionData updated for each drone("completed" key's value).
+		dataToReturn = missionDivisionData
+		'''
+		Assign locations to reach to each involved drone
+		'''
+		if missionDivisionData['response'] == 'Good' or missionDivisionData['response'] == 'Warn':
+			#filling the locations to reach array for each drone involved
+			UAVInfo = missionDivisionData['UAVs']
+			print UAVInfo
+			for index in xrange(0, len(UAVInfo)):
+				drone = UAVInfo[index]['name']
+				#if drone has already a filled list of locations to reach, I need to go ahead
+				#otherwise I need to understand if the mission has been already completed and if not I can assign points to the associated drone and set the key "completed" to True
+				if self.drones[drone].listOfLocationsToReach is None:
+					if UAVInfo[index]['completed'] == False:
+						self.drones[drone].buildListOfLocations(UAVInfo[index]['points'])
+						UAVInfo[index]['completed'] = True
+				else:
+					print "This drone has already locations to reach"
+			missionDivisionData['UAVs'] = UAVInfo
+			file = open("oldSurvey.txt", "w")
+			file.write(str(missionDivisionData))
+			file.close()
+		return dataToReturn
+
+	'''
+	Used for cheating..
+	'''
+	def checkOldSurvey(self):
+		#taking information about old survey not completed
+		missionDivisionData = (open("oldSurvey.txt", "r").read())
+		if len(missionDivisionData) == 0:
+			return "No old survey to end"
+		missionDivisionData = eval(missionDivisionData)
+		#dataToReturt is required for keeping data on missionDivisionData correct. In fact with the modify of "completed" field in eache UAVInfo object,
+		#the risk is that client could not understand which points to show. File will be modified with the missionDivisionData updated for each drone("completed" key's value).
+		dataToReturn = missionDivisionData
+		UAVInfo = missionDivisionData['UAVs']
+		for index in xrange(0, len(UAVInfo)):
+			drone = UAVInfo[index]['name']
+			#if drone has already a filled list of locations to reach, I need to go ahead
+			#otherwise I need to understand if the mission has been already completed and if not I can assign points to the associated drone and set the key "completed" to True
+			if self.drones[drone].listOfLocationsToReach is not None:
+				print "This drone has already locations to reach"
+			else:
+				if UAVInfo[index]['completed'] == False:
+					self.drones[drone].buildListOfLocations(UAVInfo[index]['points'])
+					UAVInfo[index]['completed'] = True
+		missionDivisionData['UAVs'] = UAVInfo
+		file = open("oldSurvey.txt", "w")
+		file.write(str(missionDivisionData))
+		file.close()
+		return dataToReturn
+
+
 	'''
 	This method creates a thread for a drone's flight.
 	'''
@@ -161,6 +225,7 @@ class ServerBrain:
 					print "rectangular flight for ", drone
 					eventlet.spawn(self.drones[drone].missionFlight, self.connectionManager, self.socket)
 					time.sleep(5)
+
 	'''
 	This method doesn't create a thread for the following kind of flight. We need to talk about
 	priority this method could have.

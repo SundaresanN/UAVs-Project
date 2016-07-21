@@ -20,12 +20,28 @@ def index():
 def getDrones():
 	return jsonify(results=brain.getDroneNames())
 
-
+@app.route('/checkOldSurvey', methods=['GET'])
+def checkOldSurvey():
+    return jsonify({'data': brain.checkOldSurvey()})
+    
 @app.route('/connectDrone', methods=['POST'])
 def connectDrone():
     data = request.get_json()
     message = brain.connectDrone(data['droneName'])
     return jsonify({'data' : message})
+
+@app.route('/buildPath', methods=['POST'])
+def buildPath():
+    data = request.get_json()
+    print data
+    path = brain.buildPath(data['droneName'], data['locationsList'])
+    return jsonify({'path' : path})
+
+@app.route('/buildRectangularPath', methods=['POST'])
+def buildRectangularPath():
+    data = request.get_json()
+    dataToReturn = brain.buildRectangularSurveyPointsCheating(data)
+    return jsonify({'data' : dataToReturn})
 
 @app.route('/flight', methods=['POST'])
 def flight():
@@ -53,18 +69,6 @@ def twoPointsFlight(data):
     brain.takeATwoPointsFlight(data['name'])
     return 'Two Points Flight Completed'
 
-@app.route('/buildPath', methods=['POST'])
-def buildPath():
-    data = request.get_json()
-    print data
-    path = brain.buildPath(data['droneName'], data['locationsList'])
-    return jsonify({'path' : path})
-
-@app.route('/buildRectangularPath', methods=['POST'])
-def buildRectangularPath():
-    data = request.get_json()
-    dataToReturn = brain.buildRectangularSurveyPoints(data)
-    return jsonify({'data' : dataToReturn})
 
 
 if __name__ == '__main__':

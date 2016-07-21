@@ -13,29 +13,39 @@ function addGraphicsInfoForTheRectangularSurvey(){
 			$("#typeOfSurveyDiv").children().eq(0).append(checkbox)
 
 		}
+		extraDronesBox = "<div class='row'>" +
+												"<div class='col-lg-12'>" +
+													"<div class='form-group'>" +
+													"<label for='extraDronesBox'>Extra Drones:</label>" +
+														"<input type='number' min='0' class='form-control' id='extraDronesBox'>" +
+													"</div>" +
+												"</div>" +
+										"</div>"
+		$("#typeOfSurveyDiv").children().eq(0).append(extraDronesBox)
+
 		var buttons = "<div class='row'>" +
 										"<div class='col-lg-12'>" +
-											"<button type='button' class='btn btn-primary' id='confirmRectangularSurvey'>Confirm</button>" +
-											"<button type='button' class='btn btn-danger' id='cancelSurvey'>Cancel</button>" +
+											"<div class='row'>" +
+												"<div class='col-lg-6'>" +
+													"<p>" +
+														"<a class='btn btn-success' id='confirmRectangularSurvey'>Confirm</a>" +
+													"</p>" +
+												"</div>" +
+												"<div class='col-lg-6'>" +
+													"<p>" +
+														"<a class='btn btn-danger' id='cancelSurvey'>Cancel</a>" +
+													"</p>" +
+												"</div>" +
+											"</div>" +
 										"</div>" +
 									"</div>"
 		$("#typeOfSurveyDiv").children().eq(0).append(buttons)
 
 		$("#cancelSurvey").click(function(){
-				deleteDataOfRectangularSurvey()
-				while($('#typeOfSurveyDiv').children().eq(0).children().eq(2).html() != undefined){
-					$('#typeOfSurveyDiv').children().eq(0).children().eq(2).remove()
-				}
-				var button = "<div class='row'>" +
-												"<div class='col-lg-12'>" +
-													"<button type='button' class='btn btn-primary' id='confirmedSurvey' onclick='confirmedSurvey()'>Confirm</button>" +
-												"</div>" +
-											"</div>"
-				$("#typeOfSurveyDiv").children().eq(0).append(button)
+			cancelRectangularSurvey()
 		})
 
 		$("#confirmRectangularSurvey").click(function(){
-
 			var dronesSelected = new Array()
 			var child = 2
 			while($('#typeOfSurveyDiv').children().eq(0).children().eq(child).children().eq(0).children().hasClass('checkbox')){
@@ -51,9 +61,16 @@ function addGraphicsInfoForTheRectangularSurvey(){
 				alert("Please insert at least one drone for this type of survey.")
 				return
 			}
-			console.log(dronesSelected)
+			$(this).attr('disabled', 'disabled');
 			prepareRectangularSurvey(dronesSelected)
 		})
+}
+
+function cancelRectangularSurvey(){
+	deleteDataOfRectangularSurvey()
+	while($('#typeOfSurveyDiv').children().eq(0).children().eq(2).html() != undefined){
+		$('#typeOfSurveyDiv').children().eq(0).children().eq(2).remove()
+	}
 }
 
 //This function will remove the graphic components in the drones table and will replace them with the components correllated with the
@@ -77,7 +94,7 @@ function prepareRectangularSurvey(drones){
 	}
 	var buildRectangularPathButton = "<div class='row'>" +
 													"<div class='col-lg-12'>" +
-														'<button type="button" class="btn btn-success" onclick="buildRectangularPath()">Build Rectangular Path</button>' +
+														'<a class="btn btn-default" onclick="buildRectangularPath()">Calculate Points</a>' +
 													"</div>" +
 												"</div>"
 
@@ -100,12 +117,13 @@ function buildRectangularPath(){
 			dronesInvolved.push(brain.drones[drone].name)
 		}
 	}
+	var totalDrones = dronesInvolved.length + parseInt($("#extraDronesBox").val())
 	//AJAX request to server for building points inside the rectangular area
 	$.ajax({
 		type: 'POST',
 		url: '/buildRectangularPath',
 		contentType: 'application/json',
-		data: JSON.stringify({drones: dronesInvolved, locationsList: brain.rectangularSurveyLocations}),
+		data: JSON.stringify({drones: dronesInvolved, total: totalDrones,  locationsList: brain.rectangularSurveyLocations}),
 		success: function(data){
 			data = data['data']
 			console.log(data)
@@ -139,11 +157,11 @@ function buildRectangularPath(){
 			//the "flight" button
 			var flightRectangularButton = "<div class='row'>" +
 																			"<div class='col-lg-12'>" +
-																				'<button type="button" class="btn btn-success" onclick="flightDrone(\'' +  null + '\', \'' +  'rectangular' + '\')">Flight</button>' +
+																				'<a type="button" class="btn btn-default" onclick="flightDrone(\'' +  null + '\', \'' +  'rectangular' + '\')">Start Survey</a>' +
 																			"</div>" +
 																		"</div>"
 			//Just need to understand what is the child for "build rectangular path" button and remove it.
-			$("#typeOfSurveyDiv").children().eq(0).children().eq(5).remove()
+			$("#typeOfSurveyDiv").children().eq(0).children().eq(6).remove()
 			$("#typeOfSurveyDiv").children().eq(0).append(flightRectangularButton)
 
 		},

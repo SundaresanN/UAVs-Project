@@ -32,7 +32,6 @@ function getDronesInfoFromServer(){
 			}
 
 			brain.initialGraphicSettings()
-
 		},
 		error: function(){
 			$('h1').remove()
@@ -63,7 +62,7 @@ function connectDrone(droneName){
 				$("[id = '" + droneName + "']").children().eq(5).html("-")
 
 			} else{
-				
+
 				var element = brain.getIndexDrone(droneName)
 				var buildPathButton = '<button type="button" class="btn btn-success" onclick="buildPath(\'' +  brain.drones[element].name + '\')">Build Path</button>'
 				if(brain.drones[element].surveyMode == 'rectangular'){

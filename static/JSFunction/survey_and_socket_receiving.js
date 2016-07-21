@@ -65,21 +65,25 @@ function updateGraphicAndDataStructureInformationOnReachedLocation(data){
 /*
 This function is called when user confirms which survey do.
 */
-function confirmedSurvey(){
+function confirmingSurvey(){
 	$("#tableInfo").remove()
 	brain.graphicBrain.clickOnMap = false
 	var typeOfSurvey = $("#selectTypeOfSurvey option:selected").text()
 	switch (typeOfSurvey) {
 		case 'Normal Survey':
+			cancelOscillationSurvey()
+			cancelRectangularSurvey()
 			brain.typeOfSurvey = 'normal'
 			break;
 		case 'Rectangular Survey':
 			//Setting up this data member of the ClientBrain instance, I set up the rectangular survey mode, so only the drones involved in
 			// it can fly, the others must wait the end of the rectangular surbey flight.
+			cancelOscillationSurvey()
 			brain.typeOfSurvey = 'rectangular'
 			addGraphicsInfoForTheRectangularSurvey()
 			break;
 		case 'Oscillation Survey':
+			cancelRectangularSurvey()
 			brain.typeOfSurvey = 'oscillation'
 			addGraphicsInfoForTheOscillationSurvey()
 			break;

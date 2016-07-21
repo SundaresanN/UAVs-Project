@@ -192,6 +192,8 @@ Function that serializes data for the client side.
 '''
 def serializeMissionData(missionDivisionData):
     for indexLocations in xrange(0, len(missionDivisionData['UAVs'])):
+        #this line of code is for cheating the experiments
+        missionDivisionData['UAVs'][indexLocations]['completed'] = False
         for indexPoints in xrange(0, len(missionDivisionData['UAVs'][indexLocations]['points'])):
             print missionDivisionData['UAVs'][indexLocations]
             missionDivisionData['UAVs'][indexLocations]['points'][indexPoints] = {
