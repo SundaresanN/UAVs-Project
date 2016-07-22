@@ -142,7 +142,7 @@ class ServerBrain:
 			droneList.append(location['latitude'])
 			droneList.append(location['longitude'])
 
-		#missionDivisionData = rectPlan.missionDivision(result, droneList, data['total'])
+		missionDivisionData = rectPlan.missionDivision(result, droneList, data['total'])
 		missionDivisionData = rectPlan.missionDivision(result, droneList)
 		missionDivisionData = rectPlan.serializeMissionData(missionDivisionData)
 		#dataToReturt is required for keeping data on missionDivisionData correct. In fact with the modify of "completed" field in eache UAVInfo object,

@@ -188,7 +188,22 @@ def missionDivision(pointList, droneList):
         return
 
 '''
-Function that serializes data for the client side.
+Function that serializes data for sending to client side. Data have this shape:
+missionDivisionData = {
+    'response' : ...,
+    'UAVs' : [
+        {
+            'name': ...,
+            'points' : [loc, loc, loc, ..., loc],
+            'completed' : True|False
+        },
+        {
+            'name': ...,
+            'points' : [loc, loc, loc, ..., loc],
+            'completed' : True|False
+        }
+    ]
+}
 '''
 def serializeMissionData(missionDivisionData):
     for indexLocations in xrange(0, len(missionDivisionData['UAVs'])):
