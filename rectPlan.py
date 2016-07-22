@@ -107,7 +107,7 @@ def rectMission(p1, p2, p3, alt, cam='gopro', imgOvr=.05):
               'canon':{'ssizem':5.7, 'ssizep':7.6, 'flen':5.2, 'angN' : 1.0027311229353408, 'angW' : 1.2621587749426584, 'TangN':1.566803225, 'TangW':3.1365079},
               'gopro':{'angN':2.792523803, 'angW':2.792523803, 'TangN':2.3857296493600746, 'TangW':2.3857296493600746}}
     perpendicularTestResult=isPerpendicular(p1,p2,p3)
-    #print perpendicularTestResult
+    print perpendicularTestResult
     if perpendicularTestResult=="Good" or perpendicularTestResult=="Warn":
         v21=sub(p1,p2)
         v23=sub(p3,p2)
@@ -231,7 +231,7 @@ def serializeMissionData(missionDivisionData):
         #this line of code is for cheating the experiments
         missionDivisionData['UAVs'][indexLocations]['completed'] = False
         for indexPoints in xrange(0, len(missionDivisionData['UAVs'][indexLocations]['points'])):
-            #print missionDivisionData['UAVs'][indexLocations]
+            print missionDivisionData['UAVs'][indexLocations]
             missionDivisionData['UAVs'][indexLocations]['points'][indexPoints] = {
                     "latitude" : missionDivisionData['UAVs'][indexLocations]['points'][indexPoints].latitude,
                     "longitude" : missionDivisionData['UAVs'][indexLocations]['points'][indexPoints].longitude,
