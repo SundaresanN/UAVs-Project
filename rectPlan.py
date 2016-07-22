@@ -60,8 +60,8 @@ f3=[latlon(38.202472,-91.736857),latlon(38.203990,-91.734097),latlon(38.205077,-
 
 badPoints=[latlon(38.893968,-92.201754),latlon(38.893906, -92.201759),latlon(38.894549,-92.201091),latlon(38.894549, -92.201046)]
 badPoints2=[latlon(38.893866,-92.201769), latlon(38.893964, -92.201031), latlon(38.894561, -92.200889)]
-'''
 
+'''
 def add(p1, p2):
     north=p1.n+p2.n
     west=p1.e+p2.e
@@ -107,7 +107,7 @@ def rectMission(p1, p2, p3, alt, cam='gopro', imgOvr=.05):
               'canon':{'ssizem':5.7, 'ssizep':7.6, 'flen':5.2, 'angN' : 1.0027311229353408, 'angW' : 1.2621587749426584, 'TangN':1.566803225, 'TangW':3.1365079},
               'gopro':{'angN':2.792523803, 'angW':2.792523803, 'TangN':2.3857296493600746, 'TangW':2.3857296493600746}}
     perpendicularTestResult=isPerpendicular(p1,p2,p3)
-    print perpendicularTestResult
+    #print perpendicularTestResult
     if perpendicularTestResult=="Good" or perpendicularTestResult=="Warn":
         v21=sub(p1,p2)
         v23=sub(p3,p2)
@@ -192,18 +192,23 @@ def missionDivisionCheating(pointList, droneList, numDrones):
     dividedMission={'response':pointList['response'], 'UAVs':list()}
     picListLength=len(pointList['picList'])
     picListSection=int(picListLength/numDrones)
+    droneName=["Solo Gold", "Solo Green"]
     if numDrones==1:
         dividedMission['UAVs'].append({'name': droneList[0], 'points': pointList['picList']})
     else:
         drone1location=latlon(droneList[1],droneList[2])
         drone2location=latlon(droneList[4],droneList[5])
         for number in range(0,numDrones):
-            if number % 2 ==0:
-                print(droneList[0])
-                dividedMission['UAVs'].append({'name':droneList[0], 'points':pointList['picList'][picListSection*number:picListSection*(number+1)]})
+            if number % 2 == 0:
+                if number < numDrones-1:
+                    dividedMission['UAVs'].append({'name':droneName[0], 'points':pointList['picList'][picListSection*number:picListSection*(number+1)]})
+                else:
+                    dividedMission['UAVs'].append({'name':droneName[0], 'points':pointList['picList'][picListSection*number:picListLength]})
             else:
-                print(droneList[3])
-                dividedMission['UAVs'].append({'name':droneList[3], 'points':pointList['picList'][picListSection*number:picListSection*(number+1)]})
+                if number < numDrones-1:
+                    dividedMission['UAVs'].append({'name':droneName[1], 'points':pointList['picList'][picListSection*number:picListSection*(number+1)]})
+                else:
+                    dividedMission['UAVs'].append({'name':droneName[1], 'points':pointList['picList'][picListSection*number:picListLength]})
     return dividedMission
 
 
@@ -231,7 +236,7 @@ def serializeMissionData(missionDivisionData):
         #this line of code is for cheating the experiments
         missionDivisionData['UAVs'][indexLocations]['completed'] = False
         for indexPoints in xrange(0, len(missionDivisionData['UAVs'][indexLocations]['points'])):
-            print missionDivisionData['UAVs'][indexLocations]
+            #print missionDivisionData['UAVs'][indexLocations]
             missionDivisionData['UAVs'][indexLocations]['points'][indexPoints] = {
                     "latitude" : missionDivisionData['UAVs'][indexLocations]['points'][indexPoints].latitude,
                     "longitude" : missionDivisionData['UAVs'][indexLocations]['points'][indexPoints].longitude,
@@ -257,8 +262,7 @@ dlist=["gold", f1[4].n, f1[4].e, "green", f1[5].n, f1[5].e]
 data=missionDivisionCheating(surveyPlan, dlist, 7)
 print('missionDivision worked')
 print()
-for location in data['locations']:
-    print(location['name'])
-    for point in location['points']:
-        print(point.latitude, point.longitude)
-'''
+for uav in data['UAVs']:
+    print(uav['name'])
+    for point in uav['points']:
+        print(point.latitude, point.longitude)'''
