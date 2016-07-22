@@ -54,13 +54,13 @@ The algorithm assumes the orientation
     f2 is the field just north of that one
     f3 is a field on a strange angle I found for testing'''
 
-'''f1=[latlon(38.893866,-92.201769),latlon(38.893865, -92.201024),latlon(38.894552,-92.201016),latlon(38.894554,-92.201748), latlon(38.894035, -92.200937), latlon(38.894281, -92.200959) ]
+f1=[latlon(38.893866,-92.201769),latlon(38.893865, -92.201024),latlon(38.894552,-92.201016),latlon(38.894554,-92.201748), latlon(38.894035, -92.200937), latlon(38.894281, -92.200959) ]
 f2=[latlon(38.894687,-92.202445),latlon(38.894659,-92.201019),latlon(38.895398,-92.201018),latlon(38.895424,-92.202389)]
 f3=[latlon(38.202472,-91.736857),latlon(38.203990,-91.734097),latlon(38.205077,-91.735023),latlon(38.203475,-91.737941)]
 
 badPoints=[latlon(38.893968,-92.201754),latlon(38.893906, -92.201759),latlon(38.894549,-92.201091),latlon(38.894549, -92.201046)]
 badPoints2=[latlon(38.893866,-92.201769), latlon(38.893964, -92.201031), latlon(38.894561, -92.200889)]
-'''
+
 
 def add(p1, p2):
     north=p1.n+p2.n
@@ -107,7 +107,7 @@ def rectMission(p1, p2, p3, alt, cam='gopro', imgOvr=.05):
               'canon':{'ssizem':5.7, 'ssizep':7.6, 'flen':5.2, 'angN' : 1.0027311229353408, 'angW' : 1.2621587749426584, 'TangN':1.566803225, 'TangW':3.1365079},
               'gopro':{'angN':2.792523803, 'angW':2.792523803, 'TangN':2.3857296493600746, 'TangW':2.3857296493600746}}
     perpendicularTestResult=isPerpendicular(p1,p2,p3)
-    print perpendicularTestResult
+    #print perpendicularTestResult
     if perpendicularTestResult=="Good" or perpendicularTestResult=="Warn":
         v21=sub(p1,p2)
         v23=sub(p3,p2)
@@ -187,6 +187,27 @@ def missionDivision(pointList, droneList):
         print("Wrong")
         return
 
+
+def missionDivisionCheating(pointList, droneList, numDrones):
+    dividedMission={'response':pointList['response'], 'UAVs':list()}
+    picListLength=len(pointList['picList'])
+    picListSection=int(picListLength/numDrones)
+    if numDrones==1:
+        dividedMission['UAVs'].append({'name': droneList[0], 'points': pointList['picList']})
+    else:
+        drone1location=latlon(droneList[1],droneList[2])
+        drone2location=latlon(droneList[4],droneList[5])
+        for number in range(0,numDrones):
+            if number % 2 ==0:
+                print(droneList[0])
+                dividedMission['UAVs'].append({'name':droneList[0], 'points':pointList['picList'][picListSection*number:picListSection*(number+1)]})
+            else:
+                print(droneList[3])
+                dividedMission['UAVs'].append({'name':droneList[3], 'points':pointList['picList'][picListSection*number:picListSection*(number+1)]})
+    return dividedMission
+
+
+
 '''
 Function that serializes data for sending to client side. Data have this shape:
 missionDivisionData = {
@@ -210,7 +231,7 @@ def serializeMissionData(missionDivisionData):
         #this line of code is for cheating the experiments
         missionDivisionData['UAVs'][indexLocations]['completed'] = False
         for indexPoints in xrange(0, len(missionDivisionData['UAVs'][indexLocations]['points'])):
-            print missionDivisionData['UAVs'][indexLocations]
+            #print missionDivisionData['UAVs'][indexLocations]
             missionDivisionData['UAVs'][indexLocations]['points'][indexPoints] = {
                     "latitude" : missionDivisionData['UAVs'][indexLocations]['points'][indexPoints].latitude,
                     "longitude" : missionDivisionData['UAVs'][indexLocations]['points'][indexPoints].longitude,
@@ -218,12 +239,12 @@ def serializeMissionData(missionDivisionData):
             }
     return missionDivisionData
 
-#surveyPlan=rectMission(f1[0],f1[1],f1[2],20, 'pi')
+surveyPlan=rectMission(f1[0],f1[1],f1[2],20, 'pi')
 #missionList=rectMission(f2[2],f2[3],f2[0],20, 'canon')
 #missionList=rectMission(f3[2],f3[3],f3[0],20, 'pi')
 #missionList=rectMission(f1[0],f1[1],badPoints[2],20, 'pi')
 
-'''if surveyPlan != None:
+if surveyPlan != None:
     print(surveyPlan['response'])
     for x in surveyPlan['picList'] :
         if x!=surveyPlan['picList'][-1]:
@@ -233,11 +254,10 @@ def serializeMissionData(missionDivisionData):
 
 dlist=["gold", f1[4].n, f1[4].e, "green", f1[5].n, f1[5].e]
 
-data=missionDivision(surveyPlan, dlist)
+data=missionDivisionCheating(surveyPlan, dlist, 7)
 print('missionDivision worked')
 print()
 for location in data['locations']:
     print(location['name'])
     for point in location['points']:
         print(point.latitude, point.longitude)
-'''
