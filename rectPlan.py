@@ -53,14 +53,14 @@ The algorithm assumes the orientation
     f1 is the field for the may 10 demo
     f2 is the field just north of that one
     f3 is a field on a strange angle I found for testing'''
-
+'''
 f1=[latlon(38.893866,-92.201769),latlon(38.893865, -92.201024),latlon(38.894552,-92.201016),latlon(38.894554,-92.201748), latlon(38.894035, -92.200937), latlon(38.894281, -92.200959) ]
 f2=[latlon(38.894687,-92.202445),latlon(38.894659,-92.201019),latlon(38.895398,-92.201018),latlon(38.895424,-92.202389)]
 f3=[latlon(38.202472,-91.736857),latlon(38.203990,-91.734097),latlon(38.205077,-91.735023),latlon(38.203475,-91.737941)]
 
 badPoints=[latlon(38.893968,-92.201754),latlon(38.893906, -92.201759),latlon(38.894549,-92.201091),latlon(38.894549, -92.201046)]
 badPoints2=[latlon(38.893866,-92.201769), latlon(38.893964, -92.201031), latlon(38.894561, -92.200889)]
-
+'''
 
 def add(p1, p2):
     north=p1.n+p2.n
@@ -238,7 +238,7 @@ def serializeMissionData(missionDivisionData):
                     "altitude" : missionDivisionData['UAVs'][indexLocations]['points'][indexPoints].altitude,
             }
     return missionDivisionData
-
+'''
 surveyPlan=rectMission(f1[0],f1[1],f1[2],20, 'pi')
 #missionList=rectMission(f2[2],f2[3],f2[0],20, 'canon')
 #missionList=rectMission(f3[2],f3[3],f3[0],20, 'pi')
@@ -261,3 +261,4 @@ for location in data['locations']:
     print(location['name'])
     for point in location['points']:
         print(point.latitude, point.longitude)
+'''
