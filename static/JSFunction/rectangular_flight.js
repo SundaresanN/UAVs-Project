@@ -17,7 +17,7 @@ function addGraphicsInfoForTheRectangularSurvey(){
 												"<div class='col-lg-12'>" +
 													"<div class='form-group'>" +
 													"<label for='extraDronesBox'>Extra Drones:</label>" +
-														"<input type='number' min='0' class='form-control' id='extraDronesBox'>" +
+														"<input type='number' min='0' value='0' class='form-control' id='extraDronesBox'>" +
 													"</div>" +
 												"</div>" +
 										"</div>"

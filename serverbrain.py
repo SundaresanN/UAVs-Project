@@ -142,8 +142,8 @@ class ServerBrain:
 			droneList.append(location['latitude'])
 			droneList.append(location['longitude'])
 
-		missionDivisionData = rectPlan.missionDivision(result, droneList, data['total'])
-		missionDivisionData = rectPlan.missionDivision(result, droneList)
+		missionDivisionData = rectPlan.missionDivisionCheating(result, droneList, data['total'])
+		#missionDivisionData = rectPlan.missionDivision(result, droneList)
 		missionDivisionData = rectPlan.serializeMissionData(missionDivisionData)
 		#dataToReturt is required for keeping data on missionDivisionData correct. In fact with the modify of "completed" field in eache UAVInfo object,
 		#the risk is that client could not understand which points to show. File will be modified with the missionDivisionData updated for each drone("completed" key's value).
@@ -159,8 +159,8 @@ class ServerBrain:
 				drone = UAVInfo[index]['name']
 				#if drone has already a filled list of locations to reach, I need to go ahead
 				#otherwise I need to understand if the mission has been already completed and if not I can assign points to the associated drone and set the key "completed" to True
-				if self.drones[drone].listOfLocationsToReach is None:
-					if UAVInfo[index]['completed'] == False:
+				if self.drones[drone] is not None:
+					if self.drones[drone].listOfLocationsToReach is None:
 						self.drones[drone].buildListOfLocations(UAVInfo[index]['points'])
 						UAVInfo[index]['completed'] = True
 				else:
@@ -188,12 +188,15 @@ class ServerBrain:
 			drone = UAVInfo[index]['name']
 			#if drone has already a filled list of locations to reach, I need to go ahead
 			#otherwise I need to understand if the mission has been already completed and if not I can assign points to the associated drone and set the key "completed" to True
-			if self.drones[drone].listOfLocationsToReach is not None:
-				print "This drone has already locations to reach"
-			else:
-				if UAVInfo[index]['completed'] == False:
-					self.drones[drone].buildListOfLocations(UAVInfo[index]['points'])
-					UAVInfo[index]['completed'] = True
+			if self.drones[drone] is not None:
+				if self.drones[drone].listOfLocationsToReach is not None:
+					print "This drone has already locations to reach"
+				else:
+					print drone + "has an empty list of locations"
+					if UAVInfo[index]['completed'] == False:
+						self.drones[drone].buildListOfLocations(UAVInfo[index]['points'])
+						UAVInfo[index]['completed'] = True
+
 		missionDivisionData['UAVs'] = UAVInfo
 		file = open("oldSurvey.txt", "w")
 		file.write(str(missionDivisionData))

@@ -192,18 +192,19 @@ def missionDivisionCheating(pointList, droneList, numDrones):
     dividedMission={'response':pointList['response'], 'UAVs':list()}
     picListLength=len(pointList['picList'])
     picListSection=int(picListLength/numDrones)
+    droneName=["Solo Gold","Solo Green"]
     if numDrones==1:
         dividedMission['UAVs'].append({'name': droneList[0], 'points': pointList['picList']})
     else:
-        drone1location=latlon(droneList[1],droneList[2])
-        drone2location=latlon(droneList[4],droneList[5])
+        #drone1location=latlon(droneList[1],droneList[2])
+        #drone2location=latlon(droneList[4],droneList[5])
         for number in range(0,numDrones):
             if number % 2 ==0:
-                print(droneList[0])
-                dividedMission['UAVs'].append({'name':droneList[0], 'points':pointList['picList'][picListSection*number:picListSection*(number+1)]})
+                #print(droneList[0])
+                dividedMission['UAVs'].append({'name':droneName[0], 'points':pointList['picList'][picListSection*number:picListSection*(number+1)]})
             else:
-                print(droneList[3])
-                dividedMission['UAVs'].append({'name':droneList[3], 'points':pointList['picList'][picListSection*number:picListSection*(number+1)]})
+                #print(droneList[3])
+                dividedMission['UAVs'].append({'name':droneName[1], 'points':pointList['picList'][picListSection*number:picListSection*(number+1)]})
     return dividedMission
 
 

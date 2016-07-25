@@ -24,18 +24,18 @@ function checkOldSurvey(){
   				 //removeVertices()
   				 deleteDeleteButtonsFromTableOfLocationsToReachInRectangularSurvey()
   				}
-
-  			//addAllTheLocationsForRectangularSurvey()
-  			//Now I need to remove the "build rectangular path" button and replace it with
-  			//the "flight" button
-        var flightRectangularButton = "<div class='row'>" +
-  																			"<div class='col-lg-12'>" +
-  																				'<a type="button" class="btn btn-default" onclick="flightDrone(\'' +  null + '\', \'' +  'rectangular' + '\')">Start Survey</a>' +
-  																			"</div>" +
-  																		"</div>"
-  			//Just need to understand what is the child for "build rectangular path" button and remove it.
-  			$("#typeOfSurveyDiv").children().eq(0).children().eq(2).remove()
-  			$("#typeOfSurveyDiv").children().eq(0).append(flightRectangularButton)
+         }
+         if (locations.length > 0) {
+           //Now I need to remove the "build rectangular path" button and replace it with
+     			//the "flight" button
+           var flightRectangularButton = "<div class='row'>" +
+     																			"<div class='col-lg-12'>" +
+     																				'<a type="button" class="btn btn-default" onclick="flightDrone(\'' +  null + '\', \'' +  'rectangular' + '\')">Start Survey</a>' +
+     																			"</div>" +
+     																		"</div>"
+     			//Just need to understand what is the child for "build rectangular path" button and remove it.
+     			$("#typeOfSurveyDiv").children().eq(0).children().eq(2).remove()
+     			$("#typeOfSurveyDiv").children().eq(0).append(flightRectangularButton)
          }
 		},
 		error: function(){
