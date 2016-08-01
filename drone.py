@@ -124,16 +124,25 @@ class Drone():
 		cmds.download()
 		cmds.wait_ready()
 		cmds.clear()
+		#index for association between picutre and location
+		index = 0
+		#open the file for the picture-location association
+		pictures_file = open("association picture-location Solo " + self.name + ".txt", "a")
+		pictures_file.write("Survey: " + str(time.strftime("%c")))
 		#adding waypoint and takeAPicture commands
 		for location in self.listOfLocationsToReach:
 			locationCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, location.lat, location.lon, location.alt)
 			pictureCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_DO_DIGICAM_CONTROL, 0, 0, 1, 0, 0, 0, 1, 0, 0)
+			pictures_file.write("Index " + str(index) + " ---> " + "lat: " + str(location.lat) + ", lon: " + str(location.lon) + ", alt: " + str(location.alt) + "\n")
+			index = index + 1
 			cmds.add(locationCommand)
 			cmds.add(pictureCommand)
+		pictures_file.close()
 
-		#sending commands to UAV
+		#uploading commands to UAV
 		cmds.upload()
 		#taking off command
+		return
 		self.__armAndTakeOff__()
 
 		self.vehicle.commands.next = 0 #reset mission set to first(0) waypoint
