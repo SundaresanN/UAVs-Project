@@ -4766,3 +4766,105 @@ Flight time: 520.487426996
 Take off time required: 4.00451183319
 Mission Flight starts on Tue Jul 19 09:17:14 2016
 Initial Battery Level: 12
+Take off time required: 3.00300502777
+Mission Flight starts on Tue Aug  2 08:47:27 2016
+Initial Battery Level: 96
+Location:
+	- latitude: 37.9244900533
+	- longitude: -91.7720515308
+	- altitude: 10
+	- battery: 95
+Location:
+	- latitude: 37.9244975035
+	- longitude: -91.7722563649
+	- altitude: 10
+	- battery: 95
+Location:
+	- latitude: 37.9245049538
+	- longitude: -91.772461199
+	- altitude: 10
+	- battery: 95
+Location:
+	- latitude: 37.9245124041
+	- longitude: -91.7726660332
+	- altitude: 10
+	- battery: 95
+Location:
+	- latitude: 37.9245198543
+	- longitude: -91.7728708673
+	- altitude: 10
+	- battery: 95
+Take off time required: 5.00597500801
+Mission Flight starts on Tue Aug  2 09:05:18 2016
+Initial Battery Level: 87
+Location:
+	- latitude: 37.9245438515
+	- longitude: -91.771932118
+	- altitude: 10
+	- battery: 86
+Location:
+	- latitude: 37.9245490397
+	- longitude: -91.7721370219
+	- altitude: 10
+	- battery: 86
+Location:
+	- latitude: 37.924554228
+	- longitude: -91.7723419258
+	- altitude: 10
+	- battery: 86
+Location:
+	- latitude: 37.9245594162
+	- longitude: -91.7725468297
+	- altitude: 10
+	- battery: 86
+Location:
+	- latitude: 37.9245646044
+	- longitude: -91.7727517336
+	- altitude: 10
+	- battery: 86
+Location:
+	- latitude: 37.9245697926
+	- longitude: -91.7729566375
+	- altitude: 10
+	- battery: 86
+Location:
+	- latitude: 37.9247743471
+	- longitude: -91.7729435992
+	- altitude: 10
+	- battery: 86
+Location:
+	- latitude: 37.9247691588
+	- longitude: -91.7727386953
+	- altitude: 10
+	- battery: 85
+Location:
+	- latitude: 37.9247639706
+	- longitude: -91.7725337914
+	- altitude: 10
+	- battery: 85
+Location:
+	- latitude: 37.9247587824
+	- longitude: -91.7723288875
+	- altitude: 10
+	- battery: 85
+Location:
+	- latitude: 37.9247535942
+	- longitude: -91.7721239836
+	- altitude: 10
+	- battery: 85
+Location:
+	- latitude: 37.924748406
+	- longitude: -91.7719190797
+	- altitude: 10
+	- battery: 85
+Mission Flight starts on Tue Aug  2 14:36:10 2016
+Initial Battery Level: 98
+Location:
+	- latitude: 37.9244350205
+	- longitude: -91.7719256903
+	- altitude: 10
+	- battery: 98
+
+	- time: 7.46636295319
+Mission Flight starts on Tue Aug  2 14:44:31 2016
+Initial Battery Level: 96

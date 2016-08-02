@@ -138,14 +138,24 @@ class ServerBrain:
 		droneList = []
 		for drone in data['drones']:
 			droneList.append(drone)
-			location = self.drones[drone].getCurrentLocation()
+			#location = self.drones[drone].getCurrentLocation()
+			if drone == "Solo Gold":
+				location = {
+					'latitude' : 37.924340212346,
+					'longitude' : -91.77195611425
+				}
+			else:
+				location = {
+					'latitude' : 37.921343566,
+					'longitude' : -91.776543245
+				}
 			droneList.append(location['latitude'])
 			droneList.append(location['longitude'])
 
 		missionDivisionData = rectPlan.missionDivisionCheating(result, droneList, data['total'])
 		#missionDivisionData = rectPlan.missionDivision(result, droneList)
 		missionDivisionData = rectPlan.serializeMissionData(missionDivisionData)
-		#dataToReturt is required for keeping data on missionDivisionData correct. In fact with the modify of "completed" field in eache UAVInfo object,
+		#dataToReturn is required for keeping data on missionDivisionData correct. In fact with the modify of "completed" field in eache UAVInfo object,
 		#the risk is that client could not understand which points to show. File will be modified with the missionDivisionData updated for each drone("completed" key's value).
 		dataToReturn = missionDivisionData
 		'''
@@ -154,7 +164,6 @@ class ServerBrain:
 		if missionDivisionData['response'] == 'Good' or missionDivisionData['response'] == 'Warn':
 			#filling the locations to reach array for each drone involved
 			UAVInfo = missionDivisionData['UAVs']
-			print UAVInfo
 			for index in xrange(0, len(UAVInfo)):
 				drone = UAVInfo[index]['name']
 				#if drone has already a filled list of locations to reach, I need to go ahead
@@ -203,7 +212,6 @@ class ServerBrain:
 		file.close()
 		return dataToReturn
 
-
 	'''
 	This method creates a thread for a drone's flight.
 	'''
@@ -229,13 +237,7 @@ class ServerBrain:
 					eventlet.spawn(self.drones[drone].missionFlight, self.connectionManager, self.socket)
 					time.sleep(5)
 
-	'''
-	This method doesn't create a thread for the following kind of flight. We need to talk about
-	priority this method could have.
-	Max priority means that this kind of flight could not be interrupted by anything(so it's a process that requires all the power of the server)
-	'''
-	def takeATwoPointsFlight(self, drone):
-		self.drones[drone].twoPointsFlight(self.connectionManager, self.socket)
+
 	'''
 	This method is used for building the network the drone will connect to.
 	This method is private because it's usage is thought for this class and not for other classes.

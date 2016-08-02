@@ -5974,3 +5974,14 @@ Location:
 	- longitude: -91.7723365
 	- altitude: 10.02
 	- battery: 83
+Take off time required: 1.00142502785
+Take off time required: 1.00146698952
+Mission Flight starts on Tue Aug  2 14:36:15 2016
+Initial Battery Level: 98
+Location:
+	- latitude: 37.9246692949
+	- longitude: -91.7727353033
+	- altitude: 10
+	- battery: 98
+
+	- time: 5.30200910568

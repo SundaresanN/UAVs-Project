@@ -14,10 +14,11 @@ function checkOldSurvey(){
 			for (var index in locations) {
 				 var element = locations[index]
          if (locations[index]['completed'] == false) {
+           console.log("HERE")
            var indexDrone = brain.getIndexDrone(element['name'])
   				 var pointsArray = element['points']
   				 for (var secondIndex in pointsArray) {
-  					  console.log("adding to " + element['name'] + " location " + pointsArray[secondIndex])
+  					  //console.log("adding to " + element['name'] + " location " + pointsArray[secondIndex])
   					 	brain.drones[indexDrone].locationsToReach.push(new Location(pointsArray[secondIndex]['latitude'], pointsArray[secondIndex]['longitude'], pointsArray[secondIndex]['altitude']))
   						addLocationForRectangularSurveyInTheGUI(element['name'], pointsArray[secondIndex])
   				 }

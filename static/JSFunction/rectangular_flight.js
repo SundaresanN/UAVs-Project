@@ -139,6 +139,7 @@ function buildRectangularPath(){
 				alert("[WARNING] Could happen that points in the rectangle are not perferct")
 			}
 			locations = data['UAVs']
+			console.log(locations)
 			for (var index in locations) {
 				 var element = locations[index]
 				 var indexDrone = brain.getIndexDrone(element['name'])

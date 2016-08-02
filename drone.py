@@ -119,12 +119,62 @@ class Drone():
 		print "Mission Flight for ", self.name
 		self.fileTest = open("test " + self.name + ".txt", "a")
 		self.__connectToMyNetwork__(connectionManager)
+		for location in self.listOfLocationsToReach:
+			print location
+		#taking off before uploading commands to Solo
+		#self.__armAndTakeOff__()
 		#downloading and clearing the commands actually in the drone's memory
+		self.__uploadMissionPoints__()
+		start = time.time()
+		self.vehicle.mode = VehicleMode('AUTO') #starting the mission
+		#writing on the file
+		self.fileTest.write("Mission Flight starts on " +  str(time.strftime("%c")))
+		self.fileTest.write("\nInitial Battery Level: " +  str(self.getBattery()) + "\n")
+		eventlet.sleep(self.__generatingRandomSleepTime__())
+		index = 0
+		next = -1
+		while True:
+			self.__connectToMyNetwork__(connectionManager)
+			#I'm getting next command from drone in flight
+			if next != self.vehicle.commands.next:
+				next = self.vehicle.commands.next
+				if next%2!=0:
+					next-=1
+				while index <= (next/2):
+					location = self.listOfLocationsToReach[index]
+					#writing on the file
+					self.fileTest.write("Location:\n\t- latitude: " + str(location.lat))
+					self.fileTest.write("\n\t- longitude: " +  str(location.lon))
+					self.fileTest.write("\n\t- altitude: " + str(location.alt))
+					self.fileTest.write("\n\t- battery: " + str(self.getBattery()) + "\n")
+					self.fileTest.write("\n\t- time: " + str(time.time()-start) + "\n")
+
+					#sending information via socket
+					self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False, typeOfSurvey = 'normal', numberOfOscillations = None)
+					index+=1
+				#checking if drone has endend its trip
+				if index == len(self.listOfLocationsToReach):
+					print "Just finished to send all the live information via socket"
+					break
+			eventlet.sleep(self.__generatingRandomSleepTime__())
+
+		self.__removeAllTheElementInTheListOfLocationsToReach__()
+		self.__connectToMyNetwork__(connectionManager)
+		self.vehicle.mode = VehicleMode('GUIDED')
+		self.vehicle.mode = VehicleMode('RTL')
+		end = time.time()
+		self.fileTest.write("\nFlight time: " + str(end-start))
+		self.fileTest.write("\n###########################################\n")
+		self.fileTest.close()
+		self.__sendFlightDataToClientUsingSocket__(socket, self.vehicle.location.global_frame, reached = False, RTLMode = True, typeOfSurvey = 'normal', numberOfOscillations = None)
+		time.sleep(2)
+
+	def __uploadMissionPoints__(self):
 		cmds = self.vehicle.commands
 		cmds.download()
 		cmds.wait_ready()
 		cmds.clear()
-		#index for association between picutre and location
+		#index for association between picture and location
 		index = 0
 		#open the file for the picture-location association
 		pictures_file = open("association picture-location Solo " + self.name + ".txt", "a")
@@ -142,10 +192,43 @@ class Drone():
 		#uploading commands to UAV
 		cmds.upload()
 		#taking off command
-		self.__armAndTakeOff__()
-
 		self.vehicle.commands.next = 0 #reset mission set to first(0) waypoint
 
+	def secondMissionFlight(self, connectionManager, socket):
+
+		print "Mission Flight for ", self.name
+		self.fileTest = open("test " + self.name + ".txt", "a")
+		self.__connectToMyNetwork__(connectionManager)
+		#downloading and clearing the commands actually in the drone's memory
+		cmds = self.vehicle.commands
+		cmds.download()
+		cmds.wait_ready()
+		cmds.clear()
+		#adding take off command using mavlink protocol
+		takeoffCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, 0, 0, 0, 0, 0, self.takeOffAltitude)
+		cmds.add(takeoffCommand)
+
+		#index for association between picture and location
+		index = 0
+		#open the file for the picture-location association
+		pictures_file = open("association picture-location Solo " + self.name + ".txt", "a")
+		pictures_file.write("Survey: " + str(time.strftime("%c")) + "\n")
+		#adding waypoint and takeAPicture commands
+		for location in self.listOfLocationsToReach:
+			locationCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, location.lat, location.lon, location.alt)
+			pictureCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_DO_DIGICAM_CONTROL, 0, 0, 1, 0, 0, 0, 1, 0, 0)
+			pictures_file.write("Index " + str(index) + " ---> " + "lat: " + str(location.lat) + ", lon: " + str(location.lon) + ", alt: " + str(location.alt) + "\n")
+			index = index + 1
+			cmds.add(locationCommand)
+			cmds.add(pictureCommand)
+		pictures_file.close()
+
+		#adding return to launch command using mavlink protocol
+		RTLCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_RETURN_TO_LAUNCH, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+		cmds.add(RTLCommand)
+		#uploading commands to UAV	def __uploadMissionPoints__(self):
+
+		self.vehicle.commands.next = 0 #reset mission set to first(0) waypoint
 		start = time.time()
 		self.vehicle.mode = VehicleMode('AUTO') #starting the mission
 		#writing on the file
@@ -159,27 +242,30 @@ class Drone():
 			#I'm getting next command from drone in flight
 			if next != self.vehicle.commands.next:
 				next = self.vehicle.commands.next
-				if next%2!=0:
+				#checking if drone has endend its trip and so the next command is the RTL command
+				if next == 2*len(self.listOfLocationsToReach)+1:
 					next-=1
-				while index >= (next/2):
+				elif next%2!=0:
+					next+=1
+				while index < (next/2):
 					location = self.listOfLocationsToReach[index]
 					#writing on the file
 					self.fileTest.write("Location:\n\t- latitude: " + str(location.lat))
 					self.fileTest.write("\n\t- longitude: " +  str(location.lon))
 					self.fileTest.write("\n\t- altitude: " + str(location.alt))
 					self.fileTest.write("\n\t- battery: " + str(self.getBattery()) + "\n")
+					self.fileTest.write("\n\t- time: " + str(time.time() - start) + "\n")
 					#sending information via socket
 					self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False, typeOfSurvey = 'normal', numberOfOscillations = None)
 					index+=1
-				#checking if drone has endend its trip
 				if index == len(self.listOfLocationsToReach):
+					print "Just finished to send all the live information via socket"
 					break
+
 			eventlet.sleep(self.__generatingRandomSleepTime__())
 
 		self.__removeAllTheElementInTheListOfLocationsToReach__()
 		self.__connectToMyNetwork__(connectionManager)
-		self.vehicle.mode = VehicleMode('GUIDED')
-		self.vehicle.mode = VehicleMode('RTL')
 		end = time.time()
 		self.fileTest.write("\nFlight time: " + str(end-start))
 		self.fileTest.write("\n###########################################\n")

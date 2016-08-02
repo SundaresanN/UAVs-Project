@@ -216,7 +216,7 @@ def missionDivisionCheating(pointList, droneList, numDrones):
                     dividedMission['UAVs'].append({'name':droneName[1], 'points':pointList['picList'][picListSection*number:picListSection*(number+1)]})
                 else:
                     dividedMission['UAVs'].append({'name':droneName[1], 'points':pointList['picList'][picListSection*number:picListLength]})
-
+    print dividedMission
     return dividedMission
 
 

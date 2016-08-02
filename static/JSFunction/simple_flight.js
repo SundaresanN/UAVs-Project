@@ -70,7 +70,7 @@ function flightDrone(droneName, type){
 					updateGraphicAndDataStructureInformationOnOscillationSurvey(data)
 				},
 				error: function(){
-					console.log("There is an error on server side")
+					alert("There is an error on server side")
 				}
 			})
 		} else {
@@ -84,6 +84,7 @@ function flightDrone(droneName, type){
 				data: JSON.stringify({ name: droneName }),
 				success: function(data){
 					console.log(data)
+					$("[id = '" + droneName + "']").children().eq(3).html(droneName + " is flying..")
 				},
 				error: function(){
 					console.log("There is an error on server side")

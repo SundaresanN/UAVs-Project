@@ -23,7 +23,7 @@ def getDrones():
 @app.route('/checkOldSurvey', methods=['GET'])
 def checkOldSurvey():
     return jsonify({'data': brain.checkOldSurvey()})
-    
+
 @app.route('/connectDrone', methods=['POST'])
 def connectDrone():
     data = request.get_json()
@@ -33,7 +33,6 @@ def connectDrone():
 @app.route('/buildPath', methods=['POST'])
 def buildPath():
     data = request.get_json()
-    print data
     path = brain.buildPath(data['droneName'], data['locationsList'])
     return jsonify({'path' : path})
 
