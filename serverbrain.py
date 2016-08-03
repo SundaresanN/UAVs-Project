@@ -161,7 +161,7 @@ class ServerBrain:
 				if self.drones[drone] is not None:
 					if self.drones[drone].listOfLocationsToReach is None:
 						self.drones[drone].buildListOfLocations(UAVInfo[index]['points'])
-						UAVInfo[index]['completed'] = True
+						UAVInfo[index]['to complete'] = True
 				else:
 					print "This drone has already locations to reach"
 			missionDivisionData['UAVs'] = UAVInfo
@@ -194,7 +194,7 @@ class ServerBrain:
 					print drone + " has an empty list of locations"
 					if UAVInfo[index]['completed'] == False:
 						self.drones[drone].buildListOfLocations(UAVInfo[index]['points'])
-						UAVInfo[index]['completed'] = True
+						UAVInfo[index]['to complete'] = True
 					else:
 						print "This set of points has been completed"
 		missionDivisionData['UAVs'] = UAVInfo
@@ -224,7 +224,6 @@ class ServerBrain:
 		for drone in self.drones:
 			if self.drones[drone] is not None:
 				if len(self.drones[drone].listOfLocationsToReach)>0:
-					print "rectangular flight for ", drone
 					eventlet.spawn(self.drones[drone].missionFlight, self.connectionManager, self.socket)
 					time.sleep(5)
 

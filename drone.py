@@ -76,7 +76,6 @@ class Drone():
 			listToReturn.append(location)
 		return listToReturn
 
-
 	'''
 	This function is used for the drone's take off.
 	Inside the function, before the end of it, I will wait until drone reaches a "safe" altitude(this because I want to avoid the "grass problem")
@@ -119,13 +118,9 @@ class Drone():
 		print "Mission Flight for ", self.name
 		self.fileTest = open("test " + self.name + ".txt", "a")
 		self.__connectToMyNetwork__(connectionManager)
-		for location in self.listOfLocationsToReach:
-			print location
 		#taking off before uploading commands to Solo
-		#self.__armAndTakeOff__()
+		self.__armAndTakeOff__()
 		#downloading and clearing the commands actually in the drone's memory
-		self.listOfLocationsToReach = None
-		return
 		self.__uploadMissionPoints__()
 		start = time.time()
 		self.vehicle.mode = VehicleMode('AUTO') #starting the mission
@@ -148,9 +143,8 @@ class Drone():
 					self.fileTest.write("Location:\n\t- latitude: " + str(location.lat))
 					self.fileTest.write("\n\t- longitude: " +  str(location.lon))
 					self.fileTest.write("\n\t- altitude: " + str(location.alt))
-					self.fileTest.write("\n\t- battery: " + str(self.getBattery()) + "\n")
+					self.fileTest.write("\n\t- battery: " + str(self.getBattery()))
 					self.fileTest.write("\n\t- time: " + str(time.time()-start) + "\n")
-
 					#sending information via socket
 					self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False, typeOfSurvey = 'normal', numberOfOscillations = None)
 					index+=1
@@ -168,8 +162,21 @@ class Drone():
 		self.fileTest.write("\nFlight time: " + str(end-start))
 		self.fileTest.write("\n###########################################\n")
 		self.fileTest.close()
+		self.__updateFileOldSurvey__()
 		self.__sendFlightDataToClientUsingSocket__(socket, self.vehicle.location.global_frame, reached = False, RTLMode = True, typeOfSurvey = 'normal', numberOfOscillations = None)
 		time.sleep(2)
+
+	def __updateFileOldSurvey__(self):
+		missionDivisionData = (open("oldSurvey.txt", "r").read())
+		missionDivisionData = eval(missionDivisionData)
+		for index in range(0, len(missionDivisionData['UAVs'])):
+			if missionDivisionData['UAVs'][index]['name'] == self.name and missionDivisionData['UAVs'][index]['to complete'] == True:
+				missionDivisionData['UAVs'][index]['to complete'] = False
+				missionDivisionData['UAVs'][index]['completed'] = True
+				file = open("oldSurvey.txt", "w")
+				file.write(str(missionDivisionData))
+				file.close()
+				return
 
 	def __uploadMissionPoints__(self):
 		cmds = self.vehicle.commands

@@ -237,6 +237,7 @@ def serializeMissionData(missionDivisionData):
     for indexLocations in xrange(0, len(missionDivisionData['UAVs'])):
         #this line of code is for cheating the experiments
         missionDivisionData['UAVs'][indexLocations]['completed'] = False
+        missionDivisionData['UAVs'][indexLocations]['to complete'] = False
 
         for indexPoints in xrange(0, len(missionDivisionData['UAVs'][indexLocations]['points'])):
             #print missionDivisionData['UAVs'][indexLocations]
