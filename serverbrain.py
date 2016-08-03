@@ -138,17 +138,7 @@ class ServerBrain:
 		droneList = []
 		for drone in data['drones']:
 			droneList.append(drone)
-			#location = self.drones[drone].getCurrentLocation()
-			if drone == "Solo Gold":
-				location = {
-					'latitude' : 37.924340212346,
-					'longitude' : -91.77195611425
-				}
-			else:
-				location = {
-					'latitude' : 37.921343566,
-					'longitude' : -91.776543245
-				}
+			location = self.drones[drone].getCurrentLocation()
 			droneList.append(location['latitude'])
 			droneList.append(location['longitude'])
 
@@ -199,13 +189,14 @@ class ServerBrain:
 			#otherwise I need to understand if the mission has been already completed and if not I can assign points to the associated drone and set the key "completed" to True
 			if self.drones[drone] is not None:
 				if self.drones[drone].listOfLocationsToReach is not None:
-					print "This drone has already locations to reach"
+					print drone + " has already locations to reach"
 				else:
-					print drone + "has an empty list of locations"
+					print drone + " has an empty list of locations"
 					if UAVInfo[index]['completed'] == False:
 						self.drones[drone].buildListOfLocations(UAVInfo[index]['points'])
 						UAVInfo[index]['completed'] = True
-
+					else:
+						print "This set of points has been completed"
 		missionDivisionData['UAVs'] = UAVInfo
 		file = open("oldSurvey.txt", "w")
 		file.write(str(missionDivisionData))

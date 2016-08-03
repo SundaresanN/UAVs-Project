@@ -11,6 +11,7 @@ function checkOldSurvey(){
       }
 		  removingAllTheOldStuffs()
       locations = data['UAVs']
+      console.log(locations)
 			for (var index in locations) {
 				 var element = locations[index]
          if (locations[index]['completed'] == false) {

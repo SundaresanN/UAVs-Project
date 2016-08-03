@@ -124,6 +124,8 @@ class Drone():
 		#taking off before uploading commands to Solo
 		#self.__armAndTakeOff__()
 		#downloading and clearing the commands actually in the drone's memory
+		self.listOfLocationsToReach = None
+		return
 		self.__uploadMissionPoints__()
 		start = time.time()
 		self.vehicle.mode = VehicleMode('AUTO') #starting the mission

@@ -200,12 +200,6 @@ def missionDivisionCheating(pointList, droneList, numDrones):
         #drone1location=latlon(droneList[1],droneList[2])
         #drone2location=latlon(droneList[4],droneList[5])
         for number in range(0,numDrones):
-            if number % 2 ==0:
-                #print(droneList[0])
-                dividedMission['UAVs'].append({'name':droneName[0], 'points':pointList['picList'][picListSection*number:picListSection*(number+1)]})
-            else:
-                #print(droneList[3])
-                dividedMission['UAVs'].append({'name':droneName[1], 'points':pointList['picList'][picListSection*number:picListSection*(number+1)]})
             if number % 2 == 0:
                 if number < numDrones-1:
                     dividedMission['UAVs'].append({'name':droneName[0], 'points':pointList['picList'][picListSection*number:picListSection*(number+1)]})
@@ -243,6 +237,7 @@ def serializeMissionData(missionDivisionData):
     for indexLocations in xrange(0, len(missionDivisionData['UAVs'])):
         #this line of code is for cheating the experiments
         missionDivisionData['UAVs'][indexLocations]['completed'] = False
+
         for indexPoints in xrange(0, len(missionDivisionData['UAVs'][indexLocations]['points'])):
             #print missionDivisionData['UAVs'][indexLocations]
             missionDivisionData['UAVs'][indexLocations]['points'][indexPoints] = {
