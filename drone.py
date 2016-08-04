@@ -34,7 +34,6 @@ class Drone():
 
 	def connect(self):
 		self.vehicle = connect('udpout:10.1.1.10:14560', wait_ready=True)
-		self.vehicle.airspeed = 1
 
 	def getCurrentLocation(self):
 		location = self.vehicle.location.global_frame
@@ -95,7 +94,6 @@ class Drone():
 			print "Waiting for arming..."
 			time.sleep(1)
 		self.vehicle.simple_takeoff(self.takeOffAltitude)
-		#print "self.vehicle.simple_takeoff(self.takeOffAltitude), ", self.takeOffAltitude
 		'''
 		Waiting for a safe altitude for having a flight
 		'''
@@ -160,6 +158,7 @@ class Drone():
 		self.vehicle.mode = VehicleMode('RTL')
 		end = time.time()
 		self.fileTest.write("\nFlight time: " + str(end-start))
+		self.fileTest.write("\nFinal Battery level: " + str(self.getBattery()) + "\n")
 		self.fileTest.write("\n###########################################\n")
 		self.fileTest.close()
 		self.__updateFileOldSurvey__()
@@ -424,7 +423,6 @@ class Drone():
 
 	  cmds = self.vehicle.commands
 	  cmds.download()
-	  time.sleep(45)
 	  cmds.wait_ready()
 	  cmds.clear()
 	  for value in xrange(0, 500):
