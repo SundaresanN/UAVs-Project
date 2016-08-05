@@ -423,6 +423,7 @@ class Drone():
 
 	  cmds = self.vehicle.commands
 	  cmds.download()
+	  time.sleep(60)
 	  cmds.wait_ready()
 	  cmds.clear()
 	  for value in xrange(0, 500):
