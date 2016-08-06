@@ -100,7 +100,7 @@ class Drone():
 		while True:
 			if self.vehicle.location.global_relative_frame.alt <= self.takeOffAltitude*0.8:
 				end = time.time()
-				self.fileTest.write("Take off time required: " + str(end - start) + "\n")
+				self.fileTest.write("Take off time required: " + str(end - start) + "\n\n")
 				return
 
 	'''
@@ -182,6 +182,7 @@ class Drone():
 		cmds.download()
 		cmds.wait_ready()
 		cmds.clear()
+		print self.name + " has cleaned its commands."
 		#index for association between picture and location
 		index = 0
 		#open the file for the picture-location association
@@ -195,8 +196,8 @@ class Drone():
 			index = index + 1
 			cmds.add(locationCommand)
 			cmds.add(pictureCommand)
+		pictures_file.write("\n###########################################\n\n")
 		pictures_file.close()
-
 		#uploading commands to UAV
 		cmds.upload()
 		#taking off command
@@ -205,7 +206,7 @@ class Drone():
 	def secondMissionFlight(self, connectionManager, socket):
 
 		print "Mission Flight for ", self.name
-		self.fileTest = open("test " + self.name + ".txt", "a")
+		self.fileTest = open("Riccardo test " + self.name + ".txt", "a")
 		self.__connectToMyNetwork__(connectionManager)
 		#downloading and clearing the commands actually in the drone's memory
 		cmds = self.vehicle.commands
@@ -230,7 +231,7 @@ class Drone():
 			cmds.add(locationCommand)
 			cmds.add(pictureCommand)
 		pictures_file.close()
-
+		self.fileTest.write("Number of points: " + str(len(self.listOfLocationsToReach)) + "\n")
 		#adding return to launch command using mavlink protocol
 		RTLCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_RETURN_TO_LAUNCH, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 		cmds.add(RTLCommand)
@@ -276,7 +277,7 @@ class Drone():
 		self.__connectToMyNetwork__(connectionManager)
 		end = time.time()
 		self.fileTest.write("\nFlight time: " + str(end-start))
-		self.fileTest.write("\n###########################################\n")
+		self.fileTest.write("\n###########################################\n\n")
 		self.fileTest.close()
 		self.__sendFlightDataToClientUsingSocket__(socket, self.vehicle.location.global_frame, reached = False, RTLMode = True, typeOfSurvey = 'normal', numberOfOscillations = None)
 		time.sleep(2)
