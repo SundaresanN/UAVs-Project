@@ -80,7 +80,6 @@ class Drone():
 	Inside the function, before the end of it, I will wait until drone reaches a "safe" altitude(this because I want to avoid the "grass problem")
 	This function is private because I don't want that someone could decide to only taking off, if the drone should consume battery, this consumption must be on flight.
 	'''
-	def __armAndTakeOff__(self):
 		print "Inside take off of ", self.name
 		start = time.time()
 
@@ -216,9 +215,11 @@ class Drone():
 		cmds.wait_ready()
 		cmds.clear()
 		#adding take off command using mavlink protocol
-		takeoffCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, 0, 0, 0, 0, 0, self.takeOffAltitude)
+		takeoffCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, 0, 0, 0, self.getCurrentLocation()['latitude'], self.getCurrentLocation()['longitude'], self.takeOffAltitude)
 		cmds.add(takeoffCommand)
-
+		#chaing speed in the vehicle for better pictures. Airspeed = 5
+		changeSpeedCommand = Command(0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_DO_CHANGE_SPEED, 0, 0, 0, 5, 0, 1, 0, 0, 0)
+		cmds.add(changeSpeedCommand)
 		#index for association between picture and location
 		index = 0
 		#open the file for the picture-location association
@@ -227,10 +228,12 @@ class Drone():
 		#adding waypoint and takeAPicture commands
 		for location in self.listOfLocationsToReach:
 			locationCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, location.lat, location.lon, location.alt)
+			delayCommand = Command(0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_DO_CONDITION_DELAY, 0, 0, 1, 0, 0, 0, 0, 0, 0)
 			pictureCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_DO_DIGICAM_CONTROL, 0, 0, 1, 0, 0, 0, 1, 0, 0)
 			pictures_file.write("Index " + str(index) + " ---> " + "lat: " + str(location.lat) + ", lon: " + str(location.lon) + ", alt: " + str(location.alt) + "\n")
 			index = index + 1
 			cmds.add(locationCommand)
+			cmds.add(delayCommand)
 			cmds.add(pictureCommand)
 		pictures_file.close()
 		self.fileTest.write("Number of points: " + str(len(self.listOfLocationsToReach)) + "\n")
@@ -238,11 +241,10 @@ class Drone():
 		RTLCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_RETURN_TO_LAUNCH, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 		cmds.add(RTLCommand)
 		#uploading commands to UAV	def __uploadMissionPoints__(self):
-
+		cmds.upload()
 		self.vehicle.commands.next = 0 #reset mission set to first(0) waypoint
 		start = time.time()
 		self.vehicle.mode = VehicleMode('AUTO') #starting the mission
-		self.vehicle.airspeed = 1 
 		#writing on the file
 		self.fileTest.write("Mission Flight starts on " +  str(time.strftime("%c")))
 		self.fileTest.write("\nInitial Battery Level: " +  str(self.getBattery()) + "\n")
@@ -252,14 +254,16 @@ class Drone():
 		while True:
 			self.__connectToMyNetwork__(connectionManager)
 			#I'm getting next command from drone in flight
-			if next != self.vehicle.commands.next:
+			if next != self.vehicle.commands.next and self.vehicle.commands.next != 0 and self.vehicle.commands.next != 1:
 				next = self.vehicle.commands.next
 				#checking if drone has endend its trip and so the next command is the RTL command
-				if next == 2*len(self.listOfLocationsToReach)+1:
+				if next == 3*len(self.listOfLocationsToReach)+2:
 					next-=1
-				elif next%2!=0:
+				elif next%3==0:
+					next+=2
+				elif next%3==1:
 					next+=1
-				while index < (next/2):
+				while index < (next/3):
 					location = self.listOfLocationsToReach[index]
 					#writing on the file
 					self.fileTest.write("Location:\n\t- latitude: " + str(location.lat))
