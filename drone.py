@@ -114,12 +114,13 @@ class Drone():
 	def missionFlight(self, connectionManager, socket):
 
 		print "Mission Flight for ", self.name
-		self.fileTest = open("test " + self.name + ".txt", "a")
+		self.fileTest = open("Riccardo test " + self.name + ".txt", "a")
 		self.__connectToMyNetwork__(connectionManager)
-		#taking off before uploading commands to Solo
-		self.__armAndTakeOff__()
+
 		#downloading and clearing the commands actually in the drone's memory
 		self.__uploadMissionPoints__()
+		#taking off before uploading commands to Solo
+		self.__armAndTakeOff__()
 		start = time.time()
 		self.vehicle.mode = VehicleMode('AUTO') #starting the mission
 		#writing on the file
@@ -180,6 +181,7 @@ class Drone():
 	def __uploadMissionPoints__(self):
 		cmds = self.vehicle.commands
 		cmds.download()
+		time.sleep(60)
 		cmds.wait_ready()
 		cmds.clear()
 		print self.name + " has cleaned its commands."
@@ -240,6 +242,7 @@ class Drone():
 		self.vehicle.commands.next = 0 #reset mission set to first(0) waypoint
 		start = time.time()
 		self.vehicle.mode = VehicleMode('AUTO') #starting the mission
+		self.vehicle.airspeed = 1 
 		#writing on the file
 		self.fileTest.write("Mission Flight starts on " +  str(time.strftime("%c")))
 		self.fileTest.write("\nInitial Battery Level: " +  str(self.getBattery()) + "\n")
@@ -424,8 +427,8 @@ class Drone():
 
 	  cmds = self.vehicle.commands
 	  cmds.download()
-	  time.sleep(60)
 	  cmds.wait_ready()
+	  time.sleep(60)
 	  cmds.clear()
 	  for value in xrange(0, 500):
 	    #even
