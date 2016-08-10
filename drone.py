@@ -80,6 +80,7 @@ class Drone():
 	Inside the function, before the end of it, I will wait until drone reaches a "safe" altitude(this because I want to avoid the "grass problem")
 	This function is private because I don't want that someone could decide to only taking off, if the drone should consume battery, this consumption must be on flight.
 	'''
+	def __armAndTakeOff__(self):
 		print "Inside take off of ", self.name
 		start = time.time()
 
