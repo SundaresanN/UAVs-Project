@@ -116,15 +116,17 @@ class Drone():
 		print "Mission Flight for ", self.name
 		self.fileTest = open("Riccardo test " + self.name + ".txt", "a")
 		self.__connectToMyNetwork__(connectionManager)
-
+		#writing on the file
+		self.fileTest.write("Mission Flight starts on " +  str(time.strftime("%c")))
 		#downloading and clearing the commands actually in the drone's memory
 		self.__uploadMissionPoints__()
 		#taking off before uploading commands to Solo
+		eventlet.sleep(15)
+		self.__connectToMyNetwork__(connectionManager)
 		self.__armAndTakeOff__()
 		start = time.time()
 		self.vehicle.mode = VehicleMode('AUTO') #starting the mission
-		#writing on the file
-		self.fileTest.write("Mission Flight starts on " +  str(time.strftime("%c")))
+		self.fileTest.write("\nNumber of points: " + str(len(self.listOfLocationsToReach)) + "\n")
 		self.fileTest.write("\nInitial Battery Level: " +  str(self.getBattery()) + "\n")
 		eventlet.sleep(self.__generatingRandomSleepTime__())
 		index = 0
@@ -210,22 +212,19 @@ class Drone():
 		self.fileTest = open("Riccardo test " + self.name + ".txt", "a")
 		self.__connectToMyNetwork__(connectionManager)
 		#downloading and clearing the commands actually in the drone's memory
-		self.vehicle.mode = VehicleMode('AUTO')
-		while not self.vehicle.is_armable:
-			print "Waiting for vehicle to initialise..."
-		self.vehicle.armed = True
-		print self.name + " armed: ", self.vehicle.armed
-		while not self.vehicle.armed:
-			print "Waiting for arming..."
-			time.sleep(1)
+		print "Cleaning the commands"
 		cmds = self.vehicle.commands
 		cmds.download()
 		cmds.wait_ready()
 		cmds.clear()
+		print "Commands cleaned.."
+		#self.__armAndTakeOff__()
+
 		#adding take off command using mavlink protocol
-		takeoffCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, 0, 0, 0, self.getCurrentLocation()['latitude'], self.getCurrentLocation()['longitude'], self.takeOffAltitude)
-		cmds.add(takeoffCommand)
-		#chaing speed in the vehicle for better pictures. Airspeed = 5
+		#takeoffCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, 0, 0, 0, self.getCurrentLocation()['latitude'], self.getCurrentLocation()['longitude'], self.takeOffAltitude)
+		#cmds.add(takeoffCommand)
+
+		#changing speed in the vehicle for better pictures. Airspeed = 5
 		changeSpeedCommand = Command(0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_DO_CHANGE_SPEED, 0, 0, 0, 5, 0, 1, 0, 0, 0)
 		cmds.add(changeSpeedCommand)
 		#index for association between picture and location
@@ -236,24 +235,28 @@ class Drone():
 		#adding waypoint and takeAPicture commands
 		for location in self.listOfLocationsToReach:
 			locationCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, location.lat, location.lon, location.alt)
-			#delayCommand = Command(0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_DO_CONDITION_DELAY, 0, 0, 1, 0, 0, 0, 0, 0, 0)
+			delayCommand = Command(0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_CONDITION_DELAY, 0, 0, 1, 0, 0, 0, 0, 0, 0)
 			pictureCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_DO_DIGICAM_CONTROL, 0, 0, 1, 0, 0, 0, 1, 0, 0)
 			pictures_file.write("Index " + str(index) + " ---> " + "lat: " + str(location.lat) + ", lon: " + str(location.lon) + ", alt: " + str(location.alt) + "\n")
 			index = index + 1
 			cmds.add(locationCommand)
-			#cmds.add(delayCommand)
+			cmds.add(delayCommand)
 			cmds.add(pictureCommand)
 		pictures_file.close()
 		self.fileTest.write("Number of points: " + str(len(self.listOfLocationsToReach)) + "\n")
 		#adding return to launch command using mavlink protocol
 		RTLCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_RETURN_TO_LAUNCH, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 		cmds.add(RTLCommand)
+		self.__armAndTakeOff__()
 		#uploading commands to UAV	def __uploadMissionPoints__(self):
 		cmds.upload()
 		self.vehicle.commands.next = 0 #reset mission set to first(0) waypoint
 		start = time.time()
-		 #starting the mission
+		#starting the mission
+		self.vehicle.mode = VehicleMode('AUTO')
 		print self.vehicle.mode
+		print "Number of commands: ", len(self.vehicle.commands)
+
 		#writing on the file
 		self.fileTest.write("Mission Flight starts on " +  str(time.strftime("%c")))
 		self.fileTest.write("\nInitial Battery Level: " +  str(self.getBattery()) + "\n")
@@ -263,12 +266,14 @@ class Drone():
 		while True:
 			self.__connectToMyNetwork__(connectionManager)
 			#I'm getting next command from drone in flight
-			if next != self.vehicle.commands.next and self.vehicle.commands.next != 0 and self.vehicle.commands.next != 1:
+			if next != self.vehicle.commands.next and self.vehicle.commands.next != 0:
 				next = self.vehicle.commands.next
 				#checking if drone has endend its trip and so the next command is the RTL command
-				if next == 3*len(self.listOfLocationsToReach)+2:
+				if next == 3*len(self.listOfLocationsToReach)+1:
 					next-=1
-				elif next%3==1:
+				elif next%3==2:
+					next+=2
+				elif next%3==0:
 					next+=1
 				while index < (next/3):
 					location = self.listOfLocationsToReach[index]
