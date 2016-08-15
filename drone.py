@@ -148,7 +148,6 @@ class Drone():
 					self.fileTest.write("\n\t- time: " + str(time.time()-start) + "\n")
 					#sending information via socket
 					self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False, typeOfSurvey = 'normal', numberOfOscillations = None)
-					index+=1
 				#checking if drone has endend its trip
 				if index == len(self.listOfLocationsToReach):
 					print "Just finished to send all the live information via socket"
@@ -210,7 +209,9 @@ class Drone():
 
 		print "Mission Flight for ", self.name
 		self.fileTest = open("Riccardo test " + self.name + ".txt", "a")
-		self.__connectToMyNetwork__(connectionManager)
+		if self.__checkNetworkConnection__(connectionManager) is not True:
+			self.__connectToMyNetwork__(connectionManager)
+
 		#downloading and clearing the commands actually in the drone's memory
 		print "Cleaning the commands"
 		cmds = self.vehicle.commands
@@ -218,11 +219,6 @@ class Drone():
 		cmds.wait_ready()
 		cmds.clear()
 		print "Commands cleaned.."
-		#self.__armAndTakeOff__()
-
-		#adding take off command using mavlink protocol
-		#takeoffCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, 0, 0, 0, self.getCurrentLocation()['latitude'], self.getCurrentLocation()['longitude'], self.takeOffAltitude)
-		#cmds.add(takeoffCommand)
 
 		#changing speed in the vehicle for better pictures. Airspeed = 5
 		changeSpeedCommand = Command(0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_DO_CHANGE_SPEED, 0, 0, 0, 5, 0, 1, 0, 0, 0)
@@ -247,6 +243,7 @@ class Drone():
 		#adding return to launch command using mavlink protocol
 		RTLCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_RETURN_TO_LAUNCH, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 		cmds.add(RTLCommand)
+
 		self.__armAndTakeOff__()
 		#uploading commands to UAV	def __uploadMissionPoints__(self):
 		cmds.upload()
@@ -254,8 +251,6 @@ class Drone():
 		start = time.time()
 		#starting the mission
 		self.vehicle.mode = VehicleMode('AUTO')
-		print self.vehicle.mode
-		print "Number of commands: ", len(self.vehicle.commands)
 
 		#writing on the file
 		self.fileTest.write("Mission Flight starts on " +  str(time.strftime("%c")))
@@ -264,7 +259,8 @@ class Drone():
 		index = 0
 		next = -1
 		while True:
-			self.__connectToMyNetwork__(connectionManager)
+			if self.__checkNetworkConnection__(connectionManager) is not True:
+				self.__connectToMyNetwork__(connectionManager)
 			#I'm getting next command from drone in flight
 			if next != self.vehicle.commands.next and self.vehicle.commands.next != 0:
 				next = self.vehicle.commands.next
@@ -284,8 +280,11 @@ class Drone():
 					self.fileTest.write("\n\t- battery: " + str(self.getBattery()) + "\n")
 					self.fileTest.write("\n\t- time: " + str(time.time() - start) + "\n")
 					#sending information via socket
+					if self.__checkNetworkConnection__(connectionManager) is not True:
+						self.__connectToMyNetwork__(connectionManager)
 					self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False, typeOfSurvey = 'normal', numberOfOscillations = None)
 					index+=1
+					eventlet.sleep(1)
 				if index == len(self.listOfLocationsToReach):
 					print "Just finished to send all the live information via socket"
 					break
@@ -540,6 +539,7 @@ class Drone():
 
 	def __sendFlightDataToClientUsingSocket__(self, socket, location, reached, RTLMode, typeOfSurvey, numberOfOscillations):
 		if typeOfSurvey == 'normal':
+			self.__connectToMyNetwork__
 			data = {
 				'name' : self.name,
 				'location' : [location.lat, location.lon, self.vehicle.location.global_relative_frame.alt],
@@ -550,7 +550,6 @@ class Drone():
 			print "Sending data for ", self.name
 			socket.emit('Flight Information ' + self.name, data)
 			print "Data sent for ", self.name
-			time.sleep(1)
 			return
 
 		if typeOfSurvey == 'oscillation':
@@ -569,3 +568,9 @@ class Drone():
 		msg = self.vehicle.message_factory.gopro_set_request_encode(1, 154, mavutil.mavlink.GOPRO_COMMAND_SHUTTER, (1, 0, 0, 0))
 		self.vehicle.send_mavlink(msg)
 		self.vehicle.commands.upload()
+
+	def __checkNetworkConnection__(self, connectionManager):
+		if connectionManager.current() == self.wifiNetwork:
+			return True
+		else:
+			return False
