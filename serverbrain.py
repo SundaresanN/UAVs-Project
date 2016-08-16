@@ -207,7 +207,7 @@ class ServerBrain:
 	This method creates a thread for a drone's flight.
 	'''
 	def takeAFlight(self, drone):
-		eventlet.spawn(self.drones[drone].secondMissionFlight, self.connectionManager, self.socket)
+		eventlet.spawn(self.drones[drone].missionFlight, self.connectionManager, self.socket)
 
 
 	'''
@@ -225,7 +225,7 @@ class ServerBrain:
 			if self.drones[drone] is not None:
 				if len(self.drones[drone].listOfLocationsToReach)>0:
 					eventlet.spawn(self.drones[drone].missionFlight, self.connectionManager, self.socket)
-					
+
 
 
 	'''

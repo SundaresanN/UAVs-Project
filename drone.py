@@ -82,8 +82,8 @@ class Drone():
 	'''
 	def __armAndTakeOff__(self):
 		print "Inside take off of ", self.name
+		return
 		start = time.time()
-
 		print self.name + " is taking off..."
 		while not self.vehicle.is_armable:
 			print "Waiting for vehicle to initialise..."
@@ -119,23 +119,37 @@ class Drone():
 		#writing on the file
 		self.fileTest.write("Mission Flight starts on " +  str(time.strftime("%c")))
 		#downloading and clearing the commands actually in the drone's memory
+		print "before cleaning.. " + self.name
 		self.__uploadMissionPoints__()
-		#taking off before uploading commands to Solo
-		eventlet.sleep(15)
-		self.__connectToMyNetwork__(connectionManager)
-		self.__armAndTakeOff__()
+		socket.emit('Take off ack', self.name + " has just taken off. Now it is ready to start the mission.")
+		print "after cleaning, ready to go to sleep.. " + self.name
+
+		s = time.time()
+		eventlet.sleep(self.__generatingRandomSleepTime__())
+		print "I slept for " + str(time.time() - s) + " before launching the mission.." + self.name
+
+		if self.__checkNetworkConnection__(connectionManager) is not True:
+			print "different network.."
+			self.__connectToMyNetwork__(connectionManager)
+
 		start = time.time()
 		self.vehicle.mode = VehicleMode('AUTO') #starting the mission
 		self.fileTest.write("\nNumber of points: " + str(len(self.listOfLocationsToReach)) + "\n")
 		self.fileTest.write("\nInitial Battery Level: " +  str(self.getBattery()) + "\n")
+		s = time.time()
 		eventlet.sleep(self.__generatingRandomSleepTime__())
+		print "Mission has started, I have wait for " + str(time.time() - s)
+
 		index = 0
 		next = -1
 		while True:
+			s = time.time()
 			self.__connectToMyNetwork__(connectionManager)
 			#I'm getting next command from drone in flight
 			if next != self.vehicle.commands.next:
+				print "there are points (" + str(self.vehicle.commands.next - next) + ") I did not notify.."
 				next = self.vehicle.commands.next
+				print "Next command for " + self.name + " is " + str(self.vehicle.commands.next)
 				if next%2!=0:
 					next-=1
 				while index <= (next/2):
@@ -146,13 +160,19 @@ class Drone():
 					self.fileTest.write("\n\t- altitude: " + str(location.alt))
 					self.fileTest.write("\n\t- battery: " + str(self.getBattery()))
 					self.fileTest.write("\n\t- time: " + str(time.time()-start) + "\n")
-					#sending information via socket
+					if self.__checkNetworkConnection__(connectionManager) is not True:
+						self.__connectToMyNetwork__(connectionManager)
 					self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False, typeOfSurvey = 'normal', numberOfOscillations = None)
+					index+=1
+					ss = time.time()
+					eventlet.sleep(1)
+					print "I slept for " + str(time.time() - ss) + " for sending the next information via socket .. " + self.name
 				#checking if drone has endend its trip
 				if index == len(self.listOfLocationsToReach):
-					print "Just finished to send all the live information via socket"
+					print "Just finished to send all the live information via socket.." + self.name
 					break
 			eventlet.sleep(self.__generatingRandomSleepTime__())
+			print "I slept for " + str(time.time() - s) + " for a while cycle.." + self.name
 
 		self.__removeAllTheElementInTheListOfLocationsToReach__()
 		self.__connectToMyNetwork__(connectionManager)
@@ -165,6 +185,12 @@ class Drone():
 		self.fileTest.close()
 		self.__updateFileOldSurvey__()
 		self.__sendFlightDataToClientUsingSocket__(socket, self.vehicle.location.global_frame, reached = False, RTLMode = True, typeOfSurvey = 'normal', numberOfOscillations = None)
+		#clear the missions
+		cmds = self.vehicle.commands
+		cmds.download()
+		cmds.wait_ready()
+		cmds.clear()
+
 		time.sleep(2)
 
 	def __updateFileOldSurvey__(self):
@@ -180,6 +206,7 @@ class Drone():
 				return
 
 	def __uploadMissionPoints__(self):
+		print "cleaning commands for " + self.name
 		cmds = self.vehicle.commands
 		cmds.download()
 		cmds.wait_ready()
@@ -200,9 +227,10 @@ class Drone():
 			cmds.add(pictureCommand)
 		pictures_file.write("\n###########################################\n\n")
 		pictures_file.close()
+		#taking off command
+		self.__armAndTakeOff__()
 		#uploading commands to UAV
 		cmds.upload()
-		#taking off command
 		self.vehicle.commands.next = 0 #reset mission set to first(0) waypoint
 
 	def secondMissionFlight(self, connectionManager, socket):
@@ -445,6 +473,8 @@ class Drone():
 	  cmds.wait_ready()
 	  time.sleep(60)
 	  cmds.clear()
+	  print "clear " + self.name
+	  return
 	  for value in xrange(0, 500):
 	    #even
 	    if value%2 == 0:
@@ -500,6 +530,7 @@ class Drone():
 	I want this private because is somenthing that I use inside my class and it's not built for a public usage.
 	'''
 	def __connectToMyNetwork__(self, connectionManager):
+		print "connecting to " + self.wifiNetwork + "..."
 		connectionManager.interface(self.networkInterface)
 		connectionManager.connect(ssid = self.wifiNetwork, password = "Silvestri")
 
@@ -538,8 +569,8 @@ class Drone():
 				lenght = lenght - 1
 
 	def __sendFlightDataToClientUsingSocket__(self, socket, location, reached, RTLMode, typeOfSurvey, numberOfOscillations):
+
 		if typeOfSurvey == 'normal':
-			self.__connectToMyNetwork__
 			data = {
 				'name' : self.name,
 				'location' : [location.lat, location.lon, self.vehicle.location.global_relative_frame.alt],

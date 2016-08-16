@@ -3,12 +3,12 @@ This function opens a socket for receiving live data to show for eache drone in 
 */
 function openSocket(droneName){
 	brain.socket.on('Flight Information ' + droneName, function(data){
-		console.log("receiving data from " + droneName + " for flight information")
+		brain.socket.emit('response for live information', "receiving data from " + droneName + " for flight information ")
 		var textToDisplay = "Drone " + data['name'] + "<br>" +
-										"Drone location: " + "<br>" +
-										" - latitude: " + data['location'][0] + "<br>" +
-										" - longitude: " + data['location'][1] + "<br>" +
-										" - altitude: " + data['location'][2] + "<br>"
+												"Drone location: " + "<br>" +
+												" - latitude: " + data['location'][0] + "<br>" +
+												" - longitude: " + data['location'][1] + "<br>" +
+												" - altitude: " + data['location'][2] + "<br>"
 		if (data['reached'] == true) {
 			textToDisplay += "Reached location: " + data["reached"] + "<br>"
 			//something to delete the location to the table
@@ -27,12 +27,6 @@ function openSocket(droneName){
 		}else{
 			console.log("Second time same thing")
 		}
-		/*
-		var indexDrone = brain.getIndexDrone(droneName)
-		if (brain.drones[indexDrone].surveyMode == 'rectangular') {
-			removeVertices()
-		}
-		*/
 	})
 }
 /*

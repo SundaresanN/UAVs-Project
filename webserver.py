@@ -68,8 +68,13 @@ def twoPointsFlight(data):
     brain.takeATwoPointsFlight(data['name'])
     return 'Two Points Flight Completed'
 
-
-
+@socketio.on('response for live information')
+def receive_live_info(message):
+    print "##########################################"
+    print "Just received the ack from client for arrived live information.."
+    print "Message says: " + message
+    print "##########################################"
+    
 if __name__ == '__main__':
     brain = ServerBrain(socketio)
     app.debug = True

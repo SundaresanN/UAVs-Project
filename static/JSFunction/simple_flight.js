@@ -9,7 +9,6 @@ function buildPath(droneName){
 		alert("This drone has not locations to reach right now..")
 		return
 	}
-
 	$.ajax({
 		type: 'POST',
 		url: '/buildPath',
@@ -37,16 +36,19 @@ When drone is on flight, it will send information about its location or its succ
 
 */
 function flightDrone(droneName, type){
+
+	brain.socket.on('Take off ack', function(data){
+		var divToDisplay = "<div class='well well-lg'>" + data + "</div>"
+		$("#liveFlightInformation").children().eq(0).children().eq(0).children().eq(1).prepend(divToDisplay)
+	})
+
 	if (type == 'rectangular') {
 		$.ajax({
 			type: 'POST',
 			url: '/rectangularFlight',
 			contentType: 'application/json',
-			success: function(data){
-				console.log(data)
-			},
 			error: function(){
-				console.log("There is an error on server side")
+				console.log("There is an error on server side for the rectangularFlight")
 			}
 		})
 		for (var i = 0; i < brain.drones.length; i++) {
@@ -65,7 +67,6 @@ function flightDrone(droneName, type){
 				contentType: 'application/json',
 				data: JSON.stringify({ name: droneName }),
 				success: function(data){
-					console.log("New version of response")
 					data = data['data']
 					updateGraphicAndDataStructureInformationOnOscillationSurvey(data)
 				},
@@ -75,28 +76,19 @@ function flightDrone(droneName, type){
 			})
 		} else {
 			//This means that I have a "normal" flight to accomplish
-			//brain.socket.emit('flight', {'name': droneName})
-			console.log("Normal Flight Mode")
 			$.ajax({
 				type: 'POST',
 				url: '/flight',
 				contentType: 'application/json',
 				data: JSON.stringify({ name: droneName }),
 				success: function(data){
-					console.log(data)
 					$("[id = '" + droneName + "']").children().eq(3).html(droneName + " is flying..")
 				},
 				error: function(){
-					console.log("There is an error on server side")
+					console.log("There is an error on server side for /flight")
 				}
 			})
 		}
-
 		openSocket(droneName)
-		brain.socket.on('Oscillation Survey Data', function(data){
-			console.log("Data inside Oscillation Survey Data: " + data)
-
-		})
-
 	}
-	}
+}
