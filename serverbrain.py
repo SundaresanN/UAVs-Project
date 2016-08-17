@@ -224,7 +224,7 @@ class ServerBrain:
 		for drone in self.drones:
 			if self.drones[drone] is not None:
 				if len(self.drones[drone].listOfLocationsToReach)>0:
-					eventlet.spawn(self.drones[drone].missionFlight, self.connectionManager, self.socket)
+					eventlet.spawn(self.drones[drone].flight, self.connectionManager, self.socket)
 
 
 

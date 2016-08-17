@@ -1,10 +1,15 @@
 //This is the only global variable and it will be an instance of ClientBrain class
 var brain
 
+
+
 $(document).ready(function(){
 
 	var socketio = io.connect('http://' + document.domain + ':' + location.port)
 
+	$(window).on('beforeunload', function(){
+	    socketio.close();
+	});
 	//var map = new Map("MST Campus", 37.955879, -91.775020, 20, 640, 640, '/static/Images/Map\ Images/MSTStaticMap20zoom.png')
 
 	var map = new Map("Football Pitch", 37.924750,-91.772437, 19, 640, 640, '/static/Images/Map\ Images/FootballPitchZoom19.png')

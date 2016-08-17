@@ -2,8 +2,11 @@
 This function opens a socket for receiving live data to show for eache drone in flight mode
 */
 function openSocket(droneName){
+	var val = 0
 	brain.socket.on('Flight Information ' + droneName, function(data){
-		brain.socket.emit('response for live information', "receiving data from " + droneName + " for flight information ")
+		console.log("Received live information from " + droneName + " ( " + val + ")")
+		val++
+		brain.socket.emit('response for live information', "receiving data from " + droneName + " for flight information " + val)
 		var textToDisplay = "Drone " + data['name'] + "<br>" +
 												"Drone location: " + "<br>" +
 												" - latitude: " + data['location'][0] + "<br>" +

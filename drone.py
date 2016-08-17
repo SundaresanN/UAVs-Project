@@ -329,25 +329,23 @@ class Drone():
 		time.sleep(2)
 
 	def flight(self, connectionManager, socket):
-		self.fileTest = open("test " + self.name + ".txt", "a")
-		print "Inside Flight ", self.name
-		self.__connectToMyNetwork__(connectionManager)
-
-		start = time.time()
-		self.fileTest.write("Flight starts on " +  str(time.strftime("%c")))
-		self.fileTest.write("\nInitial Battery Level: " +  str(self.getBattery()))
-		self.fileTest.write("\n")
+		print "Inside flight method for ", self.name
+		if self.__checkNetworkConnection__(connectionManager) is not True:
+			self.__connectToMyNetwork__(connectionManager)
 
 		self.__armAndTakeOff__()
+		socket.emit('Take off ack', self.name + " has just taken off. Now it is ready to start the mission.")
+		print "Now " + self.name + " is going to sleep for a while.."
 		eventlet.sleep(self.__generatingRandomSleepTime__())
+		print "For " + self.name + " the number of locations to reach is ", len(self.listOfLocationsToReach)
 
-		print self.name + " number of locations to reach: ", len(self.listOfLocationsToReach)
 		for location in self.listOfLocationsToReach:
 			print "Location to reach this time: ", location
-			self.__connectToMyNetwork__(connectionManager)
+			if self.__checkNetworkConnection__(connectionManager) is not True:
+				self.__connectToMyNetwork__(connectionManager)
 			droneCurrentLocation = self.vehicle.location.global_relative_frame
 			distanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(droneCurrentLocation, location)
-			print "self.vehicle.simple_goto(location), ", location
+			print self.name + " is flying to ", location
 			#self.vehicle.simple_goto(location)
 			'''
 			Now I have to check the location of the drone in flight, this because dronekit API is thought in order to have
@@ -355,37 +353,32 @@ class Drone():
 			direction of its flight and it will go towards the new location I've just sent.
 			'''
 			while True:
-				print "Checking distance from location to reach..."
-				tollerance = 1
+				s = time.time()
 				eventlet.sleep(self.__generatingRandomSleepTime__())
-				self.__connectToMyNetwork__(connectionManager)
+				print self.name + " is checking its location after a sleep of " + str(time.time() - s) + "\n"
+				tolerance = 1
+				if self.__checkNetworkConnection__(connectionManager) is not True:
+					self.__connectToMyNetwork__(connectionManager)
 				currentDroneLocation = self.vehicle.location.global_relative_frame
-				print 'Drone: ' + self.name + ' current location: ', droneCurrentLocation
+				#print 'Drone: ' + self.name + ' current location: ', droneCurrentLocation
 				remainingDistanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(currentDroneLocation, location)
-				print 'Drone: ' + self.name + ' remaining distance: ', remainingDistanceToNextLocation
+				#print 'Drone: ' + self.name + ' remaining distance: ', remainingDistanceToNextLocation
 				#self.__sendFlightDataToClientUsingSocket__(socket, currentDroneLocation, reached = False, RTLMode = False, 'normal', None)
 				#If I've just reached the location, I need to take a picture
-				if remainingDistanceToNextLocation <= distanceToNextLocation*tollerance:
-					print "Drone " + self.name + " is taking a picture..."
+				if remainingDistanceToNextLocation <= distanceToNextLocation*tolerance:
+					print "Drone " + self.name + " has just reached the location and now it is taking a picture...\n"
 					#self.__takeAPicture__()
-					self.fileTest.write("Location:\n\t- latitude: " + str(location.lat))
-					self.fileTest.write("\n\t- longitude: " +  str(location.lon))
-					self.fileTest.write("\n\t- altitude: " + str(location.alt))
-					self.fileTest.write("\n\t- battery: " + str(self.getBattery()) + "\n")
 					self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False, typeOfSurvey = 'normal', numberOfOscillations = None)
 					break
+				print self.name + "'s thread is going to sleep during the flight for awhile..\n"
 
 		'''
 		Now it's time to come back home
 		'''
-		print "Removing all the elements in the list of locations to reach"
 		self.__removeAllTheElementInTheListOfLocationsToReach__()
-		self.__connectToMyNetwork__(connectionManager)
-		print "self.vehicle.mode = VehicleMode('RTL')"
-		end = time.time()
-		self.fileTest.write("\nFlight time: " + str(end-start))
-		self.fileTest.write("\n###########################################\n")
-		self.fileTest.close()
+		if self.__checkNetworkConnection__(connectionManager) is not True:
+			self.__connectToMyNetwork__(connectionManager)
+		print self.name + " has completed its mission and now it is coming back home."
 		self.__sendFlightDataToClientUsingSocket__(socket, self.vehicle.location.global_frame, reached = False, RTLMode = True, typeOfSurvey = 'normal', numberOfOscillations = None)
 		time.sleep(2)
 
@@ -441,9 +434,9 @@ class Drone():
 							numberOfOscillations = numberOfOscillations + 1
 						break
 				else:
-					tollerance = 0.1
+					tolerance = 0.1
 					remainingDistanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(self.vehicle.location.global_relative_frame, location)
-					if remainingDistanceToNextLocation <= distanceToNextLocation * tollerance:
+					if remainingDistanceToNextLocation <= distanceToNextLocation * tolerance:
 						print "Changing location to reach for the oscillation flight"
 						locationBool = not locationBool
 						if locationBool == 0:
