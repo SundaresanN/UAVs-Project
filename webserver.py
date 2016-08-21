@@ -68,14 +68,10 @@ def twoPointsFlight(data):
     brain.takeATwoPointsFlight(data['name'])
     return 'Two Points Flight Completed'
 
-count = 0
 @socketio.on('response for live information')
 def receive_live_info(message):
-    global count
-    count+=1
 
     print "##########################################"
-    print "count is ", count
     print "Just received the ack from client for arrived live information.."
     print "Message says: " + message
     print "##########################################"
