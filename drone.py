@@ -144,10 +144,11 @@ class Drone():
 		next = -1
 		while True:
 			s = time.time()
-			self.__connectToMyNetwork__(connectionManager)
+			if self.__checkNetworkConnection__() is not True:
+				self.__connectToMyNetwork__(connectionManager)
 			#I'm getting next command from drone in flight
 			if next != self.vehicle.commands.next:
-				print "there are points (" + str(self.vehicle.commands.next - next) + ") I did not notify.."
+				print "there are " + str(self.vehicle.commands.next - next) + " points I did not notify.."
 				next = self.vehicle.commands.next
 				print "Next command for " + self.name + " is " + str(self.vehicle.commands.next)
 				if next%2!=0:
@@ -165,14 +166,14 @@ class Drone():
 					self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False, typeOfSurvey = 'normal', numberOfOscillations = None)
 					index+=1
 					ss = time.time()
-					eventlet.sleep(1)
-					print "I slept for " + str(time.time() - ss) + " for sending the next information via socket .. " + self.name
+					eventlet.sleep(self.__generatingRandomSleepTime__())
+					print "I have slept for " + str(time.time() - ss) + " for sending the next information via socket .. " + self.name
 				#checking if drone has endend its trip
 				if index == len(self.listOfLocationsToReach):
 					print "Just finished to send all the live information via socket.." + self.name
 					break
 			eventlet.sleep(self.__generatingRandomSleepTime__())
-			print "I slept for " + str(time.time() - s) + " for a while cycle.." + self.name
+			print "I have slept for " + str(time.time() - s) + " for a while cycle.." + self.name
 
 		self.__removeAllTheElementInTheListOfLocationsToReach__()
 		self.__connectToMyNetwork__(connectionManager)
@@ -268,11 +269,13 @@ class Drone():
 			cmds.add(pictureCommand)
 		pictures_file.close()
 		self.fileTest.write("Number of points: " + str(len(self.listOfLocationsToReach)) + "\n")
+
 		#adding return to launch command using mavlink protocol
 		RTLCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_RETURN_TO_LAUNCH, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 		cmds.add(RTLCommand)
 
 		self.__armAndTakeOff__()
+		socket.emit('Take off ack', self.name + " has just taken off. Now it is ready to start the mission.")
 		#uploading commands to UAV	def __uploadMissionPoints__(self):
 		cmds.upload()
 		self.vehicle.commands.next = 0 #reset mission set to first(0) waypoint
@@ -291,7 +294,9 @@ class Drone():
 				self.__connectToMyNetwork__(connectionManager)
 			#I'm getting next command from drone in flight
 			if next != self.vehicle.commands.next and self.vehicle.commands.next != 0:
+				print "there are " + str(self.vehicle.commands.next - next) + " points I did not notify.."
 				next = self.vehicle.commands.next
+				print "Next command for " + self.name + " is " + str(self.vehicle.commands.next)
 				#checking if drone has endend its trip and so the next command is the RTL command
 				if next == 3*len(self.listOfLocationsToReach)+1:
 					next-=1
@@ -312,7 +317,9 @@ class Drone():
 						self.__connectToMyNetwork__(connectionManager)
 					self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False, typeOfSurvey = 'normal', numberOfOscillations = None)
 					index+=1
-					eventlet.sleep(1)
+					ss = time.time()
+					eventlet.sleep(self.__generatingRandomSleepTime__())
+					print "I have slept for " + str(time.time() - ss) + " for sending the next information via socket .. " + self.name
 				if index == len(self.listOfLocationsToReach):
 					print "Just finished to send all the live information via socket"
 					break
@@ -326,6 +333,13 @@ class Drone():
 		self.fileTest.write("\n###########################################\n\n")
 		self.fileTest.close()
 		self.__sendFlightDataToClientUsingSocket__(socket, self.vehicle.location.global_frame, reached = False, RTLMode = True, typeOfSurvey = 'normal', numberOfOscillations = None)
+
+		#clear the missions
+		cmds = self.vehicle.commands
+		cmds.download()
+		cmds.wait_ready()
+		cmds.clear()
+
 		time.sleep(2)
 
 	def flight(self, connectionManager, socket):
