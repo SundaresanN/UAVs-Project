@@ -31,7 +31,7 @@ class ServerBrain:
 		return droneList
 
 	'''
-	This method is used for connecting Drone object with real drone
+	This method is used for creating an instance of the class Drone.
 	'''
 	def connectDrone(self, droneName):
 		'''
@@ -53,8 +53,7 @@ class ServerBrain:
 			return infosToReturn
 
 	'''
-	This method uses a scheduling algorithm for locations to reach for the drones.
-	When the algorithm finishes its work, the locations to reach will be assigned to each drone.
+	This method assigns the locations to reach to the Solo passed as parameter.
 	'''
 	def buildPath(self, droneName, locationsToReach):
 		'''
@@ -66,7 +65,7 @@ class ServerBrain:
 	'''
 	This method generates the points inside the rectangular area delimited by the 3 points sent by client.
 	If the 3 points are perfectly put from client, this method will return all the points to client and moreover it will assing these points to
-	each drone involved in the survey on server side.
+	each Solo involved in the survey. Otherwise it will notify the client of the possibile errors it has got.
 	'''
 	def buildRectangularSurveyPointsReal(self, data):
 
@@ -171,7 +170,27 @@ class ServerBrain:
 		return dataToReturn
 
 	'''
-	Used for cheating..
+	This method allows to upload the points to reach by the Solos from a file where there is a dictionary with a particular structure.
+	The structure of the dictionary is:
+		missionDivisionData = {
+			'response' : 'Good|Warm|Error',
+			'UAVs' : [ {
+				'name' : '..',
+				'points' : [loc1, loc2, ...],
+				'to complete' : True|False,
+				'completed' : True|False
+			},
+			{
+				'name' : '..',
+				'points' : [loc1, loc2, ...],
+				'to complete' : True|False,
+				'completed' : True|False
+			}]
+		}
+	As you can see the dictionary contains information about the last multiple flight that has involved multiple Solos.
+	This method searches for that element of the array in missionDivisionData['UAVs'] that belongs to a connected Solo and that has key 'to complete' set to True.
+	Once it finds the element of the array, it will upload the points in the key 'points' to the current listOfLocationsToReach associated to the current Solo.
+	After the uploading (that can involve multiple Solos), this method will update the file with the new information about the old survey.
 	'''
 	def checkOldSurvey(self):
 		#taking information about old survey not completed
@@ -218,7 +237,7 @@ class ServerBrain:
 		return data
 
 	'''
-	This method starts the rectangular survey flight.
+	This method starts the rectangular survey flight creating threads for each Solo involved.
 	'''
 	def takeARectangularFlight(self):
 		for drone in self.drones:
@@ -229,8 +248,7 @@ class ServerBrain:
 
 
 	'''
-	This method is used for building the network the drone will connect to.
-	This method is private because it's usage is thought for this class and not for other classes.
+	This method is used for building the wifi network name the drone will connect to.
 	'''
 	def __getNetworkName__(self, type, drone):
 		color = drone.split()[1] # I've just taken the drone color from drone name(ex:'Solo Gold')
@@ -240,9 +258,7 @@ class ServerBrain:
 		return wifiNetwork
 
 	'''
-	This method has been designed for getting network interface value and wifi network name
-	for the drone or for the camera.
-	This method is private because its functions are thought for inside the class.
+	This method is designed in order to get network interface value and wifi network name for the Solo.
 	'''
 	def __getNetwork__(self, drone, type):
 		wifiNetwork = self.__getNetworkName__(type, drone)

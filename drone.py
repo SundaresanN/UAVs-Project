@@ -32,9 +32,15 @@ class Drone():
 
 		self.fileTest = None
 
+	'''
+	This method creates a connection with the real Solo.
+	'''
 	def connect(self):
 		self.vehicle = connect('udpout:10.1.1.10:14560', wait_ready=True)
 
+	'''
+	This method returns the current Solo's location in a dictionary.
+	'''
 	def getCurrentLocation(self):
 		location = self.vehicle.location.global_frame
 		location = {
@@ -43,7 +49,9 @@ class Drone():
 			"altitude" : self.vehicle.location.global_relative_frame.alt,
 		}
 		return location
-
+	'''
+	This method returns the level of the battery of the current Solo.
+	'''
 	def getBattery(self):
 		return self.vehicle.battery.level
 
@@ -76,9 +84,8 @@ class Drone():
 		return listToReturn
 
 	'''
-	This function is used for the drone's take off.
-	Inside the function, before the end of it, I will wait until drone reaches a "safe" altitude(this because I want to avoid the "grass problem")
-	This function is private because I don't want that someone could decide to only taking off, if the drone should consume battery, this consumption must be on flight.
+	This method allows the taking off of the Solo.
+	A check on the altitude reached by the Solo during the taking off will be made until Solo reaches a 'safe' altitude.
 	'''
 	def __armAndTakeOff__(self):
 		print "Inside take off of ", self.name
@@ -104,12 +111,15 @@ class Drone():
 				return
 
 	'''
-	This method is based on the possibility to send live flight information to client via socket.
-	This is why I need a Wireless object as parameter and the Socket object.
-	The Wireless object is used for switching connection and be sure that the command is sent to right drone
-	The Socket object is used for update the location on client side.
-	This method will be in concurrency with the other threads, so this is why I will use eventlet.sleep(random.random()) in
-	some some points of the code.
+	This method allows the drone's flight. It can not allow a perfect accuracy with live information on client side.
+	This lack of accuracy is due to the use of uploading commands into the Solo's memory.
+	We can identify 3 blocks:
+	1. Uploading the commands into Solo's memory and take off
+	2. Checking what is the next command the Solo has to execute and understanding in which location the Solo has flown
+	   and so updating the information on client side via socket
+	3. Clearing all the data structures used for this flight and sending command for coming back home to the Solo
+	In the meantime of the execution of this method, a file will be updated with the information about location, battery level and time passed
+	of the current flight.
 	'''
 	def missionFlight(self, connectionManager, socket):
 
@@ -119,6 +129,15 @@ class Drone():
 		#writing on the file
 		self.fileTest.write("Mission Flight starts on " +  str(time.strftime("%c")))
 		#downloading and clearing the commands actually in the drone's memory
+
+		'''
+		******************************************************************************************************************************************************************************************
+		******************************************************************************************************************************************************************************************
+		'''
+		'''
+		UPLOADING COMMANDS INTO THE SOLO'S MEMORY
+		'''
+
 		print "before cleaning.. " + self.name
 		self.__uploadMissionPoints__()
 		socket.emit('Take off ack', self.name + " has just taken off. Now it is ready to start the mission.")
@@ -131,7 +150,13 @@ class Drone():
 		if self.__checkNetworkConnection__(connectionManager) is not True:
 			print "different network.."
 			self.__connectToMyNetwork__(connectionManager)
-
+		'''
+		******************************************************************************************************************************************************************************************
+		******************************************************************************************************************************************************************************************
+		'''
+		'''
+		STARTING THE MISSION, CHECKING THE FLIGHT STATUS AND UPDATING THE INFORMATION ON CLIENT SIDE WITH THE OPENED SOCKET
+		'''
 		start = time.time()
 		self.vehicle.mode = VehicleMode('AUTO') #starting the mission
 		self.fileTest.write("\nNumber of points: " + str(len(self.listOfLocationsToReach)) + "\n")
@@ -139,7 +164,6 @@ class Drone():
 		s = time.time()
 		eventlet.sleep(self.__generatingRandomSleepTime__())
 		print "Mission has started, I have wait for " + str(time.time() - s)
-
 		index = 0
 		next = -1
 		while True:
@@ -175,6 +199,13 @@ class Drone():
 			eventlet.sleep(self.__generatingRandomSleepTime__())
 			print "I have slept for " + str(time.time() - s) + " for a while cycle.." + self.name
 
+		'''
+		******************************************************************************************************************************************************************************************
+		******************************************************************************************************************************************************************************************
+		'''
+		'''
+		CLEARING ALL THE DATA STRUCTURES USED FOR THIS FLIGHTS
+		'''
 		self.__removeAllTheElementInTheListOfLocationsToReach__()
 		self.__connectToMyNetwork__(connectionManager)
 		self.vehicle.mode = VehicleMode('GUIDED')
@@ -191,9 +222,12 @@ class Drone():
 		cmds.download()
 		cmds.wait_ready()
 		cmds.clear()
-
 		time.sleep(2)
 
+	'''
+	This method is used for updating the file with the information about the old survey.
+	The purpose of this method is for cheating the experiments.
+	'''
 	def __updateFileOldSurvey__(self):
 		missionDivisionData = (open("oldSurvey.txt", "r").read())
 		missionDivisionData = eval(missionDivisionData)
@@ -206,6 +240,15 @@ class Drone():
 				file.close()
 				return
 
+	'''
+	This method uploads all the commands (waypoints and locations) into the Solo's memory.
+	Moreover it writes on a file for the geotagging of each photo.
+	The steps in this method are:
+	1. preparing the commands to upload and writing the information about the geotagging
+	2. taking off
+	3. uploading the commands into the Solo's memory
+	Uploading the commands after the taking off is done for preventing the "cutting the grass" effect.
+	'''
 	def __uploadMissionPoints__(self):
 		print "cleaning commands for " + self.name
 		cmds = self.vehicle.commands
@@ -234,6 +277,17 @@ class Drone():
 		cmds.upload()
 		self.vehicle.commands.next = 0 #reset mission set to first(0) waypoint
 
+	'''
+	This method allows the drone's flight. It can not allow a perfect accuracy with live information on client side.
+	This lack of accuracy is due to the use of uploading commands into the Solo's memory.
+	We can identify 3 blocks:
+	1. Uploading the commands into Solo's memory (even the 'return to land' command) and take off
+	2. Checking what is the next command the Solo has to execute and understanding in which location the Solo has flown
+	   and so updating the information on client side via socket
+	3. Clearing all the data structures used for this flight
+	In the meantime of the execution of this method, a file will be updated with the information about location, battery level and time passed
+	of the current flight.
+	'''
 	def secondMissionFlight(self, connectionManager, socket):
 
 		print "Mission Flight for ", self.name
@@ -241,6 +295,13 @@ class Drone():
 		if self.__checkNetworkConnection__(connectionManager) is not True:
 			self.__connectToMyNetwork__(connectionManager)
 
+		'''
+		******************************************************************************************************************************************************************************************
+		******************************************************************************************************************************************************************************************
+		'''
+		'''
+		UPLOADING COMMANDS INTO THE SOLO'S MEMORY
+		'''
 		#downloading and clearing the commands actually in the drone's memory
 		print "Cleaning the commands"
 		cmds = self.vehicle.commands
@@ -278,6 +339,13 @@ class Drone():
 		socket.emit('Take off ack', self.name + " has just taken off. Now it is ready to start the mission.")
 		#uploading commands to UAV	def __uploadMissionPoints__(self):
 		cmds.upload()
+		'''
+		******************************************************************************************************************************************************************************************
+		******************************************************************************************************************************************************************************************
+		'''
+		'''
+		STARTING THE MISSION, CHECKING THE FLIGHT STATUS AND UPDATING THE INFORMATION ON CLIENT SIDE WITH THE OPENED SOCKET
+		'''
 		self.vehicle.commands.next = 0 #reset mission set to first(0) waypoint
 		start = time.time()
 		#starting the mission
@@ -326,6 +394,14 @@ class Drone():
 
 			eventlet.sleep(self.__generatingRandomSleepTime__())
 
+		'''
+		******************************************************************************************************************************************************************************************
+		******************************************************************************************************************************************************************************************
+		'''
+		'''
+		CLEARING ALL THE DATA STRUCTURES USED FOR THIS FLIGHTS
+		'''
+
 		self.__removeAllTheElementInTheListOfLocationsToReach__()
 		self.__connectToMyNetwork__(connectionManager)
 		end = time.time()
@@ -339,9 +415,14 @@ class Drone():
 		cmds.download()
 		cmds.wait_ready()
 		cmds.clear()
-
 		time.sleep(2)
 
+	'''
+	This method allows the flight with a 100% accuracy on live information on client side.
+	The idea of this method is to send a flight command once a time. Only when the Solo reaches the location just processed, a new flight command will be sent.
+	We can understand how far is the Solo from the location to reach and so decide if sending live information, taking the picture and at the end send the Solo to another location.
+	This method is used inside the lab for testing purposes.
+	'''
 	def flight(self, connectionManager, socket):
 		print "Inside flight method for ", self.name
 		if self.__checkNetworkConnection__(connectionManager) is not True:
@@ -398,80 +479,7 @@ class Drone():
 
 	'''
 	This method is used for flying continuously in two points until drone's battery reaches 20%.
-	We have to decide if we need exclusive priority for this kind of flight, so basically I don't wanto to interrupt this
-	kind of flight with other request.
 	'''
-	def oscillationFlight(self, connectionManager, socket):
-		self.fileTest = open("test " + self.name + ".txt", "a")
-		#I need to know if I have two differnt locations in terms of lat, lon and alt or I have same locations but with differnt altitude
-		sameLocation = self.listOfLocationsToReach[0].lat == self.listOfLocationsToReach[1].lat and self.listOfLocationsToReach[0].lon == self.listOfLocationsToReach[1].lon
-		if sameLocation is True:
-			print "Same location but different altitude"
-		#self.__connectToMyNetwork__(connectionManager)
-		start = time.time()
-		self.fileTest.write("Oscillation Flight starts on " +  str(time.strftime("%c")))
-		self.fileTest.write("\nInitial Battery Level: " + str(self.getBattery()))
-		self.__armAndTakeOff__()
-		time.sleep(2)
-		batteryLimit = 84
-		locationBool = False #it means the first location to reach
-		numberOfOscillations = 0
-
-		while self.vehicle.battery.level >= batteryLimit:
-			print "Battery: ", self.vehicle.battery.level
-			location = self.listOfLocationsToReach[locationBool]
-			droneCurrentLocation = self.vehicle.location.global_relative_frame
-			distanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(droneCurrentLocation, location)
-			#writing on the log file
-			self.fileTest.write("Location:\n\t- latitude: " + str(location.lat))
-			self.fileTest.write("\n\t- longitude: " + str(location.lon))
-			self.fileTest.write("\n\t- altitude: " + str(location.alt))
-			self.fileTest.write("\n\t- battery: " + str(self.getBattery()) + "\n")
-
-			print "Flying towards location: ", location
-			self.vehicle.simple_goto(location)
-			'''
-			Waiting drone arrives to this location
-			'''
-			while True:
-				time.sleep(5)
-				'''
-				If drone has just reached the location(even if there are same locations or not), I need go to the other location
-				'''
-				print "Checking distance from location to reach..."
-				if sameLocation == True:
-					print "Same location flight"
-					altitudeToReach = location.alt
-					if self.vehicle.location.global_relative_frame.alt <= altitudeToReach*0.95:
-						locationBool = not locationBool
-						if locationBool == 0:
-							numberOfOscillations = numberOfOscillations + 1
-						break
-				else:
-					tolerance = 0.1
-					remainingDistanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(self.vehicle.location.global_relative_frame, location)
-					if remainingDistanceToNextLocation <= distanceToNextLocation * tolerance:
-						print "Changing location to reach for the oscillation flight"
-						locationBool = not locationBool
-						if locationBool == 0:
-							numberOfOscillations = numberOfOscillations + 1
-						break
-
-		print "Removing locations to reach"
-		self.__removeAllTheElementInTheListOfLocationsToReach__(twoLocationsToRemove = True)
-		self.vehicle.mode = VehicleMode('RTL')
-		end = time.time()
-		self.fileTest.write("\nNumber of oscillations: " + str(numberOfOscillations))
-		self.fileTest.write("\nFlight time: " + str(end-start))
-		self.fileTest.write("\n###########################################\n")
-		self.fileTest.close()
-		return {
-			'name' : self.name,
-			'battery' : self.vehicle.battery.level,
-			'oscillations' : numberOfOscillations
-			}
-
-
 	def missionOscillationFlight(self):
 	  self.fileTest = open("test " + self.name + ".txt", "a")
 
@@ -560,7 +568,7 @@ class Drone():
 		return math.sqrt((lat*lat) + (lon*lon)) *  1.113195e5
 
 	'''
-	This method allows deleting of the element in the array of locations to reach
+	This method deletes the elements in the array of locations to reach and so empty the array.
 	'''
 	def __removeAllTheElementInTheListOfLocationsToReach__(self, twoLocationsToRemove = False):
 		if twoLocationsToRemove is not True:
@@ -575,6 +583,10 @@ class Drone():
 				del self.listOfLocationsToReach[lenght]
 				lenght = lenght - 1
 
+	'''
+	This method uses a socket passed as parameter for sending live information to client about flight progresses.
+	It uses the parameters for understanding if the Solo has endend its flight or it is still flying.
+	'''
 	def __sendFlightDataToClientUsingSocket__(self, socket, location, reached, RTLMode, typeOfSurvey, numberOfOscillations):
 
 		if typeOfSurvey == 'normal':
@@ -602,11 +614,18 @@ class Drone():
 			time.sleep(1)
 			return
 
+	'''
+	This method builds the command required by MAVLink protocol for taking a picture and sends it to the Solo.
+	'''
 	def __takeAPicture__(self):
 		msg = self.vehicle.message_factory.gopro_set_request_encode(1, 154, mavutil.mavlink.GOPRO_COMMAND_SHUTTER, (1, 0, 0, 0))
 		self.vehicle.send_mavlink(msg)
 		self.vehicle.commands.upload()
 
+	'''
+	This method checks the current network connection and returns True if the current network connection is the one generated by the
+	current Solo, False otherwise.
+	'''
 	def __checkNetworkConnection__(self, connectionManager):
 		if connectionManager.current() == self.wifiNetwork:
 			return True
