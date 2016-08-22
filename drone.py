@@ -37,6 +37,13 @@ class Drone():
 	'''
 	def connect(self):
 		self.vehicle = connect('udpout:10.1.1.10:14560', wait_ready=True)
+		print "cleaning commands for " + self.name
+		cmds = self.vehicle.commands
+		cmds.download()
+		time.sleep(30)
+		cmds.wait_ready()
+		cmds.clear()
+		print self.name + " has cleaned its commands."
 
 	'''
 	This method returns the current Solo's location in a dictionary.
@@ -89,7 +96,6 @@ class Drone():
 	'''
 	def __armAndTakeOff__(self):
 		print "Inside take off of ", self.name
-		return
 		start = time.time()
 		print self.name + " is taking off..."
 		while not self.vehicle.is_armable:
@@ -145,7 +151,7 @@ class Drone():
 
 		s = time.time()
 		eventlet.sleep(self.__generatingRandomSleepTime__())
-		print "I slept for " + str(time.time() - s) + " before launching the mission.." + self.name
+		print "I have slept for " + str(time.time() - s) + " before launching the mission.." + self.name
 
 		if self.__checkNetworkConnection__(connectionManager) is not True:
 			print "different network.."
@@ -168,7 +174,7 @@ class Drone():
 		next = -1
 		while True:
 			s = time.time()
-			if self.__checkNetworkConnection__() is not True:
+			if self.__checkNetworkConnection__(connectionManager) is not True:
 				self.__connectToMyNetwork__(connectionManager)
 			#I'm getting next command from drone in flight
 			if next != self.vehicle.commands.next:
@@ -217,11 +223,6 @@ class Drone():
 		self.fileTest.close()
 		self.__updateFileOldSurvey__()
 		self.__sendFlightDataToClientUsingSocket__(socket, self.vehicle.location.global_frame, reached = False, RTLMode = True, typeOfSurvey = 'normal', numberOfOscillations = None)
-		#clear the missions
-		cmds = self.vehicle.commands
-		cmds.download()
-		cmds.wait_ready()
-		cmds.clear()
 		time.sleep(2)
 
 	'''
@@ -250,12 +251,7 @@ class Drone():
 	Uploading the commands after the taking off is done for preventing the "cutting the grass" effect.
 	'''
 	def __uploadMissionPoints__(self):
-		print "cleaning commands for " + self.name
 		cmds = self.vehicle.commands
-		cmds.download()
-		cmds.wait_ready()
-		cmds.clear()
-		print self.name + " has cleaned its commands."
 		#index for association between picture and location
 		index = 0
 		#open the file for the picture-location association
@@ -309,9 +305,8 @@ class Drone():
 		cmds.wait_ready()
 		cmds.clear()
 		print "Commands cleaned.."
-
 		#changing speed in the vehicle for better pictures. Airspeed = 5
-		changeSpeedCommand = Command(0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_DO_CHANGE_SPEED, 0, 0, 0, 5, 0, 1, 0, 0, 0)
+		changeSpeedCommand = Command(0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_DO_CHANGE_SPEED, 0, 0, 0, 4, 0, 1, 0, 0, 0)
 		cmds.add(changeSpeedCommand)
 		#index for association between picture and location
 		index = 0
@@ -336,7 +331,7 @@ class Drone():
 		cmds.add(RTLCommand)
 
 		self.__armAndTakeOff__()
-		socket.emit('Take off ack', self.name + " has just taken off. Now it is ready to start the mission.")
+		#socket.emit('Take off ack', self.name + " has just taken off. Now it is ready to start the mission.")
 		#uploading commands to UAV	def __uploadMissionPoints__(self):
 		cmds.upload()
 		'''
