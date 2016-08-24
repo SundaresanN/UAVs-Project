@@ -243,9 +243,10 @@ class ServerBrain:
 		for drone in self.drones:
 			if self.drones[drone] is not None:
 				if len(self.drones[drone].listOfLocationsToReach)>0:
+					print "launching the thread for " + drone + " for having a flight."
 					eventlet.spawn(self.drones[drone].missionFlight, self.connectionManager, self.socket)
-					eventlet.sleep(30)
-
+					eventlet.sleep(10)
+					#time.sleep(10)
 
 	'''
 	This method is used for building the wifi network name the drone will connect to.
