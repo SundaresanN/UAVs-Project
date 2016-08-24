@@ -40,7 +40,6 @@ function getDronesInfoFromServer(){
 		},
 		error: function(){
 			$('h1').remove()
-			alert("Something went wrong.. check your wifi conncetion, you must be connected with Solo WiFi")
 		}
 	})
 }
@@ -49,8 +48,8 @@ function getDronesInfoFromServer(){
 //in each row of drones table.
 function connectDrone(droneName){
 
-	$("[id ='" + droneName + "']").children().eq(1).html("Trying to connect...")
-	$("[id ='" + droneName + "']").children().eq(2).children().eq(0).attr("disabled", "true")
+	$("[id ='" + droneName + "']").children().eq(1).html("Connecting to Solo...")
+	$("[id ='" + droneName + "']").children().eq(2).children().eq(0).attr("disabled", "disabled")
 
 	$.ajax({
 		type: 'POST',
@@ -69,7 +68,7 @@ function connectDrone(droneName){
 			} else{
 
 				var element = brain.getIndexDrone(droneName)
-				var buildPathButton = '<button type="button" class="btn btn-success" onclick="buildPath(\'' +  brain.drones[element].name + '\')">Build Path</button>'
+				var buildPathButton = '<button type="button" class="btn btn-success" onclick="buildPath(\'' +  brain.drones[element].name + '\')">Preparing Survey</button>'
 				if(brain.drones[element].surveyMode == 'rectangular'){
 						buildPathButton = 'Rectangular Survey Mode'
 				}

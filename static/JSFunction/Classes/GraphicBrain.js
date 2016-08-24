@@ -112,7 +112,6 @@ function addMarker(x, y, typeOfMarker, droneName, drones, typeOfSurvey, camera){
 	var id = droneName
 	var iconPath = ""
 	switch(typeOfMarker){
-
 		case "home":
 			id = id + " " + typeOfMarker
 			iconPath = id
@@ -120,6 +119,7 @@ function addMarker(x, y, typeOfMarker, droneName, drones, typeOfSurvey, camera){
 		case "drone":
 			id = id + " " + typeOfMarker
 			iconPath = id
+			console.log(id)
 			break
 		case "location":
 			var size = 0
@@ -131,15 +131,6 @@ function addMarker(x, y, typeOfMarker, droneName, drones, typeOfSurvey, camera){
 					size += drones[drone].locationsToReach.length
 				}
 			}
-			/*
-			if (camera == true) {
-				id = id
-				iconPath = id + " camera"
-			}else{
-				id = id + size
-				iconPath = size
-			}
-			*/
 			id = id + size
 			iconPath = size
 			break

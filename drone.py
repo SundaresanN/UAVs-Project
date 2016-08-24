@@ -38,11 +38,7 @@ class Drone():
 	def connect(self):
 		self.vehicle = connect('udpout:10.1.1.10:14560', wait_ready=True)
 		print "cleaning commands for " + self.name
-		cmds = self.vehicle.commands
-		cmds.download()
-		time.sleep(30)
-		cmds.wait_ready()
-		cmds.clear()
+		self.__cleaningMissionsFromSoloMemory__()
 		print self.name + " has cleaned its commands."
 
 	'''
@@ -134,7 +130,6 @@ class Drone():
 		self.__connectToMyNetwork__(connectionManager)
 		#writing on the file
 		self.fileTest.write("Mission Flight starts on " +  str(time.strftime("%c")))
-		#downloading and clearing the commands actually in the drone's memory
 
 		'''
 		******************************************************************************************************************************************************************************************
@@ -144,7 +139,6 @@ class Drone():
 		UPLOADING COMMANDS INTO THE SOLO'S MEMORY
 		'''
 
-		print "before cleaning.. " + self.name
 		self.__uploadMissionPoints__()
 		socket.emit('Take off ack', self.name + " has just taken off. Now it is ready to start the mission.")
 		print "after cleaning, ready to go to sleep.. " + self.name
@@ -212,11 +206,11 @@ class Drone():
 		'''
 		CLEARING ALL THE DATA STRUCTURES USED FOR THIS FLIGHTS
 		'''
+		end = time.time()
 		self.__removeAllTheElementInTheListOfLocationsToReach__()
 		self.__connectToMyNetwork__(connectionManager)
 		self.vehicle.mode = VehicleMode('GUIDED')
 		self.vehicle.mode = VehicleMode('RTL')
-		end = time.time()
 		self.fileTest.write("\nFlight time: " + str(end-start))
 		self.fileTest.write("\nFinal Battery level: " + str(self.getBattery()) + "\n")
 		self.fileTest.write("\n###########################################\n")
@@ -285,7 +279,6 @@ class Drone():
 	of the current flight.
 	'''
 	def secondMissionFlight(self, connectionManager, socket):
-
 		print "Mission Flight for ", self.name
 		self.fileTest = open("Riccardo test " + self.name + ".txt", "a")
 		if self.__checkNetworkConnection__(connectionManager) is not True:
@@ -300,11 +293,10 @@ class Drone():
 		'''
 		#downloading and clearing the commands actually in the drone's memory
 		print "Cleaning the commands"
-		cmds = self.vehicle.commands
-		cmds.download()
-		cmds.wait_ready()
-		cmds.clear()
-		print "Commands cleaned.."
+		cmds = self.__cleaningMissionsFromSoloMemory__()
+		if cmds is False:
+			return "Error on cleaning the Solo's memory"
+
 		#changing speed in the vehicle for better pictures. Airspeed = 5
 		changeSpeedCommand = Command(0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_DO_CHANGE_SPEED, 0, 0, 0, 4, 0, 1, 0, 0, 0)
 		cmds.add(changeSpeedCommand)
@@ -405,12 +397,6 @@ class Drone():
 		self.fileTest.close()
 		self.__sendFlightDataToClientUsingSocket__(socket, self.vehicle.location.global_frame, reached = False, RTLMode = True, typeOfSurvey = 'normal', numberOfOscillations = None)
 
-		#clear the missions
-		cmds = self.vehicle.commands
-		cmds.download()
-		cmds.wait_ready()
-		cmds.clear()
-		time.sleep(2)
 
 	'''
 	This method allows the flight with a 100% accuracy on live information on client side.
@@ -478,13 +464,10 @@ class Drone():
 	def missionOscillationFlight(self):
 	  self.fileTest = open("test " + self.name + ".txt", "a")
 
-	  cmds = self.vehicle.commands
-	  cmds.download()
-	  cmds.wait_ready()
-	  time.sleep(60)
-	  cmds.clear()
-	  print "clear " + self.name
-	  return
+	  cmds = self.__cleaningMissionsFromSoloMemory__()
+	  if cmds is False:
+		  return "Error on cleaning the Solo's memory"
+
 	  for value in xrange(0, 500):
 	    #even
 	    if value%2 == 0:
@@ -625,4 +608,16 @@ class Drone():
 		if connectionManager.current() == self.wifiNetwork:
 			return True
 		else:
+			return False
+
+	def __cleaningMissionsFromSoloMemory__(self):
+		try:
+			cmds = self.vehicle.commands
+		  	cmds.download()
+		  	cmds.wait_ready()
+		  	time.sleep(30)
+		  	cmds.clear()
+			return cmds
+		except Exception as e:
+			print "Timeout expired. Error on cleaning the memory"
 			return False
