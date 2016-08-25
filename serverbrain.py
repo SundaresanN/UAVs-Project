@@ -44,13 +44,17 @@ class ServerBrain:
 		else:
 			infosToReturn = {}
 			self.drones[droneName] = Drone(droneName, interface, network)
-			print self.drones[droneName]
-			self.drones[droneName].connect()
-			infosToReturn['drone status'] = "available"
-			infosToReturn['home location'] = self.drones[droneName].getCurrentLocation()
-			infosToReturn['drone battery'] = self.drones[droneName].getBattery()
-			infosToReturn['camera status'] = 'available'
-			return infosToReturn
+			try:
+				self.drones[droneName].connect()
+				infosToReturn['drone status'] = 'available'
+				infosToReturn['home location'] = self.drones[droneName].getCurrentLocation()
+				infosToReturn['drone battery'] = self.drones[droneName].getBattery()
+				infosToReturn['camera status'] = 'available'
+				return infosToReturn
+			except Exception as e:
+				print "Error on establishing a connection with the Solo " + droneName
+				raise
+				return
 
 	'''
 	This method assigns the locations to reach to the Solo passed as parameter.

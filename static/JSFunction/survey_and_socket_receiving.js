@@ -1,5 +1,5 @@
 /*
-This function opens a socket for receiving live data to show for eache drone in flight mode
+This function opens a socket for receiving live data to show for each drone in flight mode
 */
 function openSocket(droneName){
 	var val = 0
