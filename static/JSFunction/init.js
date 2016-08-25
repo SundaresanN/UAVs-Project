@@ -15,6 +15,7 @@ $(document).ready(function(){
 	brain = new ClientBrain(socketio, map)
 
 	getDronesInfoFromServer()
+	
 })
 
 //this function is called when 'index.html' has been loaded.
