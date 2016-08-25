@@ -212,8 +212,13 @@ function showTableForLocationToAdd(latitude, longitude, drones){
 		if (brain.rectangularSurveyLocations.length>0) {
 			$("#altitude").attr("readonly", true)
 			$("#altitude").val(brain.rectangularSurveyLocations[0].altitude)
+		} else {
+			//adding the new field for the new experiment
+			console.log("here")
+			addFieldsForDensityPixel()
 		}
 		$("#selectDrone").parent().remove()
+
 	}
 	if(brain.typeOfSurvey == 'oscillation'){
 		for(index in drones){
@@ -237,6 +242,23 @@ function showTableForLocationToAdd(latitude, longitude, drones){
 		}
 	}
 }
+
+function addFieldsForDensityPixel(){
+
+	var densityField =   "<div class='form-group'>"+
+										"<label for='density'>Density</label>" +
+										"<input type='number' min='0' class='form-control' id='density' value='0'>" +
+										"<button type='button' class='btn btn-default' onclick='densityTransformationInAltiude()'>Convert in altitude value</button>"+
+								"</div>"
+	$("#altitude").after(densityField)
+}
+
+function densityTransformationInAltiude(){
+	//some calculation
+	var result = 5
+	$("#altitude").val(result)
+}
+
 
 function addLocationIntoTableOfLocationsToReach(droneName, array, latitude, longitude, altitude, type, typeOfSurvey){
 

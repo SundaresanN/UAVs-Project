@@ -613,19 +613,9 @@ Flight time: 72.1866981983
 Final Battery level: 28
 
 ###########################################
-Mission Flight starts on Wed Aug 24 08:41:47 2016Take off time required: 1.00146198273
 
-
-Number of points: 16
-
-Initial Battery Level: 93
-Location:
-	- latitude: 37.9244117176
-	- longitude: -91.7730291248
-	- altitude: 7
-	- battery: 93
-	- time: 2.02729010582
-Mission Flight starts on Wed Aug 24 08:52:50 2016Take off time required: 1.00136899948
+Mission Flight starts on Wed Aug 24 08:52:50 2016
+Take off time required: 1.00136899948
 
 
 Number of points: 16
@@ -732,7 +722,8 @@ Flight time: 91.7490620613
 Final Battery level: 74
 
 ###########################################
-Mission Flight starts on Wed Aug 24 08:59:44 2016Take off time required: 2.00149393082
+Mission Flight starts on Wed Aug 24 08:59:44 2016
+Take off time required: 2.00149393082
 
 
 Number of points: 18
