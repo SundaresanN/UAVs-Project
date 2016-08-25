@@ -80,7 +80,7 @@ function prepareRectangularSurvey(drones){
 	for(element in drones){
 		var index = brain.getIndexDrone(drones[element])
 		brain.drones[index].surveyMode = "rectangular"
-		if($("[id = '" + drones[element] + "']").children().eq(3).children().eq(0).text() == 'Build Path'){
+		if($("[id = '" + drones[element] + "']").children().eq(3).children().eq(0).text() == 'Prepare Survey'){
 			$("[id = '" + drones[element] + "']").children().eq(3).html('Rectangular Survey Mode')
 		}
 	}
@@ -243,7 +243,7 @@ function deleteDataOfRectangularSurvey(){
 		// I already know that drone is connected
 		if(buttonName == 'Rectangular Survey Mode'){
 			var droneName = $("#dronesTable > tbody").children().eq(index).children().eq(0).text()
-			var buildPathButton = '<button type="button" class="btn btn-success" onclick="buildPath(\'' +  droneName + '\')">Build Path</button>'
+			var buildPathButton = '<button type="button" class="btn btn-success" onclick="buildPath(\'' +  droneName + '\')">Prepare Survey</button>'
 			$("#dronesTable > tbody").children().eq(index).children().eq(3).html(buildPathButton)
 		}
 	}

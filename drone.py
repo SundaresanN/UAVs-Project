@@ -36,20 +36,23 @@ class Drone():
 	This method creates a connection with the real Solo.
 	'''
 	def connect(self):
-		self.vehicle = connect('udpout:10.1.1.10:14560', wait_ready=True)
+		try:
+			self.vehicle = connect('udpout:10.1.1.10:14560', wait_ready=True)
+			self.__cleaningMissionsFromSoloMemory__()
+		except Exception as e:
+			print "Connection error.."
+			raise
+
+		'''self.vehicle = connect('udpout:10.1.1.10:14560', wait_ready=True)
 		print "cleaning commands for " + self.name
-<<<<<<< HEAD
 		cmds = self.vehicle.commands
-		print "There are " + str(len(cmds)) + " commands into the Solo's memory 1"
 		cmds.download()
 		time.sleep(30)
 		cmds.wait_ready()
 		print "There are " + str(len(cmds)) + " commands into the Solo's memory 2"
 		cmds.clear()
-=======
-		self.__cleaningMissionsFromSoloMemory__()
->>>>>>> 96b70a407e5479ce59092a52e0d0300baea36de8
-		print self.name + " has cleaned its commands."
+		#self.__cleaningMissionsFromSoloMemory__()
+		#print self.name + " has cleaned its commands."'''
 
 	'''
 	This method returns the current Solo's location in a dictionary.
@@ -225,13 +228,9 @@ class Drone():
 		end = time.time()
 		self.__removeAllTheElementInTheListOfLocationsToReach__()
 		self.__connectToMyNetwork__(connectionManager)
-<<<<<<< HEAD
 		#for the future: I need to delete this chaning mode part
 		self.vehicle.mode = VehicleMode('GUIDED')
 		self.vehicle.mode = VehicleMode('RTL')
-=======
->>>>>>> 96b70a407e5479ce59092a52e0d0300baea36de8
-
 		self.fileTest.write("\nFlight time: " + str(end-start))
 		self.fileTest.write("\nFinal Battery level: " + str(self.getBattery()) + "\n")
 		self.fileTest.write("\n###########################################\n")
@@ -284,13 +283,8 @@ class Drone():
 		pictures_file.close()
 
 		#adding command for returning home when the mission will be ended
-<<<<<<< HEAD
 		#RTLCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_RETURN_TO_LAUNCH, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 		#cmds.add(RTLCommand)
-=======
-		RTLCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_RETURN_TO_LAUNCH, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-		cmds.add(RTLCommand)
->>>>>>> 96b70a407e5479ce59092a52e0d0300baea36de8
 
 		#taking off command
 		self.__armAndTakeOff__()
@@ -673,12 +667,14 @@ class Drone():
 
 	def __cleaningMissionsFromSoloMemory__(self):
 		try:
+			print "Trying to clean the " + self.name + " memory."
 			cmds = self.vehicle.commands
 		  	cmds.download()
 		  	cmds.wait_ready()
+			print "Waiting for the download from the " + self.name +" memory..."
 		  	time.sleep(30)
 		  	cmds.clear()
-			return cmds
+			return True
 		except Exception as e:
 			print "Timeout expired. Error on cleaning the memory"
 			return False

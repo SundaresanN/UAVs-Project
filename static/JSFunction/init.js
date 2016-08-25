@@ -1,7 +1,5 @@
 //This is the only global variable and it will be an instance of ClientBrain class
-var brain
-
-
+var brain;
 
 $(document).ready(function(){
 
@@ -46,10 +44,10 @@ function getDronesInfoFromServer(){
 
 //this function is called when user clicks on "Connect" button
 //in each row of drones table.
-function connectDrone(droneName){
+function connectDrone(droneName, socket){
 
 	$("[id ='" + droneName + "']").children().eq(1).html("Connecting to Solo...")
-	$("[id ='" + droneName + "']").children().eq(2).children().eq(0).attr("disabled", "disabled")
+	$("[id ='" + droneName + "']").children().eq(3).children().eq(0).attr("disabled", "disabled")
 
 	$.ajax({
 		type: 'POST',
@@ -59,7 +57,7 @@ function connectDrone(droneName){
 		success: function(data){
 			var data = data['data']
 			if (data['home location'] == undefined) {
-				$("[id ='" + droneName + "']").children().eq(1).html("Not connected(previous error)")
+				$("[id ='" + droneName + "']").children().eq(1).html("[ERROR] Are you connected with the " + droneName + " network?")
 				$("[id = '" + droneName + "']").children().eq(2).html("-")
 				$("[id ='" + droneName + "']").children().eq(3).children().eq(0).removeAttr("disabled")
 				$("[id = '" + droneName + "']").children().eq(4).html("-")
@@ -68,7 +66,7 @@ function connectDrone(droneName){
 			} else{
 
 				var element = brain.getIndexDrone(droneName)
-				var buildPathButton = '<button type="button" class="btn btn-success" onclick="buildPath(\'' +  brain.drones[element].name + '\')">Preparing Survey</button>'
+				var buildPathButton = '<button type="button" class="btn btn-success" onclick="buildPath(\'' +  brain.drones[element].name + '\')">Prepare Survey</button>'
 				if(brain.drones[element].surveyMode == 'rectangular'){
 						buildPathButton = 'Rectangular Survey Mode'
 				}
