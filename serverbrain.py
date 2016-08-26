@@ -230,14 +230,14 @@ class ServerBrain:
 	This method creates a thread for a drone's flight.
 	'''
 	def takeAFlight(self, drone):
-		eventlet.spawn(self.drones[drone].secondMissionFlight, self.connectionManager, self.socket)
+		eventlet.spawn(self.drones[drone].flightWithTheUsingOfSolosMemoryVersionTwo, self.connectionManager, self.socket)
 
 
 	'''
 	This method allows the drone to have an oscillation flight.
 	'''
 	def takeAnOscillationFlight(self, drone):
-		data = self.drones[drone].missionOscillationFlight()
+		data = self.drones[drone].oscillationFlight()
 		return data
 
 	'''
@@ -248,7 +248,7 @@ class ServerBrain:
 			if self.drones[drone] is not None:
 				if len(self.drones[drone].listOfLocationsToReach)>0:
 					print "launching the thread for " + drone + " for having a flight."
-					eventlet.spawn(self.drones[drone].missionFlight, self.connectionManager, self.socket)
+					eventlet.spawn(self.drones[drone].flightWithTheUsingOfSolosMemory, self.connectionManager, self.socket)
 					eventlet.sleep(10)
 					#time.sleep(10)
 

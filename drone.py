@@ -136,7 +136,7 @@ class Drone():
 	In the meantime of the execution of this method, a file will be updated with the information about location, battery level and time passed
 	of the current flight.
 	'''
-	def missionFlight(self, connectionManager, socket):
+	def flightWithTheUsingOfSolosMemory(self, connectionManager, socket):
 
 		print "Mission Flight for ", self.name
 		self.fileTest = open("Riccardo test " + self.name + ".txt", "a")
@@ -153,7 +153,6 @@ class Drone():
 		s = time.time()
 		eventlet.sleep(self.__generatingRandomSleepTime__())
 		print "I have slept for " + str(time.time() - s) + " before launching the mission.." + self.name
-
 
 		self.__connectToMyNetwork__(connectionManager)
 
@@ -226,7 +225,8 @@ class Drone():
 		self.__sendFlightDataToClientUsingSocket__(socket, self.vehicle.location.global_frame, reached = False, RTLMode = True, typeOfSurvey = 'normal', numberOfOscillations = None)
 		return True
 
-	def newMissionFlight(self, connectionManager, socket):
+
+	def newflightWithTheUsingOfSolosMemory(self, connectionManager, socket):
 
 		print "Mission Flight for ", self.name
 		self.fileTest = open("Riccardo test " + self.name + ".txt", "a")
@@ -345,44 +345,12 @@ class Drone():
 		cmds.upload()
 		self.vehicle.commands.next = 0 #reset mission set to first(0) waypoint
 
-	def __uploadCommandsIntoSoloMemoryVersionTwo__(self):
-		cmds = self.vehicle.commands
-		#index for association between picture and location
-		index = 0
-		#open the file for the picture-location association
-		pictures_file = open("association picture-location Solo " + self.name + ".txt", "a")
-		pictures_file.write("Survey: " + str(time.strftime("%c")) + "\n")
-		#adding waypoint and takeAPicture commands
-		for location in self.listOfLocationsToReach:
-			locationCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, location.lat, location.lon, location.alt)
-			pictureCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_DO_DIGICAM_CONTROL, 0, 0, 1, 0, 0, 0, 1, 0, 0)
-			pictures_file.write("Index " + str(index) + " ---> " + "lat: " + str(location.lat) + ", lon: " + str(location.lon) + ", alt: " + str(location.alt) + "\n")
-			index = index + 1
-			cmds.add(locationCommand)
-			cmds.add(pictureCommand)
-		pictures_file.write("\n###########################################\n\n")
-		pictures_file.close()
-		#adding command for returning home when the mission will be ended
-		RTLCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_RETURN_TO_LAUNCH, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-		cmds.add(RTLCommand)
-		#taking off command
-		self.__armAndTakeOff__()
-		#uploading commands to UAV
-		cmds.upload()
-		self.vehicle.commands.next = 0 #reset mission set to first(0) waypoint
 
 	'''
-	This method allows the drone's flight. It can not allow a perfect accuracy with live information on client side.
-	This lack of accuracy is due to the use of uploading commands into the Solo's memory.
-	We can identify 3 blocks:
-	1. Uploading the commands into Solo's memory (even the 'return to land' command) and take off
-	2. Checking what is the next command the Solo has to execute and understanding in which location the Solo has flown
-	   and so updating the information on client side via socket
-	3. Clearing all the data structures used for this flight
-	In the meantime of the execution of this method, a file will be updated with the information about location, battery level and time passed
-	of the current flight.
+	This method allows the drone's flight with specifying the airspeed of the drone.
+	The behavior of this method is the same of the "flightWithTheUsingOfSoloMemory()"
 	'''
-	def secondMissionFlight(self, connectionManager, socket):
+	def flightWithTheUsingOfSolosMemoryVersionTwo(self, connectionManager, socket):
 		print "Mission Flight for ", self.name
 		self.fileTest = open("Riccardo test " + self.name + ".txt", "a")
 		self.__connectToMyNetwork__(connectionManager)
@@ -473,35 +441,33 @@ class Drone():
 		self.fileTest.close()
 		self.__sendFlightDataToClientUsingSocket__(socket, self.vehicle.location.global_frame, reached = False, RTLMode = True, typeOfSurvey = 'normal', numberOfOscillations = None)
 		return
-	'''
-	Building new flight method in progress..
-	'''
-	def missionFlightInProgress(self, connectionManager, socket):
-		self.__connectToMyNetwork__(connectionManager)
 
-		self.__updloadMissionPoints__()
-		socket.emit('Take off ack', self.name + " has just taken off. Now it is ready to start the mission")
-		eventlet.sleep(self.__generatingRandomSleepTime__())
 
-		self.__connectToMyNetwork__(connectionManager)
-		print self.name + " is starting the mission"
-		self.vehicle.mode = VehicleMode('AUTO')
-
-		eventlet.sleep(random.random()*10)
+	def __uploadCommandsIntoSoloMemoryVersionTwo__(self):
+		cmds = self.vehicle.commands
+		#index for association between picture and location
 		index = 0
-		next = -1
-		while True:
-			self.__connectToMyNetwork__(connectionManager)
-			if next != self.vehicle.commands.next:
-				next = self.vehicle.commands.next
-				if next == len(self.vehicle.commands)-1:
-					print "survey completed"
-					socket.emit("Flight live information " + self.name, {'last': -1, 'battery': self.getBattery(), 'completed': True})
-					break
-				if next%2!=0:
-					next-=1
-					socket.emit("Flight live information " + self.name, {'last': next, 'battery' : self.getBattery(), 'completed' : False})
-		self.__removeAllTheElementInTheListOfLocationsToReach__()
+		#open the file for the picture-location association
+		pictures_file = open("association picture-location Solo " + self.name + ".txt", "a")
+		pictures_file.write("Survey: " + str(time.strftime("%c")) + "\n")
+		#adding waypoint and takeAPicture commands
+		for location in self.listOfLocationsToReach:
+			locationCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, location.lat, location.lon, location.alt)
+			pictureCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_DO_DIGICAM_CONTROL, 0, 0, 1, 0, 0, 0, 1, 0, 0)
+			pictures_file.write("Index " + str(index) + " ---> " + "lat: " + str(location.lat) + ", lon: " + str(location.lon) + ", alt: " + str(location.alt) + "\n")
+			index = index + 1
+			cmds.add(locationCommand)
+			cmds.add(pictureCommand)
+		pictures_file.write("\n###########################################\n\n")
+		pictures_file.close()
+		#adding command for returning home when the mission will be ended
+		RTLCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_RETURN_TO_LAUNCH, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+		cmds.add(RTLCommand)
+		#taking off command
+		self.__armAndTakeOff__()
+		#uploading commands to UAV
+		cmds.upload()
+		self.vehicle.commands.next = 0 #reset mission set to first(0) waypoint
 
 
 	'''
@@ -510,7 +476,7 @@ class Drone():
 	We can understand how far is the Solo from the location to reach and so decide if sending live information, taking the picture and at the end send the Solo to another location.
 	This method is used inside the lab for testing purposes.
 	'''
-	def flight(self, connectionManager, socket):
+	def flightPointByPoint(self, connectionManager, socket):
 		print "Inside flight method for ", self.name
 		self.__connectToMyNetwork__(connectionManager)
 
@@ -560,7 +526,7 @@ class Drone():
 	'''
 	This method is used for flying continuously in two points until drone's battery reaches 20%.
 	'''
-	def missionOscillationFlight(self):
+	def oscillationFlight(self):
 	  self.fileTest = open("test " + self.name + ".txt", "a")
 
 	  cmds = self.__cleaningMissionsFromSoloMemory__()

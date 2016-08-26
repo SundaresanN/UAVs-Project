@@ -14,4 +14,4 @@ def findAltitudeFromDensityDesiredByThisParticularIndividualUserMakingUseOfTheWe
     return sqrt(camParam[cam]['res']/(pixDense*camParam[cam]['TangN']*camParam[cam]['TangW']))
 
 
-print(findAltitudeFromDensityDesiredByThisParticularIndividualUserMakingUseOfTheWebApplicationAtThisParticularTime(4))
+print(findAltitudeFromDensityDesiredByThisParticularIndividualUserMakingUseOfTheWebApplicationAtThisParticularTime(1))
