@@ -696,3 +696,22 @@ Flight time: 56.2725799084
 Final Battery level: 54
 
 ###########################################
+Mission Flight starts on Fri Aug 26 09:03:41 2016
+Take off time required: 2.00257706642
+
+
+Number of points: 15
+
+Initial Battery Level: 82
+
+Flight time: -1472220230.9
+Final Battery level: -1
+
+###########################################
+Mission Flight starts on Fri Aug 26 09:13:51 2016
+Take off time required: 1.00134897232
+
+
+Number of points: 25
+
+Initial Battery Level: 63

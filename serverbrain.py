@@ -248,7 +248,7 @@ class ServerBrain:
 			if self.drones[drone] is not None:
 				if len(self.drones[drone].listOfLocationsToReach)>0:
 					print "launching the thread for " + drone + " for having a flight."
-					eventlet.spawn(self.drones[drone].flightWithTheUsingOfSolosMemory, self.connectionManager, self.socket)
+					eventlet.spawn(self.drones[drone].newflightWithTheUsingOfSolosMemory, self.connectionManager, self.socket)
 					eventlet.sleep(10)
 					#time.sleep(10)
 

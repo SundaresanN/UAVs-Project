@@ -148,25 +148,17 @@ class Drone():
 		'''
 		self.__uploadCommandsIntoSoloMemory__()
 		socket.emit('Take off ack', self.name + " has just taken off. Now it is ready to start the mission.")
-		print "after cleaning, ready to go to sleep.. " + self.name
-
-		s = time.time()
 		eventlet.sleep(self.__generatingRandomSleepTime__())
-		print "I have slept for " + str(time.time() - s) + " before launching the mission.." + self.name
-
-		self.__connectToMyNetwork__(connectionManager)
 
 		'''
 		STARTING THE MISSION, CHECKING THE FLIGHT STATUS AND UPDATING THE INFORMATION ON CLIENT SIDE WITH THE OPENED SOCKET
 		'''
+		self.__connectToMyNetwork__(connectionManager)
 		start = time.time()
 		self.vehicle.mode = VehicleMode('AUTO') #starting the mission
 		self.fileTest.write("\nNumber of points: " + str(len(self.listOfLocationsToReach)) + "\n")
 		self.fileTest.write("\nInitial Battery Level: " +  str(self.getBattery()) + "\n")
-		s = time.time()
-		#end = 0 I need this for future application
 		eventlet.sleep(self.__generatingRandomSleepTime__())
-		print "Mission has started, I have wait for " + str(time.time() - s)
 		index = 0
 		next = -1
 		while True:
@@ -176,13 +168,6 @@ class Drone():
 			if next != self.vehicle.commands.next:
 				print "there are " + str(self.vehicle.commands.next - next) + " points I did not notify.."
 				next = self.vehicle.commands.next
-				'''
-				#this happens when there is the last commands, so the RTL command
-				if next == len(self.vehicle.commands)-1:
-					next-=1
-					end = time.time()
-					print "Just finished to process all the commands, returning home"
-				'''
 				if next%2!=0:
 					next-=1
 				while index <= (next/2):
@@ -197,15 +182,12 @@ class Drone():
 					self.__connectToMyNetwork__(connectionManager)
 					self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False, typeOfSurvey = 'normal', numberOfOscillations = None)
 					index+=1
-					ss = time.time()
 					eventlet.sleep(self.__generatingRandomSleepTime__())
-					print "I have slept for " + str(time.time() - ss) + " for sending the next information via socket .. " + self.name
 				#checking if drone has endend its trip
 				if index == len(self.listOfLocationsToReach):
 					print "Just finished to send all the live information via socket.." + self.name
 					break
 			eventlet.sleep(self.__generatingRandomSleepTime__())
-			print "I have slept for " + str(time.time() - s) + " for a while cycle.." + self.name
 
 		'''
 		CLEARING ALL THE DATA STRUCTURES USED FOR THIS FLIGHTS
