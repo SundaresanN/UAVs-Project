@@ -105,6 +105,7 @@ class Drone():
 	'''
 	def __armAndTakeOff__(self):
 		print "Inside take off of ", self.name
+		return
 		start = time.time()
 		print self.name + " is taking off..."
 		while not self.vehicle.is_armable:
@@ -208,7 +209,7 @@ class Drone():
 		return True
 
 
-	def newflightWithTheUsingOfSolosMemory(self, connectionManager, socket):
+	def fastSocketFlight(self, connectionManager, socket):
 
 		print "Mission Flight for ", self.name
 		self.fileTest = open("Riccardo test " + self.name + ".txt", "a")
@@ -243,23 +244,16 @@ class Drone():
 			if next != self.vehicle.commands.next:
 				next = self.vehicle.commands.next
 				#this happens when there is the last commands, so the RTL command
-				if next == len(self.vehicle.commands)-1:
+				if next == 2*len(self.vehicle.commands):
 					next-=1
 					end = time.time()
 					battery_end = self.getBattery()
+					socket.emit("Flight live information " + self.name, {'last' : next/2, 'completed' : True, 'battery': battery_end, 'flight time': end - start})
 					print "Just finished to process all the commands, returning home"
+					break
 				if next%2!=0:
 					next-=1
-				while index <= (next/2):
-					location = self.listOfLocationsToReach[index]
-					self.__connectToMyNetwork__(connectionManager)
-					self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False, typeOfSurvey = 'normal', numberOfOscillations = None)
-					index+=1
-					eventlet.sleep(self.__generatingRandomSleepTime__())
-				#checking if drone has endend its trip
-				if index == len(self.listOfLocationsToReach):
-					print "Just finished to send all the live information via socket.." + self.name
-					break
+				socket.emit("Flight live information " + self.name, {'last' : next/2, 'completed' : False})
 			eventlet.sleep(self.__generatingRandomSleepTime__())
 		'''
 		CLEARING ALL THE DATA STRUCTURES USED FOR THIS FLIGHTS
@@ -332,7 +326,7 @@ class Drone():
 	This method allows the drone's flight with specifying the airspeed of the drone.
 	The behavior of this method is the same of the "flightWithTheUsingOfSoloMemory()"
 	'''
-	def flightWithTheUsingOfSolosMemoryVersionTwo(self, connectionManager, socket):
+	def flightWithSpecifiedAirspeed(self, connectionManager, socket):
 		print "Mission Flight for ", self.name
 		self.fileTest = open("Riccardo test " + self.name + ".txt", "a")
 		self.__connectToMyNetwork__(connectionManager)
@@ -460,51 +454,48 @@ class Drone():
 	'''
 	def flightPointByPoint(self, connectionManager, socket):
 		print "Inside flight method for ", self.name
-		self.__connectToMyNetwork__(connectionManager)
+		#self.__connectToMyNetwork__(connectionManager)
 
 		self.__armAndTakeOff__()
 		socket.emit('Take off ack', self.name + " has just taken off. Now it is ready to start the mission.")
-		print "Now " + self.name + " is going to sleep for a while.."
-		eventlet.sleep(self.__generatingRandomSleepTime__())
+		eventlet.sleep(5)
 		print "For " + self.name + " the number of locations to reach is ", len(self.listOfLocationsToReach)
-
-		for location in self.listOfLocationsToReach:
-			print "Location to reach this time: ", location
+		index = 0
+		socket.emit("Flight live information " + self.name, {'last' : 0, 'completed' : False})
+		eventlet.sleep(5)
+		socket.emit("Flight live information " + self.name, {'last' : 2, 'completed' : False})
+		eventlet.sleep(5)
+		socket.emit("Flight live information " + self.name, {'last' : 6, 'completed' : False})
+		eventlet.sleep(5)
+		'''for location in self.listOfLocationsToReach:
+			print "Location to reach this time: ", index
 			self.__connectToMyNetwork__(connectionManager)
 			droneCurrentLocation = self.vehicle.location.global_relative_frame
 			distanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(droneCurrentLocation, location)
 			print self.name + " is flying to ", location
 			#self.vehicle.simple_goto(location)
-			'''
-			Now I have to check the location of the drone in flight, this because dronekit API is thought in order to have
-			flight to single point and if I immediatelly send another location to reach, the drone will immediatelly change
-			direction of its flight and it will go towards the new location I've just sent.
-			'''
 			while True:
-				s = time.time()
-				eventlet.sleep(self.__generatingRandomSleepTime__())
-				print self.name + " is checking its location after a sleep of " + str(time.time() - s) + "\n"
+				eventlet.sleep(5)
 				tolerance = 1
 				self.__connectToMyNetwork__(connectionManager)
 				currentDroneLocation = self.vehicle.location.global_relative_frame
 				remainingDistanceToNextLocation = self.__getDistanceFromTwoPointsInMeters__(currentDroneLocation, location)
 				#If I've just reached the location, I need to take a picture
 				if remainingDistanceToNextLocation <= distanceToNextLocation*tolerance:
-					print "Drone " + self.name + " has just reached the location and now it is taking a picture...\n"
-					self.__takeAPicture__()
-					self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False, typeOfSurvey = 'normal', numberOfOscillations = None)
+					#self.__takeAPicture__()
+					print "Seding location " + str(index)
+					socket.emit("Flight live information " + self.name, {'last' : index, 'completed' : False})
 					break
-				print self.name + "'s thread is going to sleep during the flight for awhile..\n"
-
+			index += 1'''
 		'''
 		Now it's time to come back home
 		'''
 		self.__removeAllTheElementInTheListOfLocationsToReach__()
-		self.__connectToMyNetwork__(connectionManager)
+		#self.__connectToMyNetwork__(connectionManager)
+		socket.emit("Flight live information " + self.name, {'last' : -1, 'completed' : True, 'battery': 95, 'flight time': 95})
+		eventlet.sleep(5)
 		print self.name + " has completed its mission and now it is coming back home."
-		self.__sendFlightDataToClientUsingSocket__(socket, self.vehicle.location.global_frame, reached = False, RTLMode = True, typeOfSurvey = 'normal', numberOfOscillations = None)
-		time.sleep(2)
-
+		return
 	'''
 	This method is used for flying continuously in two points until drone's battery reaches 20%.
 	'''

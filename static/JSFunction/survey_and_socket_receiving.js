@@ -19,7 +19,7 @@ function openSocket(droneName){
 		}
 		if (data['RTL'] == true) {
 			//Now that the flight has been just completed, I need to reset the 'Build Path' button for having another flight
-			var buildPathButton = '<button type="button" class="btn btn-success" onclick="buildPath(\'' +  droneName + '\')">Build Path</button>'
+			var buildPathButton = '<button type="button" class="btn btn-success" onclick="buildPath(\'' +  droneName + '\')">Prepare Survey</button>'
 			textToDisplay = "Drone " + data['name'] + ' has completed its flight, now it is coming back home'
 			$("[id = '" + droneName + "']").children().eq(3).html(buildPathButton)
 		}

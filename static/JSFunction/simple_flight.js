@@ -89,6 +89,6 @@ function flightDrone(droneName, type){
 				}
 			})
 		}
-		openSocket(droneName)
+		openSocketNewVersion(droneName)
 	}
 }
