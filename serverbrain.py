@@ -52,9 +52,9 @@ class ServerBrain:
 				infosToReturn['camera status'] = 'available'
 				return infosToReturn
 			except Exception as e:
-				print "Error on establishing a connection with the Solo " + droneName
-				raise
-				return
+				print "Error on establishing a connection with the " + droneName
+				#raise
+				return "timeout expired"
 
 	'''
 	This method assigns the locations to reach to the Solo passed as parameter.
@@ -290,3 +290,10 @@ class ServerBrain:
 
 		print "I haven't found a free antenna for your connection... sorry, ", wifiNetwork
 		return False, False
+
+	def closeBrain(self):
+		for drone in self.drones:
+			if self.drones[drone] is not None:
+				print "closing connection with the vehicle of " + drone
+				self.drones[drone].vehicle.close()
+			self.drones[drone] = None

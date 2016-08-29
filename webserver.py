@@ -77,8 +77,13 @@ def receive_live_info(message):
     print "##########################################"
     print "\n"
 
+@socketio.on('refreshing')
+def refreshing():
+    print "stopping the server.."
+    
+
 if __name__ == '__main__':
+    print "Running the server..."
     brain = ServerBrain(socketio)
-    app.debug = True
     app.threaded = True
-    socketio.run(app)
+    socketio.run(app, use_reloader=True, debug=True)

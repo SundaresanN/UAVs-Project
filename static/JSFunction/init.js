@@ -5,9 +5,11 @@ $(document).ready(function(){
 
 	var socketio = io.connect('http://' + document.domain + ':' + location.port)
 
-	$(window).on('beforeunload', function(){
-	    socketio.close();
-	});
+	window.onbeforeunload = function() {
+		socketio.emit("refreshing")
+		socketio.close()
+	}
+
 	//var map = new Map("MST Campus", 37.955879, -91.775020, 20, 640, 640, '/static/Images/Map\ Images/MSTStaticMap20zoom.png')
 
 	var map = new Map("Football Pitch", 37.924750,-91.772437, 19, 640, 640, '/static/Images/Map\ Images/FootballPitchZoom19.png')
@@ -15,7 +17,7 @@ $(document).ready(function(){
 	brain = new ClientBrain(socketio, map)
 
 	getDronesInfoFromServer()
-	
+
 })
 
 //this function is called when 'index.html' has been loaded.
@@ -57,13 +59,22 @@ function connectDrone(droneName, socket){
 		data: JSON.stringify({ droneName: droneName}),
 		success: function(data){
 			var data = data['data']
+			console.log(data);;
+			if (data=="timeout expired") {
+				alert("[ERROR] Some problem with establishing the connection with the " + droneName + ". Try to refresh the page.")
+				$("[id ='" + droneName + "']").children().eq(1).html("[ERROR] Previous connections went bad. You could try again refreshing the page.")
+				$("[id = '" + droneName + "']").children().eq(2).html("-")
+				$("[id ='" + droneName + "']").children().eq(3).children().eq(0).removeAttr("disabled")
+				$("[id = '" + droneName + "']").children().eq(4).html("-")
+				$("[id = '" + droneName + "']").children().eq(5).html("-")
+				return
+			}
 			if (data['home location'] == undefined) {
 				$("[id ='" + droneName + "']").children().eq(1).html("[ERROR] Are you connected with the " + droneName + " network?")
 				$("[id = '" + droneName + "']").children().eq(2).html("-")
 				$("[id ='" + droneName + "']").children().eq(3).children().eq(0).removeAttr("disabled")
 				$("[id = '" + droneName + "']").children().eq(4).html("-")
 				$("[id = '" + droneName + "']").children().eq(5).html("-")
-
 			} else{
 
 				var element = brain.getIndexDrone(droneName)

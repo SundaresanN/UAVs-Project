@@ -169,7 +169,7 @@ function showTableForLocationToAdd(latitude, longitude, drones){
 	           "<input class='form-control' id='longitude' readonly='true'>" +
 	        "</div>" +
 	        "<div class='form-group'>"+
-	            "<label for='altitude'>Altitude</label>" +
+	            "<label for='altitude'>Altitude (m)</label>" +
 	            "<input type='number' min='0' class='form-control' id='altitude' value='0'>" +
 	        "</div>"+
 	        "<div class='form-group'>"+
@@ -237,7 +237,7 @@ function showTableForLocationToAdd(latitude, longitude, drones){
 function addFieldsForDensityPixel(){
 
 	var densityField =  "<div class='form-group'>"+
-													"<label for='density'>Density</label>" +
+													"<label for='density'>Density (pixel/m^2)</label>" +
 													"<input type='number' min='0' class='form-control' id='density' value='0'>" +
 													"<button type='button' class='btn btn-default' onclick='densityTransformationInAltiude()'>Convert in altitude value</button>"+
 											"</div>"
@@ -251,7 +251,7 @@ function densityTransformationInAltiude(){
 	var camParam={'pi':{'ssizem':2.74, 'ssizep':3.76, 'flen':3.6, 'angN' : 0.7272647522337332, 'angW' : 0.9625338617968637, 'TangN':.8900036993, 'TangW':1.436087493, 'res':5000000},
               'canon':{'ssizem':5.7, 'ssizep':7.6, 'flen':5.2, 'angN' : 1.0027311229353408, 'angW' : 1.2621587749426584, 'TangN':1.566803225, 'TangW':3.1365079, 'res':12000000},
               'gopro':{'angN':2.792523803, 'angW':2.792523803, 'TangN':2.3857296493600746, 'TangW':2.3857296493600746, 'res':12000000}}
-  pixDense *= 10000
+  //pixDense *= 10000
 	var result = Math.sqrt(camParam[cam]['res']/(pixDense*camParam[cam]['TangN']*camParam[cam]['TangW']))
 	$("#altitude").val(result)
 }
