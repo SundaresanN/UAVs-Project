@@ -105,7 +105,6 @@ class Drone():
 	'''
 	def __armAndTakeOff__(self):
 		print "Inside take off of ", self.name
-		return
 		start = time.time()
 		print self.name + " is taking off..."
 		while not self.vehicle.is_armable:
@@ -167,7 +166,6 @@ class Drone():
 			self.__connectToMyNetwork__(connectionManager)
 			#I'm getting next command from drone in flight
 			if next != self.vehicle.commands.next:
-				print "there are " + str(self.vehicle.commands.next - next) + " points I did not notify.."
 				next = self.vehicle.commands.next
 				if next%2!=0:
 					next-=1
@@ -219,7 +217,7 @@ class Drone():
 		'''
 		UPLOADING COMMANDS INTO THE SOLO'S MEMORY
 		'''
-		self.__uploadCommandsIntoSoloMemoryVersionTwo__()
+		self.__uploadCommandsIntoSoloMemoryFastLanding__()
 		socket.emit('Take off ack', self.name + " has just taken off. Now it is ready to start the mission.")
 		print "after cleaning, ready to go to sleep.. " + self.name
 
@@ -245,11 +243,11 @@ class Drone():
 				next = self.vehicle.commands.next
 				#this happens when there is the last commands, so the RTL command
 				if next == 2*len(self.vehicle.commands):
+					print "Just finished to process all the commands, returning home"
 					next-=1
 					end = time.time()
 					battery_end = self.getBattery()
 					socket.emit("Flight live information " + self.name, {'last' : next/2, 'completed' : True, 'battery': battery_end, 'flight time': end - start})
-					print "Just finished to process all the commands, returning home"
 					break
 				if next%2!=0:
 					next-=1
@@ -419,7 +417,7 @@ class Drone():
 		return
 
 
-	def __uploadCommandsIntoSoloMemoryVersionTwo__(self):
+	def __uploadCommandsIntoSoloMemoryFastLanding__(self):
 		cmds = self.vehicle.commands
 		#index for association between picture and location
 		index = 0
@@ -445,7 +443,6 @@ class Drone():
 		cmds.upload()
 		self.vehicle.commands.next = 0 #reset mission set to first(0) waypoint
 
-
 	'''
 	This method allows the flight with a 100% accuracy on live information on client side.
 	The idea of this method is to send a flight command once a time. Only when the Solo reaches the location just processed, a new flight command will be sent.
@@ -461,13 +458,7 @@ class Drone():
 		eventlet.sleep(5)
 		print "For " + self.name + " the number of locations to reach is ", len(self.listOfLocationsToReach)
 		index = 0
-		socket.emit("Flight live information " + self.name, {'last' : 0, 'completed' : False})
-		eventlet.sleep(5)
-		socket.emit("Flight live information " + self.name, {'last' : 2, 'completed' : False})
-		eventlet.sleep(5)
-		socket.emit("Flight live information " + self.name, {'last' : 6, 'completed' : False})
-		eventlet.sleep(5)
-		'''for location in self.listOfLocationsToReach:
+		for location in self.listOfLocationsToReach:
 			print "Location to reach this time: ", index
 			self.__connectToMyNetwork__(connectionManager)
 			droneCurrentLocation = self.vehicle.location.global_relative_frame
@@ -486,7 +477,7 @@ class Drone():
 					print "Seding location " + str(index)
 					socket.emit("Flight live information " + self.name, {'last' : index, 'completed' : False})
 					break
-			index += 1'''
+			index += 1
 		'''
 		Now it's time to come back home
 		'''
