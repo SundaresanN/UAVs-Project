@@ -39,7 +39,7 @@ def buildPath():
 @app.route('/buildRectangularPath', methods=['POST'])
 def buildRectangularPath():
     data = request.get_json()
-    dataToReturn = brain.buildRectangularSurveyPointsCheating(data)
+    dataToReturn = brain.buildRectangularSurveyPointsReal(data)
     return jsonify({'data' : dataToReturn})
 
 @app.route('/flight', methods=['POST'])
@@ -80,7 +80,7 @@ def receive_live_info(message):
 @socketio.on('refreshing')
 def refreshing():
     print "stopping the server.."
-    
+
 
 if __name__ == '__main__':
     print "Running the server..."
