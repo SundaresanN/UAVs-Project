@@ -30,6 +30,8 @@ class Drone():
 
 		self.listOfLocationsToReach = None
 
+		self.bearing = 0
+
 		self.fileTest = None
 
 	'''
@@ -81,7 +83,8 @@ class Drone():
 		for location in locations:
 			if location != None:
 				self.listOfLocationsToReach.append(LocationGlobalRelative(location["latitude"], location["longitude"], location['altitude']))
-		print self.listOfLocationsToReach
+		if locations[0]['bearing'] is not None:
+			self.bearing = locations[0]['bearing']
 
 	'''
 	This method is used when someone requires the list of locations to reach in a format that is
@@ -264,8 +267,6 @@ class Drone():
 		self.fileTest.write("\n###########################################\n")
 		self.fileTest.close()
 		self.__updateFileOldSurvey__()
-		self.__connectToMyNetwork__(connectionManager)
-		self.__sendFlightDataToClientUsingSocket__(socket, self.vehicle.location.global_frame, reached = False, RTLMode = True, typeOfSurvey = 'normal', numberOfOscillations = None)
 		return True
 
 	'''
@@ -318,7 +319,6 @@ class Drone():
 		#uploading commands to UAV
 		cmds.upload()
 		self.vehicle.commands.next = 0 #reset mission set to first(0) waypoint
-
 
 	'''
 	This method allows the drone's flight with specifying the airspeed of the drone.
@@ -401,7 +401,6 @@ class Drone():
 				if index == len(self.listOfLocationsToReach):
 					print "Just finished to send all the live information via socket"
 					break
-
 			eventlet.sleep(self.__generatingRandomSleepTime__())
 
 		'''

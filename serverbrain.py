@@ -102,9 +102,6 @@ class ServerBrain:
 			droneList.append(location['longitude'])
 
 		missionDivisionData = rectPlan.missionDivision(result, droneList)
-		print "##############\nPrinting Mission Division Data"
-		print missionDivisionData
-		print "#################"
 		missionDivisionData = rectPlan.serializeMissionData(missionDivisionData)
 		'''
 		Assign locations to reach to each involved drone
