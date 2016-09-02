@@ -30,6 +30,8 @@ class Drone():
 
 		self.listOfLocationsToReach = None
 
+		self.bearing = 0
+
 		self.fileTest = None
 
 	'''
@@ -81,7 +83,8 @@ class Drone():
 		for location in locations:
 			if location != None:
 				self.listOfLocationsToReach.append(LocationGlobalRelative(location["latitude"], location["longitude"], location['altitude']))
-		print self.listOfLocationsToReach
+		if locations[0]['bearing'] is not None:
+			self.bearing = locations[0]['bearing']
 
 	'''
 	This method is used when someone requires the list of locations to reach in a format that is
@@ -206,6 +209,56 @@ class Drone():
 		self.__sendFlightDataToClientUsingSocket__(socket, self.vehicle.location.global_frame, reached = False, RTLMode = True, typeOfSurvey = 'normal', numberOfOscillations = None)
 		return True
 
+	'''
+	This method uploads all the commands (waypoints and locations) into the Solo's memory.
+	Moreover it writes on a file for the geotagging of each photo.
+	The steps in this method are:
+	1. preparing the commands to upload and writing the information about the geotagging
+	2. taking off
+	3. uploading the commands into the Solo's memory
+	Uploading the commands after the taking off is done for preventing the "cutting the grass" effect.
+	'''
+	def __uploadCommandsIntoSoloMemory__(self):
+		cmds = self.vehicle.commands
+		#index for association between picture and location
+		index = 0
+		#open the file for the picture-location association
+		pictures_file = open("association picture-location Solo " + self.name + ".txt", "a")
+		pictures_file.write("Survey: " + str(time.strftime("%c")) + "\n")
+		#adding waypoint and takeAPicture commands
+		for location in self.listOfLocationsToReach:
+			locationCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, location.lat, location.lon, location.alt)
+			pictureCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_DO_DIGICAM_CONTROL, 0, 0, 1, 0, 0, 0, 1, 0, 0)
+			pictures_file.write("Index " + str(index) + " ---> " + "lat: " + str(location.lat) + ", lon: " + str(location.lon) + ", alt: " + str(location.alt) + "\n")
+			index = index + 1
+			cmds.add(locationCommand)
+			cmds.add(pictureCommand)
+		pictures_file.write("\n###########################################\n\n")
+		pictures_file.close()
+		#adding command for returning home when the mission will be ended
+		#RTLCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_RETURN_TO_LAUNCH, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+		#cmds.add(RTLCommand)
+		#taking off command
+		self.__armAndTakeOff__()
+		#uploading commands to UAV
+		cmds.upload()
+		self.vehicle.commands.next = 0 #reset mission set to first(0) waypoint
+
+	'''
+	This method is used for updating the file with the information about the old survey.
+	The purpose of this method is for cheating the experiments.
+	'''
+	def __updateFileOldSurvey__(self):
+		missionDivisionData = (open("oldSurvey.txt", "r").read())
+		missionDivisionData = eval(missionDivisionData)
+		for index in range(0, len(missionDivisionData['UAVs'])):
+			if missionDivisionData['UAVs'][index]['name'] == self.name and missionDivisionData['UAVs'][index]['to complete'] == True:
+				missionDivisionData['UAVs'][index]['to complete'] = False
+				missionDivisionData['UAVs'][index]['completed'] = True
+				file = open("oldSurvey.txt", "w")
+				file.write(str(missionDivisionData))
+				file.close()
+				return
 
 	def fastSocketFlight(self, connectionManager, socket):
 
@@ -242,7 +295,7 @@ class Drone():
 			if next != self.vehicle.commands.next:
 				next = self.vehicle.commands.next
 				#this happens when there is the last commands, so the RTL command
-				if next == 2*len(self.vehicle.commands):
+				if next == 2*len(self.vehicle.commands)-2:
 					print "Just finished to process all the commands, returning home"
 					next-=1
 					end = time.time()
@@ -252,6 +305,7 @@ class Drone():
 				if next%2!=0:
 					next-=1
 				socket.emit("Flight live information " + self.name, {'last' : next/2, 'completed' : False})
+				print "sending live information about the flight."
 			eventlet.sleep(self.__generatingRandomSleepTime__())
 		'''
 		CLEARING ALL THE DATA STRUCTURES USED FOR THIS FLIGHTS
@@ -264,42 +318,22 @@ class Drone():
 		self.fileTest.write("\n###########################################\n")
 		self.fileTest.close()
 		self.__updateFileOldSurvey__()
-		self.__connectToMyNetwork__(connectionManager)
-		self.__sendFlightDataToClientUsingSocket__(socket, self.vehicle.location.global_frame, reached = False, RTLMode = True, typeOfSurvey = 'normal', numberOfOscillations = None)
 		return True
 
 	'''
-	This method is used for updating the file with the information about the old survey.
-	The purpose of this method is for cheating the experiments.
+	Bearing command added in the list of commands to upload.
 	'''
-	def __updateFileOldSurvey__(self):
-		missionDivisionData = (open("oldSurvey.txt", "r").read())
-		missionDivisionData = eval(missionDivisionData)
-		for index in range(0, len(missionDivisionData['UAVs'])):
-			if missionDivisionData['UAVs'][index]['name'] == self.name and missionDivisionData['UAVs'][index]['to complete'] == True:
-				missionDivisionData['UAVs'][index]['to complete'] = False
-				missionDivisionData['UAVs'][index]['completed'] = True
-				file = open("oldSurvey.txt", "w")
-				file.write(str(missionDivisionData))
-				file.close()
-				return
-
-	'''
-	This method uploads all the commands (waypoints and locations) into the Solo's memory.
-	Moreover it writes on a file for the geotagging of each photo.
-	The steps in this method are:
-	1. preparing the commands to upload and writing the information about the geotagging
-	2. taking off
-	3. uploading the commands into the Solo's memory
-	Uploading the commands after the taking off is done for preventing the "cutting the grass" effect.
-	'''
-	def __uploadCommandsIntoSoloMemory__(self):
+	def __uploadCommandsIntoSoloMemoryFastLanding__(self):
 		cmds = self.vehicle.commands
 		#index for association between picture and location
 		index = 0
 		#open the file for the picture-location association
 		pictures_file = open("association picture-location Solo " + self.name + ".txt", "a")
 		pictures_file.write("Survey: " + str(time.strftime("%c")) + "\n")
+		changeSpeedCommand = Command(0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_DO_CHANGE_SPEED, 0, 0, 0, 5, 0, 1, 0, 0, 0)
+		cmds.add(changeSpeedCommand)
+		bearingCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_CONDITION_YAW, 0, 0, self.bearing, 10, 1, 0, 0, 0, 0)
+		cmds.add(bearingCommand)
 		#adding waypoint and takeAPicture commands
 		for location in self.listOfLocationsToReach:
 			locationCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, location.lat, location.lon, location.alt)
@@ -311,14 +345,13 @@ class Drone():
 		pictures_file.write("\n###########################################\n\n")
 		pictures_file.close()
 		#adding command for returning home when the mission will be ended
-		#RTLCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_RETURN_TO_LAUNCH, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-		#cmds.add(RTLCommand)
+		RTLCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_RETURN_TO_LAUNCH, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+		cmds.add(RTLCommand)
 		#taking off command
 		self.__armAndTakeOff__()
 		#uploading commands to UAV
 		cmds.upload()
 		self.vehicle.commands.next = 0 #reset mission set to first(0) waypoint
-
 
 	'''
 	This method allows the drone's flight with specifying the airspeed of the drone.
@@ -401,7 +434,6 @@ class Drone():
 				if index == len(self.listOfLocationsToReach):
 					print "Just finished to send all the live information via socket"
 					break
-
 			eventlet.sleep(self.__generatingRandomSleepTime__())
 
 		'''
@@ -416,32 +448,6 @@ class Drone():
 		self.__sendFlightDataToClientUsingSocket__(socket, self.vehicle.location.global_frame, reached = False, RTLMode = True, typeOfSurvey = 'normal', numberOfOscillations = None)
 		return
 
-
-	def __uploadCommandsIntoSoloMemoryFastLanding__(self):
-		cmds = self.vehicle.commands
-		#index for association between picture and location
-		index = 0
-		#open the file for the picture-location association
-		pictures_file = open("association picture-location Solo " + self.name + ".txt", "a")
-		pictures_file.write("Survey: " + str(time.strftime("%c")) + "\n")
-		#adding waypoint and takeAPicture commands
-		for location in self.listOfLocationsToReach:
-			locationCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, location.lat, location.lon, location.alt)
-			pictureCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_DO_DIGICAM_CONTROL, 0, 0, 1, 0, 0, 0, 1, 0, 0)
-			pictures_file.write("Index " + str(index) + " ---> " + "lat: " + str(location.lat) + ", lon: " + str(location.lon) + ", alt: " + str(location.alt) + "\n")
-			index = index + 1
-			cmds.add(locationCommand)
-			cmds.add(pictureCommand)
-		pictures_file.write("\n###########################################\n\n")
-		pictures_file.close()
-		#adding command for returning home when the mission will be ended
-		RTLCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_RETURN_TO_LAUNCH, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-		cmds.add(RTLCommand)
-		#taking off command
-		self.__armAndTakeOff__()
-		#uploading commands to UAV
-		cmds.upload()
-		self.vehicle.commands.next = 0 #reset mission set to first(0) waypoint
 
 	'''
 	This method allows the flight with a 100% accuracy on live information on client side.
@@ -487,6 +493,7 @@ class Drone():
 		eventlet.sleep(5)
 		print self.name + " has completed its mission and now it is coming back home."
 		return
+
 	'''
 	This method is used for flying continuously in two points until drone's battery reaches 20%.
 	'''

@@ -1,5 +1,8 @@
 Experiments data:
 
+Landing time: 51.92 seconds
+Discharge during the landing: 7%
+
 1) Number of UAVs: 1
 
   - 50 points: 119.30 seconds / 14%

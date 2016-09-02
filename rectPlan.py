@@ -245,6 +245,7 @@ def serializeMissionData(missionDivisionData):
                     "latitude" : missionDivisionData['UAVs'][indexLocations]['points'][indexPoints].latitude,
                     "longitude" : missionDivisionData['UAVs'][indexLocations]['points'][indexPoints].longitude,
                     "altitude" : missionDivisionData['UAVs'][indexLocations]['points'][indexPoints].altitude,
+                    'bearing' : missionDivisionData['UAVs'][indexLocations]['points'][indexPoints].bearing
             }
     return missionDivisionData
 '''
