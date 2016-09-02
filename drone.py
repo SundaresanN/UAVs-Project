@@ -242,17 +242,17 @@ class Drone():
 		while True:
 			self.__connectToMyNetwork__(connectionManager)
 			#I'm getting next command from drone in flight
-			if next != self.vehicle.commands.next:
+			if next != self.vehicle.commands.next and self.vehicle.commands.next!=0:
 				next = self.vehicle.commands.next
 				#this happens when there is the last commands, so the RTL command
-				if next == 2*len(self.vehicle.commands):
+				if next == 2*len(self.vehicle.commands)-1:
 					print "Just finished to process all the commands, returning home"
 					next-=1
 					end = time.time()
 					battery_end = self.getBattery()
 					socket.emit("Flight live information " + self.name, {'last' : next/2, 'completed' : True, 'battery': battery_end, 'flight time': end - start})
 					break
-				if next%2!=0:
+				if next%2==0:
 					next-=1
 				socket.emit("Flight live information " + self.name, {'last' : next/2, 'completed' : False})
 			eventlet.sleep(self.__generatingRandomSleepTime__())
@@ -415,7 +415,9 @@ class Drone():
 		self.__sendFlightDataToClientUsingSocket__(socket, self.vehicle.location.global_frame, reached = False, RTLMode = True, typeOfSurvey = 'normal', numberOfOscillations = None)
 		return
 
-
+	'''
+	Bearing command added in the list of commands to upload.
+	'''
 	def __uploadCommandsIntoSoloMemoryFastLanding__(self):
 		cmds = self.vehicle.commands
 		#index for association between picture and location
@@ -423,6 +425,8 @@ class Drone():
 		#open the file for the picture-location association
 		pictures_file = open("association picture-location Solo " + self.name + ".txt", "a")
 		pictures_file.write("Survey: " + str(time.strftime("%c")) + "\n")
+		bearingCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_CONDITION_YAW, 0, 0, self.bearing, 10, -1, 0, 0, 0, 0)
+		cmd.add(bearingCommand)
 		#adding waypoint and takeAPicture commands
 		for location in self.listOfLocationsToReach:
 			locationCommand = Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, location.lat, location.lon, location.alt)
@@ -486,6 +490,7 @@ class Drone():
 		eventlet.sleep(5)
 		print self.name + " has completed its mission and now it is coming back home."
 		return
+
 	'''
 	This method is used for flying continuously in two points until drone's battery reaches 20%.
 	'''
