@@ -76,13 +76,6 @@ function init(map, drones){
 									"</div>" +
 								"</div>" +
 							"</div>" +
-							/*
-							"<div class='row'>" +
-								"<div class='col-lg-12'>" +
-									"<button type='button' class='btn btn-primary' id='confirmedSurvey' onclick='confirmedSurvey()'>Confirm</button>" +
-								"</div>" +
-							"</div>" +
-						*/
 						"</div>" +
 					"</div>"
 	$("#firstRow").append(typeOfSurveyDiv)

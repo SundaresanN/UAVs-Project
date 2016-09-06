@@ -34,27 +34,18 @@ class Drone():
 
 		self.fileTest = None
 
+		self.firstFlight = True
+
 	'''
 	This method creates a connection with the real Solo.
 	'''
 	def connect(self):
 		try:
 			self.vehicle = connect('udpout:10.1.1.10:14560', wait_ready=True)
-			self.__cleaningMissionsFromSoloMemory__()
+			self.cleanTheMemory()
 		except Exception as e:
 			print "Connection error.."
 			raise
-
-		'''self.vehicle = connect('udpout:10.1.1.10:14560', wait_ready=True)
-		print "cleaning commands for " + self.name
-		cmds = self.vehicle.commands
-		cmds.download()
-		time.sleep(30)
-		cmds.wait_ready()
-		print "There are " + str(len(cmds)) + " commands into the Solo's memory 2"
-		cmds.clear()
-		#self.__cleaningMissionsFromSoloMemory__()
-		#print self.name + " has cleaned its commands."'''
 
 	'''
 	This method returns the current Solo's location in a dictionary.
@@ -67,6 +58,7 @@ class Drone():
 			"altitude" : self.vehicle.location.global_relative_frame.alt,
 		}
 		return location
+
 	'''
 	This method returns the level of the battery of the current Solo.
 	'''
@@ -151,6 +143,7 @@ class Drone():
 		'''
 		self.__uploadCommandsIntoSoloMemory__()
 		socket.emit('Take off ack', self.name + " has just taken off. Now it is ready to start the mission.")
+		self.firstFlight = False
 		eventlet.sleep(self.__generatingRandomSleepTime__())
 
 		'''
@@ -260,6 +253,10 @@ class Drone():
 				file.close()
 				return
 
+	'''
+	This method has been implemented for speeding up the live information streaming using the socket.
+	[TO DO] To add the possibility to set the airspeed --> You need to modify the __uploadCommandsIntoSoloMemoryFastLanding__() method.
+	'''
 	def fastSocketFlight(self, connectionManager, socket):
 
 		print "Mission Flight for ", self.name
@@ -273,7 +270,7 @@ class Drone():
 		self.__uploadCommandsIntoSoloMemoryFastLanding__()
 		socket.emit('Take off ack', self.name + " has just taken off. Now it is ready to start the mission.")
 		print "after cleaning, ready to go to sleep.. " + self.name
-
+		self.firstFlight = False
 		eventlet.sleep(self.__generatingRandomSleepTime__())
 
 		'''
@@ -292,19 +289,23 @@ class Drone():
 		while True:
 			self.__connectToMyNetwork__(connectionManager)
 			#I'm getting next command from drone in flight
-			if next != self.vehicle.commands.next:
+			if next != self.vehicle.commands.next and self.vehicle.commands.next!=0 and self.vehicle.commands.next!=1:
 				next = self.vehicle.commands.next
 				#this happens when there is the last commands, so the RTL command
-				if next == 2*len(self.vehicle.commands)-2:
+				#this is when we have the bearing command. If we do not have the bearing command the right operand is +2 and not +3
+				if next == 2*len(self.listOfLocationsToReach)+3:
 					print "Just finished to process all the commands, returning home"
 					next-=1
 					end = time.time()
 					battery_end = self.getBattery()
-					socket.emit("Flight live information " + self.name, {'last' : next/2, 'completed' : True, 'battery': battery_end, 'flight time': end - start})
+					socket.emit("Flight live information " + self.name, {'last' : (next-1)/2, 'completed' : True, 'battery': battery_end, 'flight time': end - start})
+					eventlet.sleep(self.__generatingRandomSleepTime__())
 					break
+				#when we do not have the bearing command the if condition is next%2==0
 				if next%2!=0:
 					next-=1
-				socket.emit("Flight live information " + self.name, {'last' : next/2, 'completed' : False})
+				socket.emit("Flight live information " + self.name, {'last' : (next-1)/2, 'completed' : False})
+				eventlet.sleep(self.__generatingRandomSleepTime__())
 				print "sending live information about the flight."
 			eventlet.sleep(self.__generatingRandomSleepTime__())
 		'''
@@ -395,7 +396,8 @@ class Drone():
 		cmds.add(RTLCommand)
 
 		self.__armAndTakeOff__()
-		#socket.emit('Take off ack', self.name + " has just taken off. Now it is ready to start the mission.")
+		socket.emit('Take off ack', self.name + " has just taken off. Now it is ready to start the mission.")
+		self.firstFlight = False
 		#uploading commands to UAV	def __uploadCommandsIntoSoloMemory__(self):
 		cmds.upload()
 
@@ -448,7 +450,6 @@ class Drone():
 		self.__sendFlightDataToClientUsingSocket__(socket, self.vehicle.location.global_frame, reached = False, RTLMode = True, typeOfSurvey = 'normal', numberOfOscillations = None)
 		return
 
-
 	'''
 	This method allows the flight with a 100% accuracy on live information on client side.
 	The idea of this method is to send a flight command once a time. Only when the Solo reaches the location just processed, a new flight command will be sent.
@@ -500,7 +501,7 @@ class Drone():
 	def oscillationFlight(self):
 	  self.fileTest = open("test " + self.name + ".txt", "a")
 
-	  cmds = self.__cleaningMissionsFromSoloMemory__()
+	  cmds = self.cleanTheMemory()
 	  if cmds is False:
 		  return "Error on cleaning the Solo's memory"
 
@@ -651,7 +652,10 @@ class Drone():
 		else:
 			return False
 
-	def __cleaningMissionsFromSoloMemory__(self):
+	'''
+	This method clean the memory on board of the Solo
+	'''
+	def cleanTheMemory(self):
 		try:
 			print "Trying to clean the " + self.name + " memory."
 			cmds = self.vehicle.commands

@@ -230,6 +230,10 @@ class ServerBrain:
 	This method creates a thread for a drone's flight.
 	'''
 	def takeAFlight(self, drone):
+		if self.drones[drone] is not None and self.drones[drone].firstFlight is False:
+			print drone + " has already had a flight, for the next flight I need to clear its memory.."
+			self.drones[drone].cleanTheMemory()
+
 		eventlet.spawn(self.drones[drone].flightPointByPoint, self.connectionManager, self.socket)
 
 
@@ -244,12 +248,18 @@ class ServerBrain:
 	This method starts the rectangular survey flight creating threads for each Solo involved.
 	'''
 	def takeARectangularFlight(self):
+		#I need to be sure that the memory has been cleaned
+		for drone in self.drones:
+			if self.drones[drone] is not None and self.drones[drone].firstFlight is False:
+				print drone + " has already had a flight, for the next flight I need to clear its memory.."
+				self.drones[drone].cleanTheMemory()
+
 		for drone in self.drones:
 			if self.drones[drone] is not None:
 				if len(self.drones[drone].listOfLocationsToReach)>0:
 					print "launching the thread for " + drone + " for having a flight."
 					eventlet.spawn(self.drones[drone].flightWithTheUsingOfSolosMemory, self.connectionManager, self.socket)
-					eventlet.sleep(20)
+					eventlet.sleep(15)
 					#time.sleep(10)
 
 	'''
@@ -286,6 +296,7 @@ class ServerBrain:
 					return self.connectionManager.interface(), self.connectionManager.current()
 				else:
 					'''This could be possible if the network is not available '''
+					print "Network not available"
 					return False, False
 
 		print "I haven't found a free antenna for your connection... sorry, ", wifiNetwork
