@@ -77,7 +77,10 @@ function init(map, drones){
 								"</div>" +
 							"</div>" +
 						"</div>" +
-					"</div>"
+					"</div>" 
+
+
+
 	$("#firstRow").append(typeOfSurveyDiv)
 	$("#selectTypeOfSurvey").click(function(){
 			confirmingSurvey()
