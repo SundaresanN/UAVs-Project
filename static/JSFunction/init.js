@@ -12,7 +12,8 @@ $(document).ready(function(){
 
 	//var map = new Map("MST Campus", 37.955879, -91.775020, 20, 640, 640, '/static/Images/Map\ Images/MSTStaticMap20zoom.png')
 
-	var map = new Map("Football Pitch", 37.924750,-91.772437, 19, 640, 640, '/static/Images/Map\ Images/FootballPitchZoom19.png')
+	//var map = new Map("Football Pitch", 37.924750,-91.772437, 19, 640, 640, '/static/Images/Map\ Images/FootballPitchZoom19.png')
+	var map = new Map("Havener Center", 37.954953, -91.775637, 20, 640, 640, '/static/Images/Map\ Images/HavenerCenter20Zoom.png')
 	//var map = new Map("Dog Area", 37.924403, -91.775691, 19, 640, 640, '/static/Images/Map\ Images/DogAreaLionsPark.png')
 	brain = new ClientBrain(socketio, map)
 
