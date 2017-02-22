@@ -66,6 +66,32 @@ class ServerBrain:
 		self.drones[droneName].buildListOfLocations(locationsToReach)
 		return {'drone': droneName, 'locations to reach' : self.drones[droneName].serializeListOfLocationsToReach()}
 
+
+	def buildRandomPath(self, droneInvolved):
+		if self.drones[droneInvolved] is None:
+			return "ERROR"
+		import randomflytry
+		randomSurveyLocation = randomflytry.randMissionRead('randMission.txt')
+		locations = []
+		for location in randomSurveyLocation['picList']:
+			'''
+			location is a mission class instance. I can access to the single location values in a simple way:
+			- location.latitude
+			- location.longitude
+			- location.altitude
+			'''
+			locations.append({
+				"latitude" : location.latitude,
+				"longitude": location.longitude,
+				"altitude": location.altitude
+				})
+			pass
+		self.drones[droneInvolved].buildListOfLocations(locations)
+		return {
+			'drone' : droneInvolved,
+			'locations': locations
+			}
+
 	'''
 	This method generates the points inside the rectangular area delimited by the 3 points sent by client.
 	If the 3 points are perfectly put from client, this method will return all the points to client and moreover it will assing these points to
@@ -107,7 +133,7 @@ class ServerBrain:
 		Assign locations to reach to each involved drone
 		'''
 		if missionDivisionData['response'] == 'Good' or missionDivisionData['response'] == 'Warn':
-			#filling the locations to reach array for each drone involved
+			#filling the locationsToReach array for each involved drone
 			for UAVInfo in missionDivisionData['UAVs']:
 				drone = UAVInfo['name']
 				self.drones[drone].buildListOfLocations(UAVInfo['points'])
@@ -234,7 +260,8 @@ class ServerBrain:
 			print drone + " has already had a flight, for the next flight I need to clear its memory.."
 			self.drones[drone].cleanTheMemory()
 
-		eventlet.spawn(self.drones[drone].flightPointByPoint, self.connectionManager, self.socket)
+		# we use the singleFlightWithTheUsingOfSolosMemory for the random flight
+		eventlet.spawn(self.drones[drone].singleFlightWithTheUsingOfSolosMemory, self.connectionManager, self.socket)
 
 
 	'''

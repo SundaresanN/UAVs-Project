@@ -554,6 +554,78 @@ class Drone():
 	    'oscillations' : numberOfOscillations
 	    }
 
+
+	def singleFlightWithTheUsingOfSolosMemory(self, connectionManager, socket):
+
+		print "Mission Flight for ", self.name
+		self.fileTest = open("Ken Random test " + self.name + ".txt", "a")
+		self.__connectToMyNetwork__(connectionManager)
+		#writing on the file
+		self.fileTest.write("Mission Flight starts on " +  str(time.strftime("%c")) + '\n')
+		'''
+		UPLOADING COMMANDS INTO THE SOLO'S MEMORY
+		'''
+		self.__uploadCommandsIntoSoloMemory__()
+		#socket.emit('Take off ack', self.name + " has just taken off. Now it is ready to start the mission.")
+		self.firstFlight = False
+		#eventlet.sleep(self.__generatingRandomSleepTime__())
+
+		'''
+		STARTING THE MISSION, CHECKING THE FLIGHT STATUS AND UPDATING THE INFORMATION ON CLIENT SIDE WITH THE OPENED SOCKET
+		'''
+		#self.__connectToMyNetwork__(connectionManager)
+		start = time.time()
+		self.vehicle.mode = VehicleMode('AUTO') #starting the mission
+		self.fileTest.write("\nNumber of points: " + str(len(self.listOfLocationsToReach)) + "\n")
+		self.fileTest.write("\nInitial Battery Level: " +  str(self.getBattery()) + "\n")
+		eventlet.sleep(self.__generatingRandomSleepTime__())
+		index = 0
+		next = -1
+		while True:
+			s = time.time()
+			#self.__connectToMyNetwork__(connectionManager)
+			#I'm getting next command from drone in flight
+			if next != self.vehicle.commands.next:
+				next = self.vehicle.commands.next
+				if next%2!=0:
+					next-=1
+				while index <= (next/2):
+					location = self.listOfLocationsToReach[index]
+					#writing on the file
+					#I would not write these information in the file, it's not important at this point.
+					'''self.fileTest.write("Location:\n\t- latitude: " + str(location.lat))
+					self.fileTest.write("\n\t- longitude: " +  str(location.lon))
+					self.fileTest.write("\n\t- altitude: " + str(location.alt))
+					self.fileTest.write("\n\t- battery: " + str(self.getBattery()))
+					self.fileTest.write("\n\t- time: " + str(time.time()-start) + "\n")
+					self.__connectToMyNetwork__(connectionManager)
+					self.__sendFlightDataToClientUsingSocket__(socket, location, reached = True, RTLMode = False, typeOfSurvey = 'normal', numberOfOscillations = None)
+					'''
+					index+=1
+					eventlet.sleep(self.__generatingRandomSleepTime__())
+				#checking if drone has endend its trip
+				if index == len(self.listOfLocationsToReach):
+					print "Just finished the survey.." + self.name
+					break
+			eventlet.sleep(self.__generatingRandomSleepTime__())
+
+		'''
+		CLEARING ALL THE DATA STRUCTURES USED FOR THIS FLIGHTS
+		'''
+		#clear this for the
+		end = time.time()
+		self.__removeAllTheElementInTheListOfLocationsToReach__()
+		#self.__connectToMyNetwork__(connectionManager)
+		#for the future: I need to delete this chaning mode part
+		self.vehicle.mode = VehicleMode('GUIDED')
+		self.vehicle.mode = VehicleMode('RTL')
+		self.fileTest.write("\nFlight time: " + str(end-start))
+		self.fileTest.write("\nFinal Battery level: " + str(self.getBattery()) + "\n")
+		self.fileTest.write("\n###########################################\n")
+		self.fileTest.close()
+		self.__updateFileOldSurvey__()
+		#self.__sendFlightDataToClientUsingSocket__(socket, self.vehicle.location.global_frame, reached = False, RTLMode = True, typeOfSurvey = 'normal', numberOfOscillations = None)
+		return True
 	'''
 	With this function I set up the interface on the value of the this drone instance and after that I give
 	priority to the wifi network associated to this drone instance.

@@ -68,6 +68,12 @@ def twoPointsFlight(data):
     brain.takeATwoPointsFlight(data['name'])
     return 'Two Points Flight Completed'
 
+@app.route('/buildRandomPath', methods=['POST'])
+def buildRandomPath():
+    drone = request.get_json()['drone']
+    randomPoints = brain.buildRandomPath(drone)
+    return jsonify({'data': randomPoints})
+
 @socketio.on('response for live information')
 def receive_live_info(message):
 

@@ -72,12 +72,13 @@ function init(map, drones){
 											"<option>Normal Survey</option>" +
 											"<option>Rectangular Survey</option>" +
 											"<option>Oscillation Survey</option>" +
+											"<option>Random Survey</option>" +
 										"</select>" +
 									"</div>" +
 								"</div>" +
 							"</div>" +
 						"</div>" +
-					"</div>" 
+					"</div>"
 
 
 
