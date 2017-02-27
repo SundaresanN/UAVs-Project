@@ -1,5 +1,3 @@
-
-
 '''Takes as a parameter an integer representing the desired number of pixels per centimeter and
 returns the necessary altitude from which the pictures should be taken in meters
 The camera to be selected from gopro canon or pi is also user configurable, but
